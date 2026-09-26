@@ -149,6 +149,57 @@ func guardPlanFile(t *testing.T, rel string) string {
 	return ""
 }
 
+// guardIsMaintainerTree reports whether this checkout is the maintainer's,
+// rather than the published subtree.
+//
+// tools/ is the marker, and it is not a heuristic. The published repository is
+// this tree with exactly three directories removed — tools/, corpus-build/ and
+// supabase/ — so a checkout that has tools/ in it is the one those directories
+// belong to, and a checkout that does not is the distribution.
+func guardIsMaintainerTree(t *testing.T) bool {
+	t.Helper()
+	fi, err := os.Stat(filepath.Join(moduleRoot(t), "tools"))
+	return err == nil && fi.IsDir()
+}
+
+// guardMaintainerPath resolves a path that exists only in the maintainer tree.
+// It returns the path and true when the path is there to be read, and false
+// when the caller should skip it.
+//
+// # WHY A DISTRIBUTION MAY SKIP, AND WHY IT MAY NOT SKIP QUIETLY
+//
+// Three directories are deliberately not published: tools/ (the ship-content
+// scanner and the corpus pre-flight), corpus-build/ (the corpus compiler and
+// signer) and supabase/ (the hosted gateway). This guard suite ships anyway,
+// and the public repository's CI runs it, so a guard that reads one of those
+// paths has to distinguish two situations that look identical to os.Stat:
+//
+//   - the artefact is absent because this is the distribution, where it was
+//     never published, so there is nothing to check and skipping is honest;
+//   - the artefact is absent from a maintainer checkout, where it is required,
+//     so the absence is a deletion or a typo and must stay fatal.
+//
+// The rule is the one guardPlanFile already applies to the planning tree, and
+// for the same reason: a guard that went green with nothing behind it would be
+// worse than one that did not run. What differs is only the marker — the plan
+// is absent from the distribution, the maintainer tooling is absent from it
+// too, and tools/ tells the two checkouts apart.
+func guardMaintainerPath(t *testing.T, path string) (string, bool) {
+	t.Helper()
+	if _, err := os.Stat(path); err == nil {
+		return path, true
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat %s: %v", path, err)
+	}
+	if guardIsMaintainerTree(t) {
+		t.Fatalf("%s is missing from a maintainer checkout.\n"+
+			"tools/ is present, so this is the tree those directories belong "+
+			"to, and this path is required here. Its absence is a deletion or a "+
+			"typo, not a distribution that ships without it.", path)
+	}
+	return "", false
+}
+
 // guardCorpusPath is the corpus that ships with the binary, relative to the
 // module root. It is the same corpus the binary resolves next to itself.
 func guardCorpusPath(t *testing.T) string {

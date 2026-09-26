@@ -64,14 +64,22 @@ jobs:
         run: make guard
       - name: Architectural import-graph test
         run: make arch
-      # The corpus YAML tree is the source of truth every guard above reads, and
-      # nothing validated it on a pull request. `make corpus-verify` runs the
-      # compiler's own schema/citation/no-silent-upgrade rules, which read
-      # corpus/**/*.yaml and need no key and no signed bundle — so it is safe
-      # here, unlike `make dogfood` (see the note at the bottom of this file).
-      # A malformed or uncited corpus entry used to reach main unchallenged.
-      - name: Corpus validation (schema, citations, no silent upgrade)
-        run: make corpus-verify
+      # # WHY THERE IS NO CORPUS STEP HERE
+      #
+      # There was one, running `make corpus-verify`. It needs `corpus-build/` —
+      # the compiler that holds the Ed25519 signing code and is therefore never
+      # published — so it worked in the maintainer repository and could not work
+      # in this one. A step that cannot run is not a gate; it is a red mark that
+      # teaches people to ignore red marks.
+      #
+      # The corpus YAML tree is still validated on every pull request, because
+      # the corpus guards in `make guard` above read it: TestCorpusPredicatesTypecheck
+      # type-checks every predicate, TestEveryTrapIsEitherFiredByAFixtureOrListed
+      # reads every trap, TestCorpusNoticeCodesMatchTheirDeclaredMeaning reads
+      # every notice code, and TestShippedBundleIsACurrentCompileOfTheSource
+      # refuses a bundle that is not a compile of the source. What is lost here
+      # is `corpus-build --validate`'s own rule set, which is named in the note
+      # at the bottom of this file.
 
   # ---------------------------------------------------------------------------
   # 2. TEST — build, then the full suite with the race detector and coverage,
@@ -243,7 +251,25 @@ jobs:
   # `make corpus-dist-check` — NOT run here, for the same reason: it verifies a
   # signed bundle that only exists on the maintainer's machine. Its CI-side twin
   # is the corpus pre-flight in release.yml, which runs on the release runner
-  # where the bundle has been uploaded as an artefact.
+  # where the bundle has been uploaded as an artefact. That pre-flight runs
+  # tools/check-corpus-dist.sh, which is maintainer tooling: in a checkout
+  # without it the step fails with a sentence saying exactly that, rather than
+  # passing over a check it could not run.
+  #
+  # `make corpus-verify` — NOT run here. It invokes `corpus-build/`, the corpus
+  # compiler and signer, which is deliberately not published because it holds
+  # the Ed25519 signing code. So the compiler's own schema, citation and
+  # no-silent-upgrade rules cannot run in this repository. That is a real
+  # reduction in what a pull request is checked against, and it is recorded
+  # rather than hidden behind a step that would fail on a missing target. What
+  # still reads the corpus YAML here is `make guard`, whose corpus group fails on
+  # a predicate that does not type-check, a trap with no fixture, or a notice code
+  # that contradicts its declared meaning. What does not run is
+  # `corpus-build --validate`, or any other part of the compiler. The maintainer
+  # runs `make corpus-verify` before a release. The release pre-flight in
+  # release.yml needs corpus-build too — it byte-compares the bundle against a
+  # fresh compile — so that pre-flight is a maintainer-tree step as well, and it
+  # fails with a sentence saying so rather than passing over the check.
   #
   # `make bench` — the benchmark itself is not run; TestBenchmarkSuiteIsNotEmpty
   # (in `make guard`) asserts the suite is non-empty, which is the part that can

@@ -40,28 +40,20 @@ builds:
       - arm64
     mod_timestamp: "{{ .CommitTimestamp }}"
 
-  # The internal-only tool. It contains the Ed25519 corpus-signing code, so it
-  # is compiled here (to prove it still builds) but is NEVER archived, checksummed
-  # or uploaded — see `archives.builds` below. It must never ship.
-  - id: corpus-build
-    main: ./corpus-build
-    binary: corpus-build
-    env:
-      - CGO_ENABLED=0
-    flags:
-      - -trimpath
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    mod_timestamp: "{{ .CommitTimestamp }}"
+  # `corpus-build` used to be built here as well, with the note that it contains
+  # the Ed25519 corpus-signing code, is never archived, and is compiled only to
+  # prove it still builds. It is gone because the published repository does not
+  # ship corpus-build/ at all — so a release run from a public checkout failed
+  # on a main package that is not in the tree, and `make release` broke for
+  # exactly the readers the release is for.
+  #
+  # Nothing is lost. The proof that corpus-build compiles belongs to the tree
+  # that has it: `make corpus`, `make corpus-verify`, `make corpus-sign` and
+  # `make corpus-dist` all run it, and the maintainer's release is cut from the
+  # maintainer checkout, where those targets exist.
 
 archives:
-  # Only the public `clearance` build is packaged. corpus-build is deliberately
-  # absent, so it cannot leak into a release.
+  # Only the public `clearance` build is packaged.
   - id: clearance
     builds:
       - clearance

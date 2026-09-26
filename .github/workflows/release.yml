@@ -99,10 +99,33 @@ jobs:
       # The assertions live in tools/check-corpus-dist.sh, which `make
       # corpus-dist-check` also runs — one implementation, so the check the
       # founder runs before tagging cannot drift from the check CI runs.
+      #
+      # That script byte-compares the bundle against a FRESH compile, so it runs
+      # `go run ./corpus-build` — the compiler, which holds the Ed25519 signing
+      # code and is therefore never published. In a checkout that does not have
+      # it, this step FAILS with the sentence below rather than passing over a
+      # check it could not run: the pre-flight is the only check that reads the
+      # bundle rather than the YAML tree, and a green tick over an unrun check is
+      # how a stale bundle reached a release on 25 Sep 2026.
       - name: Corpus pre-flight (the archive must carry a current, signed corpus)
         shell: bash
         run: |
           set -euo pipefail
+          if [ ! -f tools/check-corpus-dist.sh ] || [ ! -d corpus-build ]; then
+            echo ""
+            echo "This checkout cannot run the corpus pre-flight. It needs"
+            echo "tools/check-corpus-dist.sh and corpus-build/, and one or both are"
+            echo "absent. Both are maintainer tooling: the published distribution"
+            echo "ships without them, because corpus-build holds the Ed25519 signing"
+            echo "code and must never be published."
+            echo ""
+            echo "This step fails rather than skipping, on purpose. The pre-flight"
+            echo "is the only check that reads the corpus bundle instead of the YAML"
+            echo "tree, and a release whose bundle was never verified is exactly what"
+            echo "shipped on 25 Sep 2026. Cut the release from the maintainer"
+            echo "checkout, where both are present."
+            exit 1
+          fi
           if ! bash tools/check-corpus-dist.sh; then
             echo ""
             echo "The archive must contain a SIGNED corpus bundle that matches the"

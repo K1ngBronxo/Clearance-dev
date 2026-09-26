@@ -177,8 +177,11 @@ make build    # ./clearance
 make dogfood  # clearance check . on Clearance itself — must pass
 ```
 
-Run `make help` for the full target list. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for the invariant discipline and the rules a change must satisfy.
+Run `make help` for the full target list. A few targets are maintainer-only and are
+marked `[maintainer]`; they need the corpus signing key and the corpus compiler,
+neither of which is published, so they are absent from this repository and
+`make help` here does not name them. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+invariant discipline and the rules a change must satisfy.
 
 ---
 
@@ -192,5 +195,11 @@ coordinated-disclosure window, and a safe-harbour commitment.
 
 ## Licence
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The compiled corpus is
-distributed separately and is licensed CC-BY-4.0.
+**Functional Source License 1.1, ALv2 Future License** (`FSL-1.1-ALv2`) — read
+that as **source-available, not open source**. The source is public and the
+licence is not OSI-approved. On the second anniversary of the first release of a
+version, that version's grant becomes an irrevocable Apache-2.0 licence.
+
+See [LICENSE](LICENSE) and [NOTICE](NOTICE). The compiled corpus is distributed
+separately from the binary and is licensed CC-BY-4.0; it is a data artefact, not
+a code dependency, and is not covered by the FSL grant.

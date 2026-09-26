@@ -1,6 +1,10 @@
 # Clearance — Makefile
 # ---------------------------------------------------------------------------
-# The target set is frozen: the ones below, plus `guard` and `dogfood`.
+# The target set is frozen. The ones a reader of the published repository can
+# use are below; the maintainer-only ones — the corpus toolchain, `dogfood`,
+# `ship-check` — are in tools/maintainer.mk, included at the bottom of this
+# file when tools/ is present. The split is by dependency, not by taste: the
+# header of that file says which dependency puts a target there.
 #
 # Runs in Git Bash on Windows (the founder's machine) and on Linux/macOS CI.
 # Recipe lines MUST begin with a real TAB — do not expand them to spaces.
@@ -119,13 +123,10 @@ GUARD_BUILD      := TestEveryGuardTestNamedInTheMakefileExists|TestEveryRunNameE
 GUARD_CORPUS     := TestFixtures|TestEveryTrapIsEitherFiredByAFixtureOrListed|TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed|TestEveryTerritoryGateIsEitherEvaluatedOrAcknowledged|TestEveryGraphKindIsEitherProducedByAFixtureOrAcknowledged|TestCorpusPredicatesTypecheck|TestObligationVocabularyMatchesTheSpec|TestEveryObligationKindInTheCorpusIsKnown|TestObligationValidatorRefusesATypo|TestFixActionValidatorRefusesATypo|TestEveryGraphScopedTrapHasAnEngineCheck|TestTrapScopeValidatorRefusesATypo|TestCorpusNoticeCodesMatchTheirDeclaredMeaning|TestShippedBundleIsACurrentCompileOfTheSource
 
 .DEFAULT_GOAL := help
-.PHONY: help guard test lint arch fixtures corpus corpus-verify \
-        corpus-verify-bundle corpus-sign \
-        corpus-dist corpus-dist-check build release vulncheck dogfood bench \
-        ship-check
+.PHONY: help guard test lint arch fixtures build release vulncheck dogfood bench
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' \
 		|| true
 
@@ -209,126 +210,6 @@ fixtures: ## Verify every fixture produces the verdict it declares
 	$(GO) test ./internal/... -run 'TestFixtures' -count=1
 	$(GO) test ./internal/... -run 'TestEveryTrapIsEitherFiredByAFixtureOrListed' -count=1
 
-# Compiles corpus/*.yml -> corpus.json. The compiled corpus is a signed JSON
-# bundle, not an embedded database: an embedded DB would need CGO or a
-# third-party driver, either of which breaks ADR-001's single-static-binary /
-# zero-dependency promise. No key required. `--compile` is the corpus-build CLI
-# contract.
-corpus: ## Compile corpus/*.yml -> corpus.json (unsigned)
-	$(GO) run ./corpus-build --compile --out corpus.json
-
-corpus-verify: ## Run every corpus validation rule (schema, citations, no-silent-upgrade)
-	$(GO) run ./corpus-build --validate
-	$(GO) test ./internal/... -run 'TestCorpusPredicatesTypecheck|TestConfidenceUpgradeRequiresCorrection' -count=1
-
-# Verify the STAGED bundle with the shipped binary. This is the acceptance step
-# for the corpus bundle, and it depends on `build` on purpose.
-#
-# The dependency is the whole point. `go build ./cmd/clearance` writes clearance.exe
-# into this directory and carries NO -X public-key stamp, so building the main
-# package after `make build` leaves behind a binary that refuses every bundle with
-# E-INT-005, "no corpus public key embedded" — whose recovery text says
-# "Reinstall" and sends the reader somewhere useless. Observed this session, and
-# then measured: stamped 7,076,352 bytes / verify EXIT 0 against unstamped
-# 10,160,640 bytes / verify EXIT 4.
-#
-# `go build ./...` is NOT the trigger, and an earlier version of this comment said
-# it was. With more than one package Go discards the outputs, so the stamped
-# binary survives; only a single-main-package build overwrites it.
-#
-# This is the sixth appearance of the stamp trap in this repository's history —
-# four silent `-X` typos, then `TestEveryStampedSymbolExists`. The first five
-# were fixed by making the stamp checkable. This one is fixed by making the
-# order a dependency rather than a sentence in a runbook.
-corpus-verify-bundle: build ## Verify corpus-dist/ with a freshly-built stamped binary
-	CLEARANCE_CORPUS=corpus-dist ./$(BINARY)$(EXE) corpus verify
-
-# The corpus release version, stamped into every verdict as `meta.corpus_version`.
-#
-# There is deliberately NO default, for the same reason CORPUS_KEY has no default
-# path: a default is a decision nobody made. This used to be
-# `$(shell date -u +%Y.%m.%d)`, which meant `make corpus-dist` silently stamped a
-# version that no step had chosen. The consequences were quiet and real:
-# the version bump was skippable, two bundles with
-# *different* content built on the same day got the *same* version, and one
-# unchanged bundle got a new version every day. A version that names content
-# cannot be derived from the calendar.
-#
-# Bump it deliberately — PATCH for a correction, MINOR for a new licence, trap,
-# ToS entry or obligation, MAJOR for a schema change. The corpus ships
-# independently of the binary, so the version has to
-# be readable on its own, away from any binary version beside it.
-CORPUS_VERSION ?=
-
-# Requires the OFFLINE Ed25519 key. NEVER run this in CI.
-#
-# CORPUS_KEY names a FILE, and there is deliberately no default path — a default
-# is a path somebody leaves lying around (see corpus-build's usage text).
-#
-# This target used to print "Signing requires the OFFLINE key" and then invoke
-# the signer anyway with no --key, so it failed every time and told nobody why.
-# It now refuses up front and names the thing it is missing.
-corpus-sign: ## Sign corpus.json with the offline key: make corpus-sign CORPUS_KEY=<file>
-	@test -n "$(CORPUS_KEY)" || { \
-		echo "corpus-sign: CORPUS_KEY is not set, and signing is the one step that needs it."; \
-		echo "  usage: make corpus-sign CORPUS_KEY=/path/to/corpus-signing.key"; \
-		echo "  That file holds the OFFLINE Ed25519 private key. CI must never hold it."; \
-		exit 2; \
-	}
-	$(GO) run ./corpus-build --sign --in corpus.json --out corpus.json.sig --key $(CORPUS_KEY)
-
-# Build the three artefacts a release ships: the payload, its manifest and the
-# signature. corpus-dist/ is what `.goreleaser.yml` copies into the archive
-# beside the binary, and what a human attaches to the draft release.
-#
-# It is deliberately NOT the `corpus/` YAML source tree. A release must ship the
-# compiled, signed bundle and not the raw YAML: YAML cannot be signed, and
-# `clearance check` refuses an unverifiable bundle (INV-9). Shipping the source
-# tree would ship a corpus the binary is required to reject — which is exactly
-# the state this project was in until the loader was wired to the bundle.
-corpus-dist: ## Compile + sign the corpus into ./corpus-dist (needs CORPUS_KEY and CORPUS_VERSION)
-	@test -n "$(CORPUS_KEY)" || { \
-		echo "corpus-dist: CORPUS_KEY is not set."; \
-		echo "  usage: make corpus-dist CORPUS_KEY=/path/to/corpus-signing.key CORPUS_VERSION=<version>"; \
-		exit 2; \
-	}
-	@test -n "$(CORPUS_VERSION)" || { \
-		echo "corpus-dist: CORPUS_VERSION is not set."; \
-		echo "  usage: make corpus-dist CORPUS_KEY=/path/to/corpus-signing.key CORPUS_VERSION=<version>"; \
-		echo "  The version is stamped into every verdict as meta.corpus_version, so it"; \
-		echo "  names the CONTENT of this bundle and cannot be derived from today's date."; \
-		echo "  Bump it deliberately: PATCH a correction, MINOR a new entry."; \
-		exit 2; \
-	}
-	rm -rf corpus-dist
-	mkdir -p corpus-dist
-	$(GO) run ./corpus-build --compile --out corpus-dist/corpus.json --version $(CORPUS_VERSION)
-	$(GO) run ./corpus-build --sign --in corpus-dist/corpus.json --out corpus-dist/corpus.json.sig --key $(CORPUS_KEY)
-	@echo ""
-	@echo "corpus-dist/ is built and signed. Verify it before it ships:"
-	@echo "  make build && CLEARANCE_CORPUS=corpus-dist ./$(BINARY)$(EXE) corpus verify"
-	@echo ""
-	@echo "  The corpus is named by the CLEARANCE_CORPUS environment variable."
-	@echo "  \`corpus verify\` does not take a --corpus flag: runCorpus resolves the"
-	@echo "  corpus itself, so the flag would be ignored and the command would fail"
-	@echo "  with E-CORPUS-001 against the default path. This hint printed that"
-	@echo "  broken invocation until it was run instead of trusted."
-
-# Check that corpus-dist/ is a current, complete, signed bundle.
-#
-# This is the SAME script the release pre-flight runs, deliberately: a release
-# check that exists in two places is a check that eventually disagrees with
-# itself, and the copy nobody runs is the one that is wrong. It exists as a
-# target as well as a CI step because the founder needs to be able to run it
-# before tagging, not discover the problem after.
-#
-# It exists at all because corpus-dist/ is git-ignored, so it is invisible to
-# review, and the pre-flight verified only that the three files EXISTED. A bundle
-# compiled before a corpus edit therefore passed every gate and shipped — which
-# is exactly what happened on 25 Sep 2026. See tools/check-corpus-dist.sh.
-corpus-dist-check: ## Verify corpus-dist/ is current, complete and signed
-	@GO=$(GO) bash tools/check-corpus-dist.sh
-
 # NOTE: this is the only build that stamps the corpus public key. Building the
 # main package directly — `go build ./cmd/clearance`, which is what a developer
 # naturally types — writes the same filename into this directory WITHOUT the
@@ -352,6 +233,19 @@ release: ## Cross-compile the 6 release targets via goreleaser
 vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
 	$(GO) run $(GOVULNCHECK) ./...
 
+# Dogfooding is the doctrine this project is built on — the tool must pass its
+# own check honestly — and NOTICE says so. It is a PUBLIC target, and it was
+# briefly moved into tools/maintainer.mk on the belief that `clearance check .`
+# needs a signed bundle. It does not, and the belief was falsified by running it:
+# with the corpus at `corpus/` unsigned, the scan completed and exited 0 with
+# BLOCKERS: 0. Everything it needs ships — the corpus YAML, clearance.config.yml,
+# and the binary this target builds.
+#
+# `--fail-on BLOCK` is the doctrine made checkable: a condition is acceptable, a
+# blocker is not.
+dogfood: build ## Run clearance check . on Clearance itself (must pass)
+	./$(BINARY)$(EXE) check . --fail-on BLOCK
+
 # There is deliberately NO `conformance` target here.
 #
 # `make conformance` was specified, and the
@@ -367,19 +261,26 @@ vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
 # for nobody to notice. The gap is tracked rather than hidden, and the target is
 # restored when the vectors exist.
 
-dogfood: build ## Run clearance check . on Clearance itself (must pass)
-	./$(BINARY)$(EXE) check . --fail-on BLOCK
-
-# Refuse to ship content that leaks internal planning. Reads the CONTENTS of
-# every shipped file, not just its path, because the first push passed a path
-# check and was wrong: the staged README.md was a planning overview — an
-# internal roadmap and a commercial posture — not a product README. A path
-# check sees a file named README.md; it does not read it.
-#
-# Run with no argument it scans the working tree, so a scrub can be verified
-# before it is committed rather than discovered after it is pushed.
-ship-check: ## Refuse to ship content that leaks the plan (contents, not paths)
-	bash tools/check-ship-content.sh
-
 bench: ## Run the benchmark suite
 	$(GO) test ./... -run '^$$' -bench . -benchmem -count=1
+
+# ---------------------------------------------------------------------------
+# The maintainer-only targets.
+#
+# `-include` ignores a missing file, which is exactly what the published
+# distribution needs: it ships without tools/ and therefore without this
+# fragment, and the Makefile above stays complete for everything a reader of the
+# public repository can do.
+#
+# That same silence is how a typo would hide, so tools/ is the marker instead.
+# Where tools/ is present — every maintainer checkout — the fragment is required,
+# and its absence is a hard error rather than a Makefile that quietly lost eight
+# targets. This is the same rule, with the same marker, as guardMaintainerPath in
+# internal/guard_helpers_test.go.
+# ---------------------------------------------------------------------------
+ifneq ($(wildcard tools),)
+ifeq ($(wildcard tools/maintainer.mk),)
+$(error tools/ is present but tools/maintainer.mk is missing. This is the maintainer tree — the published distribution ships without tools/ at all — so the maintainer targets must be here. Restore the file, or remove tools/ if this really is a distribution.)
+endif
+endif
+-include tools/maintainer.mk

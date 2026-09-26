@@ -451,20 +451,42 @@ func TestOurOwnScriptsNameNoThirdPartyProgram(t *testing.T) {
 	}{
 		{filepath.Join("..", "..", "Makefile"), makeCommands},
 	}
-	shells, err := filepath.Glob(filepath.Join("..", "..", "tools", "*.sh"))
-	if err != nil {
-		t.Fatalf("globbing tools/*.sh: %v", err)
-	}
-	for _, p := range shells {
-		scripts = append(scripts, struct {
-			path   string
-			reader func(string) []upstreamSignal
-		}{p, shellCommands})
-	}
-	if len(shells) == 0 {
-		t.Error("tools/*.sh matched nothing. This guard's whole point is that " +
-			"the shell scripts are read too; if the directory moved, say so here " +
-			"rather than passing over an empty set.")
+	// # WHY THE SHELL SCRIPTS ARE CONDITIONAL AND THE MAKEFILE IS NOT
+	//
+	// tools/ is maintainer-only. The published distribution is this tree with
+	// tools/, corpus-build/ and supabase/ removed, so an absent tools/ here
+	// means the distribution, where there is nothing to read and the Makefile
+	// alone is the whole build-script surface. That is reported rather than
+	// passed over, for the reason guardPlanFile records one package up: a guard
+	// that goes green with nothing behind it is worse than one that does not
+	// run, and a log line is visible in the output.
+	//
+	// The skip is not silent-by-accident elsewhere, either: `make ship-check`
+	// and the release pre-flight both invoke these scripts by path, so a
+	// maintainer checkout that lost tools/ fails those loudly.
+	toolsDir := filepath.Join("..", "..", "tools")
+	if _, err := os.Stat(toolsDir); err == nil {
+		shells, globErr := filepath.Glob(filepath.Join(toolsDir, "*.sh"))
+		if globErr != nil {
+			t.Fatalf("globbing %s/*.sh: %v", toolsDir, globErr)
+		}
+		for _, p := range shells {
+			scripts = append(scripts, struct {
+				path   string
+				reader func(string) []upstreamSignal
+			}{p, shellCommands})
+		}
+		if len(shells) == 0 {
+			t.Error("tools/*.sh matched nothing. This guard's whole point is that " +
+				"the shell scripts are read too; if the directory moved, say so here " +
+				"rather than passing over an empty set.")
+		}
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat %s: %v", toolsDir, err)
+	} else {
+		t.Logf("the maintainer tooling is not part of this distribution, so there "+
+			"are no shell scripts to read here; %s is the only build script to "+
+			"check", filepath.Join("..", "..", "Makefile"))
 	}
 
 	for _, sc := range scripts {

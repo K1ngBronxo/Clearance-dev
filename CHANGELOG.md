@@ -37,6 +37,61 @@ described.
   each was verified to still fire. CI moves with it, from
   `golangci/golangci-lint-action@v6` on `v1.62.2` to `@v8` on `v2.14.0`.
 
+- **The licence is FSL-1.1-ALv2, not Apache-2.0.** `LICENSE` is now the
+  Functional Source License 1.1 with the ALv2 Future License, which is
+  **source-available and not OSI-approved**: the source is public, commercial
+  use is restricted, and on the second anniversary of a version's first release
+  that version's grant becomes an irrevocable Apache-2.0 licence.
+  `LICENSE`, `NOTICE`, `README.md` and `CONTRIBUTING.md` all moved together;
+  `clearance.config.yml` declares the matching `licence_model: source-available`
+  so that `make dogfood` scans this repository against the licence it is
+  actually under. The Apache-2.0 line in the `[0.1.0]` section below is left as
+  history — that was the baseline's licence, and **no version has been released
+  yet**, so no existing grant is being withdrawn.
+
+- **The maintainer-only targets moved to `tools/maintainer.mk`**, included by
+  `-include`. The published repository is this tree with `tools/`,
+  `corpus-build/` and `supabase/` removed, so a Makefile that named
+  `corpus-build` shipped a distribution whose own build script pointed at files
+  that are deliberately not there. The split is by dependency, not by taste: a
+  target belongs in the fragment if it cannot run without the private half of
+  the project. `corpus`, `corpus-verify`, `corpus-verify-bundle`, `corpus-sign`,
+  `corpus-dist`, `corpus-dist-check` and `ship-check` moved; `dogfood` did not,
+  and the reason is recorded in the Makefile, because it was moved once on a
+  false premise and the premise was falsified by running it.
+
+  Moving targets moved their guards' reach with them, which was the real risk:
+  six checks located a build script by path and would have gone quietly green
+  with the script gone. Each now reads `tools/maintainer.mk` when it is present,
+  and reports what it did not read when it is not:
+
+  - `TestEveryRunNameExists` — the walk over source directories.
+  - `TestEveryStampedSymbolExists` — the link-time stamp configs; `release.yml`
+    leaves the published tree with it.
+  - `TestEveryGoTestInvocationIsUncached` and the `-run`-name scan — both read
+    the fragment, so a target moving out of the Makefile cannot take its `go
+    test` invocation out of a guard's reach.
+  - `TestOurOwnScriptsNameNoThirdPartyProgram` — the `tools/*.sh` glob.
+
+  One helper carries the rule for all of them: a maintainer-only artefact may be
+  absent only where `tools/` is absent too. In a maintainer checkout its absence
+  stays fatal, so a deletion or a typo cannot pass as a distribution.
+
+- **`.goreleaser.yml` no longer cross-compiles `corpus-build`.** The published
+  repository does not ship `corpus-build/`, so that build target made `make
+  release` fail on a missing main package. Nothing is lost: the compile proof
+  belongs to the tree that has the package, and the release pre-flight in
+  `release.yml` now fails closed if that tree is not present.
+
+- **CI no longer runs `make corpus-verify`.** It invokes `corpus-build/`, which
+  is never published, so the step could only ever have passed in a checkout that
+  is not the one CI runs in. What still reads the corpus publicly is `make
+  guard`, whose corpus group fails on a predicate that does not type-check, a
+  trap with no fixture, or a notice code that contradicts its declared meaning.
+  The compiler's own `--validate` rules run in the maintainer tree, before a
+  release. The loss is real and is stated in `ci.yml` rather than absorbed
+  silently.
+
 Nothing else yet. The next entry will be a binary release; the corpus is
 versioned separately.
 

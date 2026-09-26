@@ -1558,9 +1558,18 @@ func TestNoGuardIsLeftOutOfTheGate(t *testing.T) {
 func TestEveryRunNameExists(t *testing.T) {
 	root := moduleRoot(t)
 
-	// Every script in the repo that can pass a `-run` pattern: the Makefile and
-	// the workflow files.
+	// Every script in the repo that can pass a `-run` pattern: the Makefile, the
+	// maintainer-only fragment it includes, and the workflow files.
+	//
+	// The fragment has to be read even though it is not published: it is where
+	// the maintainer targets live now, several of them pass `-run`, and a
+	// `-run` this guard cannot read is exactly the fictional name it exists to
+	// catch. In the distribution the file is absent and there is nothing to
+	// miss, because the targets that name those patterns went with it.
 	sources := []string{"Makefile"}
+	if _, ok := guardMaintainerPath(t, filepath.Join(root, "tools", "maintainer.mk")); ok {
+		sources = append(sources, filepath.Join("tools", "maintainer.mk"))
+	}
 	workflowDir := filepath.Join(root, ".github", "workflows")
 	entries, err := os.ReadDir(workflowDir)
 	if err != nil {
@@ -1603,9 +1612,18 @@ func TestEveryRunNameExists(t *testing.T) {
 	// Every Test function declared anywhere in the module, as before. The
 	// script directories are all walked, not only the ones a target happens to
 	// name, so the set this is checked against is the whole module.
+	//
+	// corpus-build is maintainer-only, so the distribution ships without it and
+	// the walk covers whatever source directories this checkout has. A source
+	// directory missing from a maintainer checkout stays fatal, and the
+	// `defined` emptiness check below keeps an empty walk from reading as a
+	// pass — see guardMaintainerPath.
 	defined := map[string]bool{}
 	for _, top := range []string{"internal", "cmd", "corpus-build"} {
 		base := filepath.Join(root, top)
+		if _, ok := guardMaintainerPath(t, base); !ok {
+			continue
+		}
 		walkErr := filepath.WalkDir(base, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -1808,9 +1826,17 @@ func TestEveryStampedSymbolExists(t *testing.T) {
 	// `{{.Version}}`, so the match stops at the first `=`.
 	stampRe := regexp.MustCompile(`-X\s+([A-Za-z0-9_./\-]+)\.([A-Za-z0-9_]+)=`)
 
-	total := 0
+	total, read := 0, 0
 	for _, rel := range configs {
-		raw, err := os.ReadFile(filepath.Join(root, rel))
+		// release.yml is maintainer-only: it runs the corpus pre-flight, which
+		// needs tools/ and a signed bundle, so the distribution ships without
+		// it. The Makefile and .goreleaser.yml ship and stay required.
+		path, ok := guardMaintainerPath(t, filepath.Join(root, rel))
+		if !ok {
+			continue
+		}
+		read++
+		raw, err := os.ReadFile(path)
 		if err != nil {
 			t.Errorf("reading %s: %v", rel, err)
 			continue
@@ -1856,8 +1882,9 @@ func TestEveryStampedSymbolExists(t *testing.T) {
 		t.Fatal("no link-time stamps were found in any build config; this guard " +
 			"is checking nothing")
 	}
-	t.Logf("%d link-time stamps verified across %d build configs",
-		total, len(configs))
+	t.Logf("%d link-time stamps verified across %d of %d build configs "+
+		"(the rest are maintainer-only and not in this distribution)",
+		total, read, len(configs))
 }
 
 // stripCommentLines drops whole-line comments, so that a `-X` mentioned in a
@@ -2543,6 +2570,15 @@ func TestEveryGoTestInvocationIsUncached(t *testing.T) {
 	root := moduleRoot(t)
 
 	scripts := []string{filepath.Join(root, "Makefile")}
+	// The maintainer-only targets live in an included fragment, so the `go test`
+	// invocations they carry are read here too. Without this, moving a target
+	// out of the Makefile would quietly take it out of this guard's reach —
+	// which is the defect this test exists to close, reintroduced by a
+	// refactor. In the distribution the fragment is absent and the targets that
+	// carried those invocations went with it.
+	if p, ok := guardMaintainerPath(t, filepath.Join(root, "tools", "maintainer.mk")); ok {
+		scripts = append(scripts, p)
+	}
 	workflows, err := filepath.Glob(filepath.Join(root, ".github", "workflows", "*.yml"))
 	if err != nil {
 		t.Fatalf("globbing workflows: %v", err)

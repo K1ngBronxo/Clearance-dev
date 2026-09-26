@@ -63,3 +63,29 @@ policy:
         recorded here rather than left to a comment, because E-SCAN-020 refuses
         an unexplained ignore: a blocker hidden without a stated reason is
         indistinguishable from a blocker hidden.
+
+    - path: .scratch/**
+      reason: >
+        .scratch/ is gitignored developer scratch space (see .gitignore) and is
+        never part of the product. It is ignored because investigations leave
+        copies of the tree and of individual fixtures in it, and those copies sit
+        OUTSIDE the fixtures/** scope above — so without this entry a probe left
+        in .scratch/ is scanned as a real dependency and dogfood reports
+        DO NOT SHIP against test data. That is a false blocker on the product's
+        own tree, produced by an untracked directory, which is worse than a
+        narrow and stated hole: it makes the verdict depend on what a developer
+        happened to leave lying around.
+
+        This was not hypothetical. A simulated published tree under
+        .scratch/dist-sim, built to verify that this repository's guards pass
+        without the maintainer-only directories, turned `clearance check .` from
+        0 blockers into 4 and from exit 0 into exit 4 — every one of the four
+        from a copy of fixtures/ inside the scratch directory. Nothing about the
+        product had changed.
+
+        A wide ignore draws a notice, and it should: while a large scratch tree
+        is present the scan reports E-SCAN-020, "Ignore rule '.scratch/**'
+        excluded 53% of files. This may be hiding dependencies." That is the
+        engine doing its job — a rule hiding half the tree deserves a second
+        look — and this paragraph is the answer it is asking for. The notice is
+        a degradation, not a blocker, so the target still exits 0.
