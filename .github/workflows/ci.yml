@@ -1,0 +1,211 @@
+name: ci
+
+# ---------------------------------------------------------------------------
+# Triggers.
+#
+# We deliberately use `pull_request`, NEVER `pull_request_target`.
+# `pull_request_target` runs in the context of the *base* repository, with the
+# base repo's GITHUB_TOKEN and secrets, so a PR from a fork could exfiltrate
+# them — a classic privilege-escalation foot-gun. That would be especially
+# indefensible for a supply-chain-integrity tool. `pull_request` gives a fork PR
+# a read-only token, which is all this pipeline needs.
+# ---------------------------------------------------------------------------
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least privilege at the top level. Every job below runs with `contents: read`
+# and nothing more; no job needs a write scope. Widened only if that changes.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref. The repo is public, so Actions minutes
+# are free, but a fast feedback loop is still worth it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOFLAGS: -mod=readonly
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. GUARD — the spine. The invariant, security, build-integrity and corpus
+  #    guards, plus the import-graph layering test. This job gates every other
+  #    job: a broken invariant makes every downstream result meaningless
+  #    (00-START-HERE/04-principles-invariants.md §2,
+  #     05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.1).
+  # ---------------------------------------------------------------------------
+  guard:
+    name: guard (invariants + arch)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      # This step used to pass a hand-written name list:
+      #
+      #     -run 'TestInvariant|TestArch|TestGuard' -count=1
+      #
+      # Two of those three alternatives matched nothing. The module has no test
+      # whose name contains `TestInvariant` or `TestGuard`, so `go test` selected
+      # exactly one test — TestArchitectureLayering — while exiting 0. A step
+      # documented as running "Invariant / arch / guard tests" ran 1 of 108.
+      #
+      # `go test -run` exits 0 when a name matches nothing, so the step could not
+      # report its own emptiness. The name list is gone rather than corrected:
+      # `make guard` is the single source of truth for which guards exist, and
+      # TestEveryRunNameExists checks those names against the module. A list
+      # duplicated here can only drift from the one there — this one already had.
+      - name: The guard gate (first, uncached)
+        run: make guard
+      - name: Architectural import-graph test
+        run: make arch
+
+  # ---------------------------------------------------------------------------
+  # 2. TEST — build, then the full suite with the race detector and coverage,
+  #    on every platform the binary promises to run on
+  #    (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.3, §2.8).
+  # ---------------------------------------------------------------------------
+  test:
+    name: test (${{ matrix.os }})
+    needs: guard
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Build
+        run: go build ./...
+      - name: Test (race + coverage)
+        run: go test ./... -race -coverprofile=cover.out
+      - name: Upload coverage profile
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: cover.out
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------------
+  # 3. LINT — golangci-lint, which includes the depguard banned-import rules
+  #    (.golangci.yml).
+  # ---------------------------------------------------------------------------
+  lint:
+    name: lint
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          # Pinned to the v1.x line the .golangci.yml schema targets.
+          version: v1.62.2
+          args: --timeout=5m
+
+  # ---------------------------------------------------------------------------
+  # 4. BANNED IMPORTS — an explicit, dependency-free gate that mirrors
+  #    05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.9. It catches the cases
+  #    depguard cannot (direct decoder *calls* via an alias, net/http imported
+  #    somewhere other than the single client, and file-opening calls outside
+  #    safefs). No Go toolchain required.
+  # ---------------------------------------------------------------------------
+  banned-imports:
+    name: banned-imports
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce the banned-import rules
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+
+          # These rules constrain the SHIPPED PRODUCT's runtime, so *_test.go is
+          # excluded. The guards are themselves Go programs that must read the
+          # tree: internal/arch_test.go parses every file's imports, so it
+          # necessarily calls os.ReadDir/os.ReadFile, and it necessarily
+          # contains the string "net/http" because that is what it searches for.
+          # Without the exclusion this job fails on the gate's own source, and a
+          # gate that cannot pass is not a gate.
+          #
+          # The structural form of rules 2 and 3 is still enforced on test files
+          # by internal/arch_test.go, which walks every .go file and excludes
+          # only itself.
+
+          echo "== rule 1: no os/exec, syscall, plugin in internal/scanner (INV-3 / C1) =="
+          if grep -rInE '"(os/exec|syscall|plugin)"' internal/scanner --include='*.go'; then
+            echo "::error::internal/scanner must not import os/exec, syscall or plugin (INV-3 / C1)"
+            fail=1
+          fi
+
+          echo "== rule 2: net/http only in internal/cli/netclient.go (C4) =="
+          for f in $(grep -rIl '"net/http"' internal --include='*.go' --exclude='*_test.go' || true); do
+            if [ "$f" != "internal/cli/netclient.go" ]; then
+              echo "::error file=$f::net/http is only allowed in internal/cli/netclient.go (C4)"
+              fail=1
+            fi
+          done
+
+          echo "== rule 3: no direct yaml/json decoding in internal/ (INV-10 / C2) =="
+          if grep -rInE '\b(yaml|json)\.(Unmarshal|NewDecoder)\b' internal --include='*.go' --exclude='*_test.go' \
+               | grep -v '^internal/safeyaml/' | grep -v '^internal/safejson/'; then
+            echo "::error::direct yaml/json decoding is banned in internal/ — use safeyaml/safejson (INV-10 / C2)"
+            fail=1
+          fi
+
+          echo "== rule 4a: no file opening in internal/ outside internal/safefs (INV-4 / C3) =="
+          if grep -rInE '\b(os\.Open|os\.ReadFile|os\.ReadDir|ioutil\.ReadFile)\s*\(' internal --include='*.go' --exclude='*_test.go' \
+               | grep -v '^internal/safefs/'; then
+            echo "::error::one function opens files — os.Open/os.ReadFile/os.ReadDir are banned outside internal/safefs (INV-4 / C3)"
+            fail=1
+          fi
+
+          echo "== rule 4b: no read-mode os.OpenFile outside internal/safefs (INV-4 / C3) =="
+          # os.OpenFile is the *write* path and is legitimate for rendering output
+          # (E-RENDER-001), so it is not banned wholesale — only its read-mode use,
+          # which would bypass the root-scoped, symlink-safe reader.
+          if grep -rInE 'os\.OpenFile\s*\([^)]*os\.O_RDONLY' internal --include='*.go' --exclude='*_test.go' \
+               | grep -v '^internal/safefs/'; then
+            echo "::error::read-mode os.OpenFile is banned outside internal/safefs (INV-4 / C3)"
+            fail=1
+          fi
+
+          exit $fail
+
+  # ---------------------------------------------------------------------------
+  # 5. VULNCHECK — govulncheck over the module
+  #    (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.10, C10).
+  # ---------------------------------------------------------------------------
+  vulncheck:
+    name: vulncheck
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: govulncheck
+        run: make vulncheck

@@ -1,0 +1,47 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+  The half of the pair that proves brand reservation is a CONDITIONAL
+  obligation. The tree is byte-identical to excluded-brand-assets/ — the same
+  vendor/acme-forked-tool/ with the same TRADEMARK.md and logo.svg, so the same
+  asset node is emitted by the scanner — and the config differs in exactly one
+  field: `use.distributed: false`.
+
+  # WHAT THIS PINS, AND WHY IT NEEDS ITS OWN FIXTURE
+
+  The finding in excluded-brand-assets/ is produced by
+  trap.assets.brand-reserved, whose predicate is `dep.kind == "asset"` AND
+  `use.distributed == true`. A rule keyed only on the kind would fire here too,
+  and a suite that contained only the distributed half could not tell a correct
+  gate from a missing one — it would assert SHIP CONDITIONAL and pass whether or
+  not `distributed` was ever read. This fixture is the other direction: with
+  `distributed: false` the trap must be FALSE, the finding must vanish, and the
+  verdict must be a clean SHIP.
+
+  # WHY THE ASSET NODE IS STILL EMITTED
+
+  `findings: []` below does NOT mean "nothing was detected". The scanner still
+  emits `asset:vendor/acme-forked-tool` — the brand signal is a fact about the
+  tree and it is true regardless of intent. What the intent changes is the
+  CONSEQUENCE: an internal use that ships to nobody raises no trademark issue,
+  and the corpus's `when` predicate is where that judgement lives. Suppressing
+  the node in the scanner would put the judgement in Go, which is the layering
+  rule (ADR-003) and the reason this fixture asserts the empty findings list
+  rather than the absence of the dependency.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Flip `use.distributed` to true and this must become SHIP_CONDITIONAL with the
+  one CONDITION finding that excluded-brand-assets/ asserts. Delete the
+  TRADEMARK.md and logo.svg and the node disappears too — a change that is NOT
+  what this fixture is testing, which is why the two halves share their vendored
+  tree byte for byte.
+
+findings: []
+
+undetermined: []
+warnings: []
+notices: []

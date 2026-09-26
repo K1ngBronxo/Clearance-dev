@@ -1,0 +1,25 @@
+schema_version: 1
+
+project:
+  name: acme-portal
+  description: A hosted client portal. The reference fixture for a SaaS that has modified a vendored AGPL dependency.
+
+# The four facts that decide this fixture. Every one of them is required, and
+# the combination is what makes AGPL-3.0 §13 bite: commercial + closed-source +
+# modified + network_exposed. Change `modified` to false and the verdict should
+# stop being DO NOT SHIP — which is exactly the misconception the trap exists to
+# document, and exactly what a future test should assert.
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: true
+  network_exposed: true
+  distributed: false
+  saas: true
+
+scale:
+  mau: 12000
+
+territories:
+  - EU
+  - US

@@ -1,0 +1,54 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity - the band the finding landed in
+# after the confidence gate - not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The fullest permissive case: one Apache-2.0 dependency, distributed.
+  Apache-2.0 is the licence with the most obligations in the corpus, so this
+  fixture is the broadest single-entry assertion in the suite.
+
+  # THE FIVE FINDINGS, AND WHY EACH IS HERE
+
+  Three are conditions that bite on distribution: apache-2.0.licence-inclusion
+  (ship the licence text), apache-2.0.notice-retention (carry the NOTICE file)
+  and apache-2.0.trademark-exclusion (the name and marks are not granted).
+  apache-2.0.patent-grant is a NOTE whose predicate is literally `when: true`,
+  so it fires on every resolved Apache-2.0 entry regardless of intent.
+
+  The fifth is the one worth reading twice: trap.patent.retaliation. Apache-2.0
+  section 3 terminates its patent grant if you sue over the work, so the
+  dependency trips the corpus's own patent-retaliation trap as well as its
+  licence obligations. That pairing is the product working - a licence entry and
+  a trap describing the same clause from two directions - and it is why this
+  fixture is not simply "the Apache one".
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Set `use.distributed: false` and the distribution-gated findings must vanish,
+  leaving the single unconditional note. Set `use.modified: true` and
+  apache-2.0.state-changes (CONDITION) must appear as well. If the trap stops
+  firing, the dependency-scoped trap pass has stopped running against resolvable
+  entries.
+
+findings:
+  - dependency: npm:apache-tool@1.0.0
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: npm:apache-tool@1.0.0
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: npm:apache-tool@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:apache-tool@1.0.0
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: npm:apache-tool@1.0.0
+    kind: trap.patent.retaliation
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

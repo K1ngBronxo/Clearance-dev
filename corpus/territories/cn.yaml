@@ -1,0 +1,29 @@
+code: CN
+name: China
+notes: >
+  Chinese regulation adds filing and data-handling duties that sit outside the
+  software licence. They bind the operator of a service rather than the author
+  of the code, so a licence review alone cannot answer them.
+gates:
+  - id: territory.cn.algorithm-filing
+    summary: >
+      Services that use recommendation algorithms may be subject to algorithm
+      filing with the regulator, independent of the software licence. The duty
+      falls on the service provider, not on the library author.
+    severity: NOTE
+    citation:
+      url: https://www.cac.gov.cn/
+      section: "Art. 24"
+      retrieved_at: "2026-09-18"
+    confidence: LOW
+  - id: territory.cn.cross-border-data
+    summary: >
+      Transferring personal information out of China may require a security
+      assessment, certification or a standard contract. A dataset bundled with a
+      dependency can trigger this even when the code licence is unrestricted.
+    severity: NOTE
+    citation:
+      url: https://flk.npc.gov.cn/
+      section: "Personal Information Protection Law, Art. 38"
+      retrieved_at: "2026-09-18"
+    confidence: LOW

@@ -1,0 +1,10 @@
+schema_version: 1
+project:
+  name: gpl-proprietary-binary
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: true
+  saas: false

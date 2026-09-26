@@ -1,0 +1,31 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+  The cleanest permissive case, and the negative half of the attribution pair.
+  One MIT dependency, and the use facts say the result is never distributed:
+  `distributed: false`.
+
+  # WHY THERE IS NO FINDING
+
+  MIT's only obligation with teeth is mit.attribution, and its predicate is
+  `use.distributed == true`. Not distributing means the notice-retention duty
+  never arises, so the obligation is a definite non-applicability rather than an
+  unknown, and nothing is emitted. That is correct: a scanner that emitted an
+  attribution finding for a build that ships to nobody would be crying wolf, and
+  crying wolf is what spec 06 section 3.2 says kills a scanner's credibility.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Flip `use.distributed` to true and this must become SHIP_CONDITIONAL with
+  mit.attribution (CONDITION) and mit.no-patent-grant (NOTE) - the two findings
+  fixtures/mixed/ and fixtures/npm-scoped-package/ pin. If this fixture ever
+  produces a finding while `distributed` is false, the attribution predicate has
+  stopped reading the intent.
+
+findings: []
+undetermined: []
+warnings: []
+notices: []

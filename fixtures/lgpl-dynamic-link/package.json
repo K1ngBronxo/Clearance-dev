@@ -1,0 +1,8 @@
+{
+  "name": "lgpl-dynamic-link",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lgpl-tool": "^3.0.0"
+  }
+}

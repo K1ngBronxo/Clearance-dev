@@ -1,0 +1,12 @@
+schema_version: 1
+
+project:
+  name: gpl-internal-only
+
+use:
+  commercial: false
+  licence_model: closed-source
+  modified: true
+  network_exposed: false
+  distributed: false
+  saas: false

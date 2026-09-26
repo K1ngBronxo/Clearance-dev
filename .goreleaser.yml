@@ -1,0 +1,145 @@
+# GoReleaser configuration.
+# ---------------------------------------------------------------------------
+# TARGETED AT: GoReleaser v2 (config schema `version: 2`).
+#   PLAN/05-INFRASTRUCTURE/01-build-and-release.md §3–§5
+#   PLAN/05-INFRASTRUCTURE/03-ci-cd-pipeline.md §3
+#   PLAN/03-SECURITY/03-supply-chain-integrity.md §2
+#
+# Reproducibility notes:
+#   * CGO_ENABLED=0  -> a truly static, dependency-free binary (the install story).
+#   * -trimpath      -> no absolute paths leak into the binary (also a privacy win).
+#   * -buildvcs=true -> embed VCS info for provenance (the task brief allows it).
+#   * mod_timestamp  -> stamp archive members with the commit time, not the wall
+#                       clock, so the archive hash is stable. Honour SOURCE_DATE_EPOCH
+#                       in CI if a fully hermetic rebuild is ever required.
+# ---------------------------------------------------------------------------
+
+version: 2
+
+project_name: clearance
+
+before:
+  hooks:
+    - go mod verify
+
+builds:
+  # The public binary. This is the product.
+  - id: clearance
+    main: ./cmd/clearance
+    binary: clearance
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -buildvcs=true
+    ldflags:
+      - -s -w -X github.com/clearance-dev/clearance/internal/cli.Version={{.Version}} -X github.com/clearance-dev/clearance/internal/cli.Commit={{.Commit}} -X github.com/clearance-dev/clearance/internal/cli.Provenance=release
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+  # The internal-only tool. It contains the Ed25519 corpus-signing code, so it
+  # is compiled here (to prove it still builds) but is NEVER archived, checksummed
+  # or uploaded — see `archives.builds` below. It must never ship
+  # (01-ARCHITECTURE/10-repo-structure.md §6).
+  - id: corpus-build
+    main: ./corpus-build
+    binary: corpus-build
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  # Only the public `clearance` build is packaged. corpus-build is deliberately
+  # absent, so it cannot leak into a release.
+  - id: clearance
+    builds:
+      - clearance
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - LICENSE
+      - README.md
+      # The signed corpus bundle, placed where the binary looks for it.
+      #
+      # This is not a nice-to-have. A `clearance` binary with no corpus beside it
+      # cannot produce a verdict at all: it resolves its corpus from `corpus/`
+      # next to the executable (cli.resolveCorpusDir), and every other candidate
+      # is a per-user location a fresh install does not have — so a user's first
+      # command fails with E-CORPUS-001, and both remedies it prints
+      # ("Reinstall Clearance", "corpus update") are dead ends.
+      #
+      # `make corpus-dist` produces these three files OFFLINE with the Ed25519
+      # key that never touches this runner. The workflow's pre-flight step fails
+      # loudly when they are absent rather than publishing a binary that cannot
+      # read a corpus — and `clearance check` refuses an unsigned bundle
+      # (INV-9), so shipping the raw YAML instead is not an option either.
+      - src: corpus-dist/corpus.json
+        dst: corpus
+      - src: corpus-dist/corpus.json.sig
+        dst: corpus
+      - src: corpus-dist/corpus.version.json
+        dst: corpus
+
+# checksums.txt + checksums.txt.sig is the frozen release contract
+# (03-SECURITY/03-supply-chain-integrity.md §2.2). cosign signs this file in
+# release.yml; the GitHub Action verifies it before running the binary.
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: "Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Security"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "Corpus"
+      regexp: '^.*?corpus(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: "Other changes"
+      order: 999
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  # A human inspects the draft (and attaches the offline-signed corpus) before
+  # publishing — 05-INFRASTRUCTURE/01-build-and-release.md §5.
+  draft: true
+  prerelease: auto
+  name_template: "Clearance {{ .Version }}"
+
+# NOTE: the corpus (corpus.json / corpus.json.sig / corpus.version.json) is NOT
+# built or signed here. It is compiled and signed OFFLINE by the maintainer with
+# an Ed25519 key that never touches a runner, and attached to the draft by hand
+# (03-SECURITY/03-supply-chain-integrity.md §3). CI must never hold that key.

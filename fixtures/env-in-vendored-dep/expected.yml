@@ -1,0 +1,49 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        A vendored dependency that ships a `.env` containing two sentinel values:
+        `DATABASE_URL` with an embedded password and `API_KEY`, both set to
+        `SENTINEL_NOT_A_REAL_SECRET_*` so that any leak is unambiguous and harmless.
+        The dependency's licence is MIT and resolves.
+
+        Observed: SHIP, and **nothing else** - 0 findings, 0 unclassified, 0
+        warnings, 0 notices.
+
+        # THE HALF OF THIS ROW THAT HOLDS, AND THE HALF THAT DOES NOT
+
+        The catalogue's section 7 expects "existence reported, contents never in
+        output". Verified against the real run:
+
+          - **Contents never in output: TRUE, and asserted here.** Grepping the full
+            CLI output for `env`, `secret` and `SENTINEL` returns only the verdict
+            header line. Neither the file's name nor either value appears anywhere in
+            the report.
+          - **Existence reported: FALSE.** Nothing reports that a `.env` exists. The
+            extension switch in `internal/scanner/upstream.go:245` returns `langNone`
+            for `case ".env"` with the comment "`.env` is a secrets file. Not read."
+            - so the file is neither read nor recorded, and no counter, notice or
+            finding mentions it.
+
+        The safety property is intact and is the one that matters: the tool cannot
+        leak what it never reads. What is weaker than the catalogue claims is
+        observability - a user is not told that their tree contains a secrets file at
+        all, so this row asserts silence and the `why` records the gap rather than
+        inventing a notice to satisfy the table.
+
+        `.env.example` and its siblings are the deliberate exception
+        (`upstream.go:256`): read for key NAMES only, never values.
+
+findings:
+  []
+
+undetermined:
+  []
+
+warnings:
+  []
+
+notices: []

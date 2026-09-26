@@ -1,0 +1,55 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  This fixture is the negative half of the territorial layer, and it is the one
+  INV-7 is really about: the licence HAS a territorial clause, and the user has
+  not said where they operate.
+
+  PLAN/02-SPECIFICATIONS/01-config-spec.md §2.4: "Omitted is not `global`. If
+  you omit `territories`, every territorial clause evaluates to `UNKNOWN`, and
+  the verdict tells you to declare them. Assuming global would be the tool
+  making a decision on your behalf."
+
+  That is exactly what happens here, and it happens through the ordinary
+  obligation path rather than through anything territorial-specific:
+
+    - evalContains sees an empty declared list, and `resolveField` reports the
+      field as undeclared, so the predicate is UNKNOWN rather than FALSE.
+    - The engine turns an UNKNOWN obligation into a NOTE (LOW confidence, the
+      raw clause attached) plus an Undetermined record carrying E-POLICY-009
+      and naming the field to supply.
+    - The verdict is UNDETERMINED, not SHIP. The one thing the tool must never
+      do is round "I do not know where you operate" to "you are fine".
+
+  # THE THREE ASSERTIONS, AND WHY ALL THREE ARE NEEDED
+
+  The finding pins that the clause was SHOWN rather than dropped. The
+  undetermined record pins WHY. The notice pins that the user was TOLD which
+  field to declare — without it the record names the obligation but not the
+  fix, and a reader would have to reverse-engineer the config.
+
+  # WHAT WOULD MAKE THIS FIXTURE FAIL FOR THE RIGHT REASON
+
+  Add `territories: [RU]` and the predicate becomes TRUE: this becomes
+  fixtures/territorial-gate, SHIP CONDITIONAL. If this fixture ever starts
+  returning SHIP, the tool has begun assuming a jurisdiction the user did not
+  state, which is the failure the whole intent model exists to prevent.
+
+findings:
+  - dependency: npm:demo-lib@1.0.0
+    kind: territorial-demo.territorial-commercial-gate
+    severity: NOTE
+
+undetermined:
+  - id: npm:demo-lib@1.0.0#territorial-demo.territorial-commercial-gate
+    reason: intent_undeclared
+
+warnings: []
+notices:
+  - E-POLICY-009

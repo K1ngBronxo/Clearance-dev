@@ -1,0 +1,68 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A dependency declaring `FOO-1.0` - an identifier that is not a licence. The
+    verdict is UNDETERMINED, and the finding is
+    `trap.licence.absent-all-rights-reserved`.
+
+    # THE CATALOGUE EXPECTS E-POLICY-001; WHAT HAPPENS IS SOMETHING ELSE
+
+    Section 8 of the catalogue predicts `E-POLICY-001` and `UNDETERMINED`. The
+    verdict is right and the code is not: there is no E-POLICY-001 notice here,
+    and no `no_corpus_entry`. Compare `unlicensed-package` and `busl-active-grant`
+    in this same batch, which produce both.
+
+    # THE MECHANISM, WHICH IS A SPLIT IN THE SCANNER
+
+    `LicenceRefFromString` (`internal/scanner/scanner.go:426`) resolves a
+    manifest's licence string in two steps - `config.NormaliseSPDX` then
+    `config.ValidSPDX` (`:448`) - and two different things happen on either side
+    of the result:
+
+      FOO-1.0     ValidSPDX false  -> Resolved=false -> "no licence resolved"
+      BUSL-1.1    ValidSPDX true   -> Resolved=true  -> corpus lookup -> miss
+
+    The first path is `licence_unresolved` plus the trap; the second is
+    `no_corpus_entry` plus E-POLICY-001. The split is principled - one string is
+    not an identifier, the other is an identifier the corpus lacks - but the
+    consequence is that **a dependency which declared something is reported as
+    having declared nothing.** `trap.licence.absent-all-rights-reserved` is titled
+    "No licence means all rights reserved", and its predicate is
+    `dep.licence.resolved == false`; a parse failure satisfies it exactly as an
+    empty field does.
+
+    The mitigation is real and worth stating: the undetermined entry's detail
+    carries the raw text (`no licence could be resolved for X (raw value: FOO-1.0)`),
+    so a reader who opens the entry can see what was declared. The finding's title
+    is what does not distinguish them.
+
+    # A SECOND CONSEQUENCE: NEW SPDX IDENTIFIERS
+
+    Because the test is membership in a hard-coded list (`config.knownSPDX`), any
+    SPDX identifier added after this binary was built lands on the `absent` path -
+    reported as a dependency with no licence rather than as one the corpus does
+    not yet know. That is the same defect with a longer fuse, and it needs no
+    fixture to happen.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Change the declaration to `LicenseRef-FOO`, which `ValidSPDX` accepts by
+    design (`internal/config/spdx.go:161`), and this must become `no_corpus_entry`
+    with E-POLICY-001. The two outcomes are one string apart, which is the whole
+    finding.
+
+findings:
+  - dependency: npm:mystery-tool@1.0.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:mystery-tool@1.0.0
+    reason: licence_unresolved
+
+warnings: []
+
+notices: []

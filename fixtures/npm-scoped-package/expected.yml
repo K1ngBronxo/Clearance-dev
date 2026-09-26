@@ -1,0 +1,44 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  An npm dependency under a scope. The path in the lockfile is
+  `node_modules/@acme/lodash`, and the parser must recover the name as
+  `@acme/lodash` — both path segments, scope and all — rather than truncating it
+  to `@acme`.
+
+  WHY THE ID IS THE ENTIRE ASSERTION. Both findings below are keyed on
+  `npm:@acme/lodash@4.17.21`. A naive "take everything after node_modules up to
+  the next slash" would produce the name `@acme`, and every finding would then
+  be keyed on `npm:@acme@4.17.21`. The verdict would still be SHIP CONDITIONAL
+  and the count would still be two, so only the dependency id can tell the two
+  apart. That is why the fixture pins ids and not just severities.
+
+  WHY A SCOPE IS WORTH ITS OWN FIXTURE. Scoped packages are where a
+  path-to-name rule breaks, and a broken rule here is not cosmetic: two scoped
+  packages under the same scope would collapse onto one name, and the graph
+  would silently lose a dependency — a false negative, the direction this
+  product cares about most.
+
+  WHY THE USE FACTS ARE WHAT THEY ARE. `distributed: true` with `commercial:
+  true` is the minimum that makes MIT speak: mit.attribution (CONDITION) and
+  mit.no-patent-grant (NOTE). Nothing else is about MIT, so nothing else is set.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Change the lockfile path to
+  `node_modules/lodash` and this must fail on the dependency id, because the
+  scope is gone. Delete the entry and it must fall to SHIP with no findings.
+
+findings:
+  - dependency: npm:@acme/lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:@acme/lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

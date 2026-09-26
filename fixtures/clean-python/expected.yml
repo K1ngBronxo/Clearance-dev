@@ -1,0 +1,43 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        A Poetry project: `pyproject.toml` declares `certifi` and `requests`,
+        `poetry.lock` pins them, and both licences are read from the vendored
+        `site-packages/<name>/LICENSE` trees. Both are Apache-2.0, so both earn the
+        patent-grant NOTE and the verdict is SHIP.
+
+        # THIS ROW IS THE REGRESSION PIN FOR THE `tomlDoc.Has` DEFECT
+
+        Before that fix this fixture was NOT clean: it emitted `E-PARSE-002 -
+        Cannot parse 'pyproject.toml': no dependency declarations found`, because
+        `internal/parsers/pypi.go:239` gated the Poetry dependency branch on
+        `doc.Has("tool.poetry.dependencies")`, and `tomlDoc.Has` read `values[path]`
+        while a TOML table header writes no entry there - only the leaf keys that
+        follow it. The branch was therefore dead for every real pyproject.toml.
+
+        The dependency list survived here anyway, because `poetry.lock` also
+        declares both packages; the warning was the visible symptom. A Poetry
+        project with no lockfile did not survive it: it reached the user as
+        `SHIP`, `0 dependencies scanned`, exit 0. That is the shape this fixture now
+        pins shut - if the `Has` regression returns, this row goes red on its
+        warning set.
+
+        `internal/parsers/toml.go` (`tomlDoc.Has`) carries the mechanism in full.
+
+findings:
+  - dependency: pypi:certifi@2024.2.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: pypi:requests@2.31.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

@@ -1,0 +1,52 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    The Hugging Face convention, and the source most real repositories actually
+    use: a YAML frontmatter block at the top of README.md carrying `license:`.
+    The weights file is a SafeTensors header with no licence of its own, so the
+    answer comes from the markdown beside it.
+
+    # WHY FRONTMATTER IS READ INSTEAD OF THE BODY
+
+    A README is two documents in one file. The frontmatter is machine-written
+    metadata with a fixed key, and the body is prose written for humans. The
+    scanner reads the first and refuses to read the second - not because prose is
+    hard to read but because it is easy to misread, and a wrong licence is worse
+    than no licence: it attaches real obligations to the wrong terms.
+
+    This fixture and weights-prose-only are the two halves of that decision.
+    Same weights, same README, same licence named inside it - one in the
+    frontmatter and one in the body - and they must not produce the same answer.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Delete the frontmatter block, leaving the body text identical, and this must
+    become UNDETERMINED. That is weights-prose-only, one directory over. If these
+    two fixtures ever agree, the frontmatter reader has stopped distinguishing
+    structured metadata from prose and the pair has become a single test.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.patent.retaliation
+    severity: NOTE

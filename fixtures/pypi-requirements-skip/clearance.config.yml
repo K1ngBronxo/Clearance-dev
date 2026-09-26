@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: pypi-requirements-skip
+  description: A requirements file with a directive the parser cannot follow.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

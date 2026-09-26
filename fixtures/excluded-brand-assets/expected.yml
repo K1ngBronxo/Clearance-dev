@@ -1,0 +1,77 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. `severity` below is
+# the EFFECTIVE severity — the band the finding landed in after the confidence
+# gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The vendored dependency vendor/acme-forked-tool/ carries a TRADEMARK.md. The
+  code is free; the name is not. The licence that governs the dependency's
+  copyright grants no trademark right — Apache-2.0 §6 says so in terms — and
+  the dependency restates it. A fork that keeps the name is a trademark
+  problem, and this fixture exists to put that in front of a user who reads
+  "permissive" and stops.
+
+  # WHAT MAKES THE TRAP FIRE, AND WHAT DOES NOT
+
+  trap.assets.brand-reserved requires `dep.kind == "asset"` AND
+  `use.distributed == true`. Both are load-bearing and neither is incidental:
+
+  - The KIND is the gate on the left because an asset node has no licence to
+    key on. internal/scanner/assets.go emits one node per vendored dependency
+    that carries a brand signal — here `asset:vendor/acme-forked-tool` — and
+    the whole point of the signal is that the licence does not reach it.
+
+  - `distributed` is the gate on the right because brand reservation is a
+    conditional obligation. A private internal use of a tool raises no
+    trademark issue, and this predicate is what stops the tool from raising
+    one. Its sibling fixture brand-assets-internal/ is this tree with
+    `distributed: false` and asserts that the SAME node produces NO finding.
+    That pair is what pins the model: a rule keyed only on the kind would fire
+    for both, and a fixture suite that contained only this half could not tell
+    the two apart.
+
+  # WHY THE EVIDENCE POINTS AT TRADEMARK.md AND NOT logo.svg
+
+  The same dependency also carries a logo.svg, which is a MEDIUM signal under
+  §2. The detector emits ONE node per dependency and points its evidence at the
+  strongest signal found, so the HIGH TRADEMARK.md wins over the MEDIUM
+  filename. That is asserted by the node's existence here and by nothing else:
+  a bug that let the MEDIUM signal win would change the evidence path and not
+  the verdict, which is why the detector's tie-break is pinned in code rather
+  than left to walk order.
+
+  # WHY IT IS A CONDITION AND NOT A BLOCKER
+
+  Because the copyright licence genuinely does permit the fork. Nothing about
+  copying, modifying or redistributing this code is prohibited; what the licence
+  does not do is carry the name across with it. The corpus declares CONDITION
+  at HIGH confidence, the confidence gate leaves it there, and the verdict is
+  SHIP CONDITIONAL — ship it, but rebrand first.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Flip `use.distributed` to false in clearance.config.yml and this must become
+  SHIP with no finding and an empty diagnostics list — which is exactly what
+  brand-assets-internal/ asserts. Delete the TRADEMARK.md and the node itself
+  disappears, leaving a clean SHIP. And because `dep.kind` is an enum whose
+  members include `asset` only because the scanner now produces it, a change
+  that stopped emitting the kind would make this fixture fail rather than pass
+  quietly — the one direction an inert layer fails in.
+
+  # THE NODE THAT IS DELIBERATELY ABSENT FROM `findings`
+
+  `asset:vendor/acme-forked-tool` is a dependency in the graph and produces no
+  obligation findings, because an asset node has no licence entry to resolve.
+  The one finding below is the trap, and it can only have come from the asset
+  layer: the project declares no packages, so the Go module contributes nothing.
+
+findings:
+  - dependency: asset:vendor/acme-forked-tool
+    kind: trap.assets.brand-reserved
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

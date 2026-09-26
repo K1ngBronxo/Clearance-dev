@@ -1,0 +1,32 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: UNDETERMINED
+
+why: >
+  The control for `mixed`, and the reason the pair exists: the dependency set is
+  byte-identical to mixed/package-lock.json. The only difference is the use
+  facts - commercial and distributed are both false here - so no obligation
+  fires at all and the finding list is empty.
+
+  That is the whole assertion: the same two packages produce two findings in
+  `mixed` and none here, purely because the use facts changed. If the two
+  fixtures ever agree, the predicate that gates MIT's obligations has stopped
+  reading the intent, and every finding in the product becomes suspect.
+
+  The verdict is still UNDETERMINED rather than SHIP, for the same reason as
+  `mixed`: leftpad's WTFPL has no corpus entry, and INV-7 forbids guessing.
+
+findings: []
+
+undetermined:
+  - id: npm:leftpad@1.0.0
+    reason: no_corpus_entry
+
+# See mixed/expected.yml for why the notice is pinned alongside the
+# undetermined entry. The two fixtures share the same lockfile and therefore
+# the same unclassifiable dependency, so they share this too.
+warnings: []
+notices:
+  - E-POLICY-001

@@ -1,0 +1,231 @@
+name: release
+
+# ---------------------------------------------------------------------------
+# Triggered only by a signed semver tag (05-INFRASTRUCTURE/01-build-and-release.md §5).
+# No `pull_request` trigger here at all, so the `pull_request_target` foot-gun
+# cannot appear by accident.
+# ---------------------------------------------------------------------------
+on:
+  push:
+    tags:
+      - "v*"
+
+# Least privilege by default; the release job widens it deliberately below.
+permissions:
+  contents: read
+
+# Never cancel a release build in flight.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GOFLAGS: -mod=readonly
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # The same invariant gate as ci.yml. A release must never be cut from a
+  # revision whose invariants do not hold
+  # (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.1, §3).
+  # ---------------------------------------------------------------------------
+  guard:
+    name: guard (invariants + arch)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      # This step used to pass a hand-written name list:
+      #
+      #     -run 'TestInvariant|TestArch|TestGuard' -count=1
+      #
+      # Two of those three alternatives matched nothing. The module has no test
+      # whose name contains `TestInvariant` or `TestGuard`, so `go test` selected
+      # exactly one test — TestArchitectureLayering — while exiting 0. A step
+      # documented as running "Invariant / arch / guard tests" ran 1 of 108, in
+      # the job that gates a release.
+      #
+      # `go test -run` exits 0 when a name matches nothing, so the step could not
+      # report its own emptiness. The name list is gone rather than corrected:
+      # `make guard` is the single source of truth for which guards exist, and
+      # TestEveryRunNameExists checks those names against the module. The same
+      # list appeared in ci.yml and was removed there too.
+      - name: The guard gate (first, uncached)
+        run: make guard
+      - name: Architectural import-graph test
+        run: make arch
+
+  release:
+    name: goreleaser + signing + provenance
+    needs: guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # create the draft release and upload assets
+      id-token: write      # keyless cosign (OIDC) and SLSA provenance
+      attestations: write  # actions/attest-build-provenance
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # goreleaser needs the full history and tags to build the changelog.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+      # ── corpus pre-flight ────────────────────────────────────────────────
+      #
+      # goreleaser copies corpus-dist/* into every archive, because a clearance
+      # binary with no corpus beside it cannot produce a verdict: it resolves its
+      # corpus from corpus/ next to the executable, and every other candidate is
+      # a per-user location a fresh install does not have.
+      #
+      # Those three files are signed OFFLINE with a key that must never reach a
+      # runner, so they are not in the repository. This step exists to fail with
+      # a sentence a human can act on — rather than a goreleaser glob error, or,
+      # worse, a published release that is broken on its first command.
+      #
+      # It checks CONTENT, not existence. Until 25 Sep 2026 it checked only that
+      # the three files were present, which a bundle compiled before a corpus
+      # edit passes: on that day the staged bundle carried a pre-fix citation and
+      # an un-narrowed trap that raised a false BLOCK against a vendored
+      # TRADEMARK.md. Every test was green, because every other guard reads the
+      # YAML tree and nothing read the artefact.
+      #
+      # The assertions live in tools/check-corpus-dist.sh, which `make
+      # corpus-dist-check` also runs — one implementation, so the check the
+      # founder runs before tagging cannot drift from the check CI runs.
+      - name: Corpus pre-flight (the archive must carry a current, signed corpus)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! bash tools/check-corpus-dist.sh; then
+            echo ""
+            echo "The archive must contain a SIGNED corpus bundle that matches the"
+            echo "corpus source: 'clearance check' refuses an unsigned bundle by"
+            echo "design (INV-9), and ships the stale one silently."
+            echo ""
+            echo "corpus-dist/ is a release artefact and is git-ignored, so it is"
+            echo "not in this checkout. Make it available to this job — upload it"
+            echo "as a workflow artefact and download it here, or run the release"
+            echo "where it already exists."
+            echo ""
+            echo "The check above names which assertion failed and the exact"
+            echo "command that rebuilds and re-signs it."
+            exit 1
+          fi
+
+      # Builds clearance for linux/mac/windows x amd64/arm64 and opens a DRAFT
+      # release. corpus-build is compiled but never archived (.goreleaser.yml).
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # A third party must be able to rebuild the tagged source byte-for-byte
+      # (03-SECURITY/03-supply-chain-integrity.md §2.5). The result is printed
+      # here and belongs in the release notes.
+      - name: Reproducible-build check
+        shell: bash
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
+            -ldflags "-s -w -buildid= -X github.com/clearance-dev/clearance/internal/cli.Version=${ver} -X github.com/clearance-dev/clearance/internal/cli.Provenance=release" \
+            -o /tmp/clearance-a ./cmd/clearance
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
+            -ldflags "-s -w -buildid= -X github.com/clearance-dev/clearance/internal/cli.Version=${ver} -X github.com/clearance-dev/clearance/internal/cli.Provenance=release" \
+            -o /tmp/clearance-b ./cmd/clearance
+          sha256sum /tmp/clearance-a /tmp/clearance-b
+          cmp /tmp/clearance-a /tmp/clearance-b
+          echo "reproducible-build: OK"
+
+      # Software bill of materials for the release (supply-chain hygiene).
+      - name: Generate SBOM (syft)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dist/clearance.sbom.cdx.json
+          artifact-name: clearance.sbom.cdx.json
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      # Keyless (OIDC) signature over checksums.txt. This is the release signing
+      # key; it is separate from the offline corpus key and cannot substitute for
+      # it (03-SECURITY/03-supply-chain-integrity.md §3.2).
+      - name: Sign checksums.txt (keyless OIDC)
+        run: |
+          cosign sign-blob --yes \
+            --output-signature dist/checksums.txt.sig \
+            dist/checksums.txt
+
+      # SLSA build provenance for the release artefacts. `id-token: write` +
+      # `attestations: write` above are what make this possible.
+      - name: Generate SLSA build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+
+      - name: Attach signature + SBOM to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            dist/checksums.txt.sig \
+            dist/clearance.sbom.cdx.json \
+            --clobber
+
+      # -----------------------------------------------------------------------
+      # Corpus artefact publication.
+      #
+      # The corpus is NOT built or signed in CI. It is compiled and signed
+      # OFFLINE by the maintainer with an Ed25519 key that never touches a runner
+      # (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §3,
+      #  03-SECURITY/03-supply-chain-integrity.md §3.1).
+      #
+      # THIS WORKFLOW MUST NOT SIGN THE CORPUS. This step only *copies* the
+      # already-signed artefacts that the pre-flight step confirmed are present.
+      #
+      # It uploads them as standalone assets IN ADDITION to the copies goreleaser
+      # placed inside each archive, and the two serve different jobs:
+      #
+      #   * the in-archive copy is what makes the binary work on first run, since
+      #     `check` resolves its corpus from `corpus/` next to the executable;
+      #   * the standalone copy is what lets a corpus update ship without a
+      #     binary release — "the entire point of putting the judgement in data"
+      #     (07-OPERATIONS/04-release-process.md §1).
+      #
+      # The gate is a repository variable rather than an unconditional step so
+      # the maintainer can publish a binary-only release first and attach the
+      # corpus once the signing ceremony is done.
+      #
+      # Note the signature filename: corpus.json.sig. It was written here as
+      # `corpus.sig`, which is the old spelling the .gitignore explicitly guards
+      # against — an upload naming a file that does not exist would have failed
+      # only at release time, which is the worst place to find out.
+      # -----------------------------------------------------------------------
+      - name: Attach the signed corpus artefacts
+        if: ${{ vars.CORPUS_ARTIFACTS_READY == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "${GITHUB_REF_NAME}" \
+            corpus-dist/corpus.json \
+            corpus-dist/corpus.json.sig \
+            corpus-dist/corpus.version.json \
+            --clobber

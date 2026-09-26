@@ -1,0 +1,43 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The fixture is the smallest possible instance of the product's second
+  differentiator: one line of Go that spawns a third-party program.
+
+  `exec.Command("ffmpeg", ...)` is a HIGH-confidence signal, because the
+  command name is a string literal and there is no ambiguity about what runs.
+  The corpus has an entry for ffmpeg, so its clause is evaluated and the
+  verdict is SHIP CONDITIONAL.
+
+  WHY THE CLAUSE IS CONDITION AND NOT BLOCK, AND WHY THAT IS THE POINT.
+  Invoking a binary that is already on the machine does not vendor its code.
+  FFmpeg's licence governs the binary you would distribute, not the program
+  you wrote, and this project distributes nothing. A scanner that shouted
+  "GPL BINARY, DO NOT SHIP" at every `ffmpeg` call would be wrong here, and
+  being wrong loudly is how a tool gets switched off. The finding says what is
+  actually true: this is a dependency worth knowing about, and it becomes a
+  real problem the moment you ship the binary.
+
+  There is deliberately no finding for the Go module itself. The project
+  declares no third-party packages, so there is nothing for the code layer to
+  resolve and no unclassified dependency - which is what makes this fixture
+  clean evidence that the two findings below came from the platform layer and
+  not from somewhere else.
+
+  WHAT WOULD MAKE THIS FIXTURE FAIL FOR THE RIGHT REASON. Delete the
+  `exec.Command` line and the verdict must fall to SHIP with zero findings: a
+  comment mentioning ffmpeg is not an invocation, which is the claim
+  fixtures/upstream-comment-only pins from the other side.
+
+findings:
+  - dependency: upstream_cli:ffmpeg
+    kind: ffmpeg.tos.binary-licence
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

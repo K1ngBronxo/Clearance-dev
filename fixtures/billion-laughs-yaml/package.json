@@ -1,0 +1,6 @@
+{
+  "name": "billion-laughs-yaml",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": { "lodash": "^4.17.21" }
+}

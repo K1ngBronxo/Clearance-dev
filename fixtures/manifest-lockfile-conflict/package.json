@@ -1,0 +1,8 @@
+{
+  "name": "manifest-lockfile-conflict",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "_name_or_path": "example/nc-model",
+  "architectures": ["LlamaForCausalLM"],
+  "model_type": "llama",
+  "license": "cc-by-nc-4.0",
+  "torch_dtype": "float16"
+}

@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: npm-lockfile-resolves-range
+  description: A manifest declaring a range, and a lockfile that resolves it.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: true
+  saas: false

@@ -1,0 +1,8 @@
+{
+  "name": "gpl-distributed",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "gpl-tool": "^3.0.0"
+  }
+}

@@ -1,0 +1,31 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+  ISC is the other permissive licence the corpus carries, and it is here to prove
+  that the permissive path is not MIT-specific. One ISC dependency, not
+  distributed.
+
+  # WHY ISC AND NOT ANOTHER MIT COPY
+
+  ISC's single obligation, isc.permission-notice, is an ATTRIBUTION keyed on
+  `use.distributed == true` - structurally identical to mit.attribution but
+  declared on a different corpus entry. A resolver that had only ever been
+  exercised against MIT could still be wrong about the second permissive entry
+  (a mis-keyed family, a missing index entry) and every existing fixture would
+  stay green. This one is the second data point.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Flip `use.distributed` to true and this must become SHIP_CONDITIONAL with
+  isc.permission-notice (CONDITION). If the ISC entry dropped out of the corpus
+  index, this fixture would instead go UNDETERMINED with a
+  `npm:isc-tool@2.0.0|no_corpus_entry` entry, and that is the regression this
+  fixture catches.
+
+findings: []
+undetermined: []
+warnings: []
+notices: []

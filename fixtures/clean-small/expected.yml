@@ -1,0 +1,49 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+    Five permissive dependencies, nothing distributed. SHIP - with one NOTE.
+
+    # WHY "CLEAN" DOES NOT MEAN "NO FINDINGS"
+
+    The catalogue's section 9 lists this row as plain SHIP, and the verdict is
+    SHIP. It carries one finding anyway: `apache-2.0.patent-grant` at NOTE on the
+    Apache-2.0 dependency, whose predicate is `when: true` and therefore fires on
+    any resolved Apache-2.0 entry at all.
+
+    That is not a defect and it is not noise. The Apache patent grant is a real
+    feature of the licence and a NOTE is the band for "worth knowing, changes
+    nothing". A clean fixture asserting zero findings would force that NOTE to be
+    suppressed, and the way to suppress it would be to make the obligation
+    conditional on something - at which point the tool would stop reporting the
+    patent grant for exactly the projects that most need to know about it.
+
+    The value of this fixture is that it is the negative case: five well-known
+    licences, four families, nothing copyleft, no conflict, no unknown. A scanner
+    that cries wolf here is useless.
+
+    # WHY FIVE AND NOT ONE
+
+    The four non-MIT licences exercise four different corpus entries through one
+    code path. A resolver tested only against MIT could be wrong about `isc` or
+    `bsd-3-clause` and every single-dependency fixture would stay green. The
+    Apache dependency is what produces the NOTE, which makes this a test of the
+    mixed case rather than of one entry repeated five times.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Change any one licence to `GPL-3.0-only` and the verdict must leave SHIP.
+    Delete the Apache dependency and the NOTE must vanish with it.
+
+findings:
+  - dependency: npm:apache-tool@3.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

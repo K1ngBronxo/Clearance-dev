@@ -1,0 +1,52 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A go.mod with a `replace` directive. The `require` names
+  `github.com/old/thing v1.0.0`; the `replace` redirects it to
+  `github.com/new/thing v2.0.0`. The undetermined record's id names the
+  replacement, and that id is the whole assertion: a parser that ignored
+  `replace` would name the module nobody is shipping.
+
+  WHY THIS IS A CORRECTNESS BUG AND NOT A COSMETIC ONE. A verdict is about the
+  code that gets built. `replace` exists precisely so that a different module is
+  built, and it is used to pin a fork, a patched copy or an internal mirror. If
+  the parser reported the original, the tool would attach the original's licence
+  — and its obligations — to a project that does not contain it, and would miss
+  the replacement's entirely. Both directions of that error are wrong, and the
+  replacement is the one a reviewer would never think to check.
+
+  WHY THE VERSION PROVES THE TWO-PASS READ. `replace` almost always appears
+  below the `require` it governs, so a single-pass parser sees an empty
+  replacement map while it is building declarations and silently applies
+  nothing. This fixture places the directive exactly that way. The id carrying
+  `v2.0.0` — the replacement's version, not the required `v1.0.0` — is evidence
+  that the directive was collected before the requires were resolved.
+
+  WHY THE VERDICT IS UNDETERMINED. go.mod records no licences and the module
+  cache is outside the project root, which INV-4 forbids reading. So the
+  replacement module's licence cannot be resolved from this tree, and
+  `licence_unresolved` is the honest record. The corpus's absent-licence trap
+  fires alongside it — `dep.licence.resolved == false` — and the confidence gate
+  lands it as a CONDITION, because it is declared BLOCK at MEDIUM. The verdict
+  stays UNDETERMINED because an unknown outranks a condition in the algebra.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete the `replace` line and
+  the id must become `go:github.com/old/thing@v1.0.0`. Add a
+  `vendor/github.com/new/thing/LICENSE` and the record must disappear, because
+  the replacement's licence is then resolvable.
+
+findings:
+  - dependency: go:github.com/new/thing@v2.0.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: go:github.com/new/thing@v2.0.0
+    reason: licence_unresolved
+
+warnings: []
+notices: []

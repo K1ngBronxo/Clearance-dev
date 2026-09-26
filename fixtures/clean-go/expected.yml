@@ -1,0 +1,31 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        A Go module with two permissive dependencies, resolved from go.mod and
+        licence-checked against the vendored trees.
+
+        `github.com/google/uuid` is Apache-2.0, which is permissive but carries a
+        patent grant. The grant is a NOTE and not a CONDITION on purpose: the
+        obligation it creates is "do not sue over patents", which a user satisfies
+        by doing nothing, so it is recorded and not asked for. `spf13/pflag` is MIT
+        and produces nothing at all. The verdict is SHIP.
+
+        This row is the tool's "does not cry wolf" case for the Go ecosystem. A
+        scanner that turned every permissive dependency into a blocker would pass
+        every trap fixture in this catalogue and be useless; this asserts the
+        absence of that failure.
+
+findings:
+  - dependency: go:github.com/google/uuid@v1.6.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

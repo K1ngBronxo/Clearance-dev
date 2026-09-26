@@ -1,0 +1,58 @@
+platform: github
+display_name: GitHub
+kind: platform
+summary: >
+  GitHub's terms govern access to the platform, not the licence of the code
+  hosted on it. Code you read or clone through GitHub is licensed by its
+  authors under whatever licence they applied, and the platform terms add
+  obligations of their own around automated access, the API and user content.
+detect:
+  # Deliberately narrow, and this is the interesting decision in the file.
+  #
+  # `github.com` is NOT listed as a host. Almost every project on earth
+  # mentions github.com somewhere — in a README badge, a go.mod line, a CI
+  # comment — and a detector that treats a bare mention as an invocation would
+  # give every repository on GitHub GitHub's terms. That is a false positive of
+  # the exact kind the spec's §3.2 says kills a scanner's credibility.
+  #
+  # What is listed is the interface whose terms actually bite: the API host,
+  # the `gh` CLI, and the tokens a program reads to authenticate.
+  bins: [gh]
+  hosts: [api.github.com]
+  env: [GITHUB_TOKEN, GH_TOKEN]
+restrictive_clauses:
+  - id: github.tos.acceptable-use
+    text_summary: >
+      Acceptable Use forbids using GitHub's servers for excessive automated bulk
+      activity, scraping, or any activity that places an undue burden on the
+      infrastructure beyond the documented interfaces.
+    severity: CONDITION
+    citation:
+      url: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+      section: "Acceptable Use"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: github.tos.api-terms
+    text_summary: >
+      Use of the GitHub API is subject to rate limits and the API Terms. Bulk
+      automated retrieval of repository metadata should go through the API and
+      respect its limits rather than scraping the web interface.
+    severity: CONDITION
+    citation:
+      url: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+      section: "API Terms"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: github.tos.content-licence
+    text_summary: >
+      You retain ownership of content you post, and you grant GitHub a licence
+      to display and reproduce it. The terms do not relicense other people's
+      code; a repository's own licence controls that.
+    severity: NOTE
+    citation:
+      url: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+      section: "User-Generated Content"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+last_verified: "2026-09-18"
+staleness_days: 180

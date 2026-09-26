@@ -1,0 +1,40 @@
+id: licence.isc
+spdx_id: ISC
+name: ISC License
+family: permissive
+osi_approved: true
+fsf_libre: true
+permissiveness: 5
+
+obligations:
+  - id: isc.permission-notice
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      ISC requires that the copyright notice and the permission notice appear in
+      all copies. The obligation is otherwise identical in effect to MIT, and no
+      source disclosure is required.
+    citation:
+      url: https://opensource.org/license/isc-license-txt
+      section: "Permission notice"
+      excerpt: "Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Retain the dependency's ISC permission notice in your distribution."
+      confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://opensource.org/license/isc-license-txt
+  section: "ISC License"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

@@ -1,0 +1,8 @@
+{
+  "name": "unknown-spdx-id",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "mystery-tool": "^1.0.0"
+  }
+}

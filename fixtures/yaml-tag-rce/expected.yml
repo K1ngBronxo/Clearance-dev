@@ -1,0 +1,50 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A YAML document carrying a `!!python/object`-style tag sits in
+    `pnpm-lock.yaml`. The observed behaviour is identical to billion-laughs-yaml:
+    the file is refused with E-PARSE-001, the graph falls back to the manifest's
+    range, and the verdict is UNDETERMINED.
+
+    # THE CATALOGUE EXPECTS E-PARSE-009, FOR THE SAME UNREACHABLE REASON
+
+    The catalogue's section 7 row expects E-PARSE-009 (disallowed tag refused).
+    The analysis is the one written on billion-laughs-yaml and it is not repeated
+    in full here: no manifest is YAML, and the only YAML lockfiles are refused
+    unparsed before any decoder sees them. safeyaml has no tag syntax at all - the
+    tag is rejected while lexing - and that rejection is unit-tested at
+    internal/safeyaml/safeyaml_test.go:226 (TestYAMLTagRCE).
+
+    # WHY THE TWO FIXTURES ARE KEPT SEPARATE
+
+    They are the same code path and the same expected output, so the pair could be
+    read as duplication. They are kept because the two payloads are the two halves
+    of INV-10's stated threat model - an expansion bomb and a deserialisation tag
+    are different attacks with different consequences if a decoder ever grows a
+    feature that admits them. The day a YAML manifest format is supported, these
+    are the two files that must start reporting E-PARSE-008 and E-PARSE-009, and
+    having them already present and already red-in-the-right-place is the point.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Strip the tag, leaving the document otherwise identical, and nothing must
+    change: E-PARSE-001 and one warning, because the refusal here is about the
+    file's format and not its contents. If stripping the tag changes the result,
+    something has started parsing pnpm-lock.yaml without saying so.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:lodash@4.17.21
+    reason: licence_unresolved
+
+warnings:
+  - E-PARSE-001
+
+notices: []

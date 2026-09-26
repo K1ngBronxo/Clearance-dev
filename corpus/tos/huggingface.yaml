@@ -1,0 +1,55 @@
+platform: huggingface
+display_name: Hugging Face
+kind: platform
+summary: >
+  Hugging Face hosts model weights, datasets and spaces. The platform terms
+  govern use of the site and its APIs; the licence of each model or dataset is
+  set by its publisher and is recorded on the model card. A gated model adds
+  publisher terms on top of the platform terms.
+detect:
+  # `huggingface_hub` is listed and `transformers` is not, and the difference
+  # is the point: huggingface_hub is a client for the Hub and cannot do
+  # anything else, while transformers runs a model you already have. A project
+  # that depends on transformers and loads local weights never touches the
+  # platform, and telling it that it inherits Hugging Face's terms would be a
+  # false positive dressed up as thoroughness.
+  bins: [huggingface-cli, hf]
+  hosts: [huggingface.co]
+  env: [HF_TOKEN, HUGGING_FACE_HUB_TOKEN]
+  imports: [huggingface_hub, huggingface-hub, "@huggingface/hub"]
+restrictive_clauses:
+  - id: huggingface.tos.model-licence-separate
+    text_summary: >
+      A model's licence is declared by its publisher and is separate from the
+      platform terms. Downloading weights through Hugging Face does not change
+      or replace the licence the publisher applied to them.
+    severity: NOTE
+    citation:
+      url: https://huggingface.co/terms-of-service
+      section: "Content and Licences"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: huggingface.tos.acceptable-use
+    text_summary: >
+      The Acceptable Use Policy forbids using the platform or hosted content for
+      unlawful purposes or to cause harm, independent of what the model's own
+      licence permits.
+    severity: CONDITION
+    citation:
+      url: https://huggingface.co/terms-of-service
+      section: "Acceptable Use"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: huggingface.tos.gated-content
+    text_summary: >
+      Some repositories are gated: access requires accepting the publisher's
+      additional terms. Accepting them can impose conditions stricter than the
+      licence shown on the card, and they bind the account that accepted them.
+    severity: CONDITION
+    citation:
+      url: https://huggingface.co/terms-of-service
+      section: "Gated Repositories"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+last_verified: "2026-09-18"
+staleness_days: 180

@@ -1,0 +1,103 @@
+id: licence.elastic-2.0
+spdx_id: Elastic-2.0
+name: Elastic License 2.0
+family: source-available
+osi_approved: false
+fsf_libre: false
+permissiveness: 1
+
+obligations:
+  - id: elastic-2.0.managed-service
+    kind: NON_COMMERCIAL
+    severity: BLOCK
+    when:
+      op: "=="
+      field: use.saas
+      value: true
+    message: >
+      Elastic License 2.0 forbids providing the software to third parties as a
+      hosted or managed service. Offering it as a service to your own customers
+      is the prohibited use, regardless of how you obtained it.
+    citation:
+      url: https://www.elastic.co/licensing/elastic-license
+      section: "Limitations (managed service)"
+      # SECTION LABEL CORRECTED. An earlier draft said "§2 (managed service)".
+      # The published page has no section numbers at all: it uses the named
+      # headings Acceptance, Copyright License, Limitations, Patents, Notices,
+      # No Other Rights, Termination, No Liability, Definitions. A reader sent
+      # to "§2" would find nothing.
+      #
+      # The parenthetical is load-bearing. This licence states three separate
+      # prohibitions under one "Limitations" heading, and two of them are
+      # obligations below. Without the qualifier both would claim the same
+      # citation ID with different text, which the corpus reports as an
+      # inconsistency — correctly, because a citation ID has to identify one
+      # passage.
+      #
+      # The excerpt itself was already exact and is unchanged.
+      excerpt: "You may not provide the software to third parties as a hosted or managed service, where the service provides users with access to any substantial set of the features or functionality of the software."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+    fix:
+      action: replace
+      suggestion: "Use a permissively licensed component instead, or negotiate a commercial licence with Elastic."
+      confidence: MEDIUM
+
+  - id: elastic-2.0.licence-key
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.modified
+      value: true
+    message: >
+      Elastic License 2.0 forbids moving, changing, disabling or circumventing
+      the licence-key functionality, and forbids removing or obscuring licensing
+      and copyright notices. Patching those out breaches the licence.
+    citation:
+      url: https://www.elastic.co/licensing/elastic-license
+      section: "Limitations"
+      excerpt: "You may not move, change, disable, or circumvent the license key functionality in the software, and you may not remove or obscure any functionality in the software that is protected by the license key."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+    fix:
+      action: configure
+      suggestion: "Do not disable or work around the licence-key checks."
+      confidence: MEDIUM
+
+  - id: elastic-2.0.not-open-source
+    kind: PLATFORM_TOS
+    severity: NOTE
+    when: true
+    message: >
+      Elastic License 2.0 is source-available, not open source, and is not
+      approved by the Open Source Initiative. Its no-managed-service condition
+      makes it unsuitable where an OSI-approved licence is required.
+    citation:
+      # SOURCE REPLACED. An earlier draft cited spdx.org/licenses/Elastic-2.0.html
+      # with the excerpt "This license is not approved by the Open Source
+      # Initiative." That sentence does not appear on the SPDX page, or on the
+      # Elastic licence page. The claim is true and is made by Elastic itself,
+      # in the announcement that introduced this licence version — so the
+      # citation now points there, at the sentence Elastic actually wrote.
+      #
+      # The machine-checkable alternative is the SPDX licence data, which
+      # carries "isOsiApproved": false:
+      #   https://spdx.org/licenses/Elastic-2.0.json
+      url: https://www.elastic.co/blog/elastic-license-v2
+      section: "SSPL remains an option for the source code"
+      excerpt: "we are still not claiming that either SSPL or the Elastic License are OSI-approved licenses."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://www.elastic.co/licensing/elastic-license
+  section: "Elastic License"
+  retrieved_at: "2026-09-23"
+confidence: MEDIUM
+last_verified: "2026-09-23"

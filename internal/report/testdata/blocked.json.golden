@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "verdict": "DO_NOT_SHIP",
+  "project": "acme-web",
+  "summary": {
+    "dependencies": 9,
+    "weight_files": 1,
+    "upstream_clis": 0,
+    "blockers": 2,
+    "conditions": 0,
+    "undetermined": 0
+  },
+  "blockers": [
+    {
+      "id": "f-copyleft-001",
+      "dependency_id": "npm:some-agpl-lib@3.0.0",
+      "kind": "copyleft.network",
+      "severity": "BLOCK",
+      "confidence": "HIGH",
+      "title": "AGPL network clause contradicts a closed-source deployment",
+      "reason": "The dependency is licensed under the AGPL, which requires that users interacting with a modified version over a network be offered the Corresponding Source. The declared intent is a closed-source service, so the obligation cannot be met without a licence change or removing the dependency.",
+      "citation": {
+        "url": "https://www.gnu.org/licenses/agpl-3.0.html",
+        "section": "AGPL-3.0 §13 — Remote Network Interaction",
+        "excerpt": "Notwithstanding any other provision of this License, if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network (if your version supports such interaction) an opportunity to receive the Corresponding Source of your version by providing access to the Corresponding Source from a network server at no charge.",
+        "excerpt_kind": "verbatim"
+      },
+      "licence": "AGPL-3.0-only",
+      "evidence": [
+        {
+          "path": "package-lock.json",
+          "line_start": 1042,
+          "line_end": 1048,
+          "excerpt": "\"license\": \"AGPL-3.0-only\"",
+          "sha256": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+        }
+      ],
+      "fix": {
+        "action": "replace-dependency",
+        "suggestion": "Replace with a permissively licensed alternative.",
+        "alternative": "crawl4ai",
+        "confidence": "HIGH"
+      },
+      "trap_id": "trap.agpl.network-service",
+      "predicate": {
+        "op": "and",
+        "l": {
+          "op": "cmp",
+          "field": "dep.licence.spdx",
+          "cmp_op": "==",
+          "value": "AGPL-3.0-only"
+        },
+        "r": {
+          "op": "cmp",
+          "field": "use.saas",
+          "cmp_op": "==",
+          "value": true
+        }
+      }
+    },
+    {
+      "id": "f-weights-002",
+      "dependency_id": "weights:models/llama-3.1-8b.bin",
+      "kind": "licence.custom",
+      "severity": "BLOCK",
+      "confidence": "HIGH",
+      "title": "Model weights carry a bespoke community licence",
+      "reason": "The weights are governed by a bespoke community licence that is not an OSI-approved licence and carries field-of-use restrictions the declared intent does not satisfy.",
+      "citation": {
+        "url": "https://llama.meta.com/llama3_1/license/",
+        "section": "Llama 3.1 Community License — Additional Commercial Terms",
+        "excerpt": "If, on the Meta Llama 3.1 version release date, the monthly active users of the products or services made available by or for Licensee exceed 700 million monthly active users in the preceding calendar month, you must request a license from Meta.",
+        "excerpt_kind": "unverified"
+      },
+      "licence": "Llama-3.1-Community",
+      "evidence": [
+        {
+          "path": "models/README.md",
+          "line_start": 1,
+          "line_end": 3
+        }
+      ],
+      "trap_id": "trap.weights.mau-threshold",
+      "predicate": null
+    }
+  ],
+  "conditions": [],
+  "notes": [
+    {
+      "id": "f-notice-003",
+      "dependency_id": "npm:tiny-mit@1.0.0",
+      "kind": "notice.required",
+      "severity": "NOTE",
+      "confidence": "LOW",
+      "title": "Notice file presence could not be confirmed",
+      "reason": "The package declares MIT but no NOTICE file was found in the vendored directory.",
+      "citation": {
+        "url": "https://opensource.org/license/mit",
+        "section": "MIT License",
+        "excerpt_kind": "unverified"
+      },
+      "licence": "MIT",
+      "evidence": [
+        {
+          "path": "node_modules/tiny-mit/package.json",
+          "line_start": 1,
+          "line_end": 1
+        }
+      ],
+      "predicate": null
+    }
+  ],
+  "undetermined": [],
+  "meta": {
+    "tool_version": "0.9.1",
+    "corpus_version": "2026.09.24",
+    "corpus_signed": true,
+    "intent_hash": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a",
+    "config_path": "clearance.config.yml",
+    "scanned_at": 1758700800,
+    "duration_ms": 42,
+    "build_commit": "3b1f2a7",
+    "build_provenance": "local"
+  }
+}

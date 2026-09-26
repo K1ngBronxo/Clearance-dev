@@ -1,0 +1,61 @@
+id: trap.assets.brand-reserved
+title: "The code is free; the name is not"
+summary: >
+  Many permissively licensed projects reserve their name, logo and icon. A fork
+  that keeps the name is a trademark problem even though the copyright licence
+  permits the fork. The code licence grants copyright and, where it says so at
+  all, says in the same breath that it grants no trademark right — so shipping
+  a fork under the original name is the one thing the licence does not let you
+  do.
+when:
+  op: and
+  l:
+    op: "=="
+    # Keyed on the kind, not on a licence. An asset node is produced by
+    # internal/scanner/assets.go for a vendored dependency that carries a brand
+    # signal, and it has no licence to key on: the whole point of the signal is
+    # that the licence does not reach it.
+    field: dep.kind
+    value: "asset"
+  r:
+    op: "=="
+    # THE CONDITIONAL-OBLIGATION MODEL. Brand reservation only matters if you
+    # distribute. A private internal use of a tool raises no trademark issue,
+    # and this predicate is what keeps the tool from raising one: the node is
+    # still emitted (the signal is real), but with `distributed: false` the
+    # trap is FALSE and no finding is produced.
+    field: use.distributed
+    value: true
+scope: dependency
+severity: CONDITION
+citation:
+  # THE LICENCE, NOT THE MARKS PAGE.
+  #
+  # PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md §4 sketches
+  # this citation as https://www.apache.org/foundation/marks/ — the ASF's own
+  # trademark policy. That page is about the ASF's marks, and it does not
+  # contain the sentence quoted below. The sentence is Apache-2.0 §6, and
+  # citing a URL that does not carry the excerpt is the mismatched-citation
+  # failure INV-1 exists to prevent — the same defect this corpus's
+  # no-licence-all-rights-reserved.yml was repointed to fix. The spec's
+  # citation is a sketch; the excerpt is the binding part, so the excerpt wins
+  # and the URL follows it.
+  #
+  # §6 is also the right authority rather than merely a convenient one: it is
+  # the clause that says in terms that the copyright grant carries no trademark
+  # grant, which is the entire proposition this trap asserts. The corpus entry
+  # corpus/licences/apache-2.0.yaml carries the same text under
+  # apache-2.0.trademark-exclusion (§6); it is truncated there by one clause,
+  # this copy is complete.
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  section: "§6 (Trademarks)"
+  excerpt: "This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file."
+  # Verbatim, and checked: fetched from the URL above on 2026-09-25 and
+  # compared word for word, including the trailing NOTICE-file clause.
+  excerpt_kind: verbatim
+  retrieved_at: "2026-09-25"
+confidence: HIGH
+fix:
+  action: rebrand
+  suggestion: "Keep the code, but rename the product and replace the logo and icon before you distribute it. The licence permits the fork; it does not permit the name."
+  confidence: MEDIUM

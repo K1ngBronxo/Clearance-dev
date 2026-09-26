@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: cargo-lockfile-beats-manifest
+  description: A Cargo project whose manifest range is resolved by its lockfile.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

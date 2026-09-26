@@ -1,0 +1,54 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  This is the fixture for the spec's §2.1 signal "SDK import naming a service",
+  and it is the one that needs no source scan at all.
+
+  THE DETECTION IS THE LOCKFILE. `openai` is a package dependency. There is no
+  `exec.Command`, no `fetch`, no API key in a template — nothing the source-level
+  detectors could see. The platform layer resolves the dependency name against
+  the corpus's `detect.imports` aliases and finds a platform. That is why the
+  match happens against the dependency graph rather than against file contents:
+  "this project calls OpenAI" is legible from package-lock.json, and the most
+  common instance of the second differentiator is the one you can read without
+  opening a single source file.
+
+  TWO LAYERS, ONE DEPENDENCY, AND THEY SAY DIFFERENT THINGS. The code layer
+  resolves Apache-2.0 and fires `apache-2.0.patent-grant` as a NOTE — true, and
+  with `distributed: false` it is the only Apache obligation that applies, since
+  §4(a), §4(d), §4(b) and §6 are all gated on distribution. The platform layer
+  fires the two OpenAI clauses as CONDITIONs. Neither list subsumes the other:
+  the patent grant is about the code you installed, the usage policies are about
+  the service you call with it, and a project can comply with one and breach the
+  other.
+
+  WHY BOTH CLAUSES FIRE. Neither clause in corpus/tos/openai.yaml carries a
+  `when` predicate, and §5 makes that the documented default: a clause with no
+  predicate applies whenever the platform is invoked, because the act of
+  invoking is what inherits the terms. If a future edit adds a predicate here,
+  this fixture must change with it, and the failure message will say so.
+
+  WHAT THIS FIXTURE GUARDS AGAINST. Two failure modes, both plausible. The
+  first is a detector that only looks at source files and therefore misses the
+  SDK entirely. The second is a corpus whose `detect.imports` list is written
+  as `["@openai/sdk"]` when the package on npm is called `openai` — the alias
+  list has to name the thing people actually install.
+
+findings:
+  - dependency: npm:openai@4.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:openai@4.0.0
+    kind: openai.tos.usage-policies
+    severity: CONDITION
+  - dependency: npm:openai@4.0.0
+    kind: openai.tos.competing-models
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

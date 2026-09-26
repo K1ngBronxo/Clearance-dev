@@ -1,0 +1,73 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  Apache-2.0 is permissive, OSI-approved, and the licence most teams would call
+  "fine". It is fine. It also contains a patent-retaliation clause, and this
+  fixture exists to put that clause in front of someone who never reads past
+  "permissive".
+
+  # WHAT MAKES THE TRAP FIRE, AND WHAT DOES NOT
+
+  trap.patent.retaliation requires `dep.licence.spdx == Apache-2.0` AND
+  `use.distributed == true`. Both are needed and neither is incidental:
+
+  - `distributed` is the gate because the patent grant runs to recipients. A
+    clause about what happens when you convey the work to someone else cannot
+    bite on a project that conveys nothing.
+
+  - The SPDX identifier, not the family, is the gate because the trap's own
+    summary says "several otherwise permissive licences, Apache-2.0 section 3
+    among them" — and MIT is not among them. Keyed on `family == permissive`,
+    this trap fired on MIT dependencies and told their users that filing a
+    patent suit would terminate a patent grant the MIT licence never made. The
+    citation is Apache-2.0 section 3, so the finding pointed at a clause that
+    does not govern the dependency it was printed against. INV-1 exists to
+    prevent exactly that.
+
+  # WHY IT IS A NOTE AND NOT A BLOCKER
+
+  Because a patent-retaliation clause is a fact about your future conduct, not
+  a defect in the dependency. Nothing about this project is non-compliant
+  today; the clause changes what happens if the company ever sues someone over
+  a patent that reads on axios. The corpus rates it NOTE, and the effective
+  severity is NOTE — there is no gate to fall through, because the confidence
+  is HIGH.
+
+  This is the shape of finding that is easy to lose. It never blocks a build,
+  so nothing forces anyone to read it, which is precisely why it is pinned
+  here: if the predicate silently stopped matching, every test in the
+  repository would still be green and no user would ever see the clause again.
+
+  # THE OBLIGATIONS BESIDE IT
+
+  apache-2.0.licence-inclusion and apache-2.0.notice-retention are CONDITIONS
+  because `distributed: true`: ship the licence text, and keep any NOTICE file
+  the dependency carries. apache-2.0.patent-grant is the obligation-layer
+  version of the same clause the trap covers — the two layers state the same
+  fact in the two registers described in weights-cc-by-nc/expected.yml.
+  apache-2.0.trademark-exclusion is the §6 no-trademark-grant clause.
+
+findings:
+  - dependency: npm:axios@1.7.7
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: npm:axios@1.7.7
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: npm:axios@1.7.7
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:axios@1.7.7
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: npm:axios@1.7.7
+    kind: trap.patent.retaliation
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

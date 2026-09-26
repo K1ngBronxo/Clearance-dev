@@ -1,0 +1,6 @@
+
+AI EXPLANATION — not part of the verdict
+────────────────────────────────────────
+  The AGPL clause applies because the service is network-exposed.
+
+  Consider replacing the dependency.

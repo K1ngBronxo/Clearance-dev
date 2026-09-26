@@ -1,0 +1,47 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: DO_NOT_SHIP
+
+why: >
+  The fresh half of the stale/fresh pair. The corpus entry is the same shape as
+  upstream-stale-tos's in every respect but one: `last_verified` is 2026-09-01,
+  which against the guard suite's injected Today of 2026-09-23 is 22 days old
+  and well inside the 180-day window. So no downgrade happens, HIGH stays HIGH,
+  and the clause reaches the verdict at the severity the corpus declared it:
+  BLOCK.
+
+  WHY THIS FIXTURE EXISTS. A staleness rule can only be trusted if both
+  directions are pinned. upstream-stale-tos proves that an old summary is
+  softened; on its own, that is satisfied by a rule that softens *every* summary
+  unconditionally — which would be a tool that never blocks on platform terms
+  at all, and would report a clear SHIP on a vendor prohibition it had just
+  read. This fixture is the other direction: a current summary keeps its full
+  force, so the downgrade is conditional on the date rather than on the clause.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Change `last_verified` in
+  corpus/tos/freshtool.yaml to 2025-01-01 and this must fall to SHIP CONDITIONAL
+  with the E-CORPUS-011 notice and the same clause demoted to CONDITION — which
+  is exactly what upstream-stale-tos asserts. Equally, flip the clause's
+  `confidence` to MEDIUM and it must become CONDITION through the INV-2 gate
+  even though it is fresh: the two downgrades are different rules and this pair
+  exists to keep them apart.
+
+  WHY THERE IS NO E-CORPUS-011 NOTICE HERE. The notice is emitted only when the
+  entry is stale. Its absence is the assertion that the freshness check ran and
+  found the entry current — a fixture that pinned the notice's absence without
+  pinning the BLOCK would not distinguish "fresh" from "the check was deleted".
+
+  There is deliberately no finding for the Go module: the project declares no
+  third-party packages, so the one finding below can only have come from the
+  platform layer.
+
+findings:
+  - dependency: upstream_cli:freshtool
+    kind: freshtool.tos.prohibited-use
+    severity: BLOCK
+
+undetermined: []
+warnings: []
+notices: []

@@ -1,0 +1,38 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    AGPL-3.0, unmodified, exposed to the network as a service. One CONDITION.
+
+    # WHY THIS IS A CONDITION AND NOT A BLOCK, AND WHY THAT IS THE RIGHT READING
+
+    AGPL section 13's source-offer duty is written for a MODIFIED version: "if you
+    modify the Program, your modified version must prominently offer all users
+    interacting with it remotely ... an opportunity to receive the Corresponding
+    Source". Running an unmodified AGPL program on a server therefore does not
+    trip section 13. The corpus records `agpl-3.0.network-unmodified` as a
+    CONDITION, which says exactly that: there is something to attend to, and it is
+    not a blocker.
+
+    This fixture exists to hold that distinction in place. It is the narrowest of
+    the three AGPL cases and the one a careless implementation would get wrong by
+    folding "network" into "modified".
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `modified: true` and this must become agpl-modified-network: two BLOCKs
+    and DO_NOT_SHIP. If that flip does not happen, the network clause has stopped
+    reading `use.modified`.
+
+findings:
+  - dependency: npm:agpl-tool@3.0.0
+    kind: agpl-3.0.network-unmodified
+    severity: CONDITION
+
+undetermined: []
+
+warnings: []
+
+notices: []

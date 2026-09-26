@@ -1,0 +1,26 @@
+CLEARANCE VERDICT — acme-web
+========================================
+SHIP:        UNDETERMINED
+BLOCKERS:    0
+CONDITIONS:  0
+SCANNED:     2 dependencies · 1 weight file
+CORPUS:      2026.09.24 · UNSIGNED ✗
+REASON:      2 items could not be classified
+NOTE:        the corpus is unsigned, so its contents could not be trusted
+
+UNDETERMINED
+
+[UNDETERMINED]  leftpad                         licence file unreadable
+                error:      E-PARSE-010 — The LICENSE file declares charset latin-1; only UTF-8 is supported.
+                evidence:   package.json:3
+                action:     Re-save as UTF-8
+
+[UNDETERMINED]  models/x.bin                    no licence found
+                error:      E-SCAN-010 — No licence text was found beside the weight file and no metadata declares one.
+                evidence:   models/x.bin:1
+                action:     Locate the licence, or remove the file
+
+----------------------------------------
+This is an informational finding based on the licence text as published on the
+date recorded. It is not legal advice. Ambiguous clauses are flagged as such.
+Important decisions should be reviewed by a qualified professional.

@@ -1,0 +1,71 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: UNDETERMINED
+
+why: >
+  A dependency with no licence statement anywhere: the lockfile entry carries no
+  `license` key, and there is no LICENSE file inside it. Copyright is granted by
+  default, so the author retains every exclusive right and grants none.
+
+  # THIS IS THE FIXTURE THAT PROVES THE TRAP LAYER EARNS ITS KEEP
+
+  Every other trap fixture in the repository fires a trap *alongside* an
+  obligation from a corpus entry. This one cannot: there is no corpus entry,
+  because there is no licence to have an entry for. Before the trap layer was
+  live, this dependency produced exactly one line — an UNDETERMINED record
+  reading "no licence could be resolved for mystery-package (raw value: none)".
+  True, and silent about the consequence.
+
+  The trap supplies the consequence, and it is the only mechanism in the system
+  that can. Its citation is choosealicense.com's explanation of what an absent
+  licence means; its fix is to locate a licence, obtain written permission, or
+  remove the dependency. That is the single most common misreading of a public
+  repository, and it is now a finding with a citation rather than an absence.
+
+  # WHY THE VERDICT IS STILL UNDETERMINED
+
+  Because it must be. The trap is a CONDITION after the confidence gate (BLOCK
+  at MEDIUM), and an UNDETERMINED record outranks a condition in the algebra.
+  The tool says both things: "here is what it means that there is no licence",
+  and "I still cannot tell you whether this project ships".
+
+  Rounding it up to DO NOT SHIP would be the tool deciding a legal question
+  from an absence of information. Rounding it down to SHIP would be the false
+  pass INV-7 exists to prevent. UNDETERMINED is the honest answer, and the trap
+  is what makes it a *useful* one.
+
+  # HOW THE PREDICATE FINALLY GOT EXPRESSED
+
+  The trap used to be keyed on `dep.licence.family == custom`, which was the
+  nearest thing the predicate vocabulary allowed. But `custom` means "bespoke",
+  and in this corpus its only member is the Llama 3.1 Community License — a
+  licence that expressly grants commercial use below 700 million MAU. So the
+  trap printed "No licence means all rights reserved" against a dependency
+  whose licence permitted the use, and cited a page about software with no
+  licence at all.
+
+  The vocabulary now has `dep.licence.resolved`, and the trap tests it directly.
+  Bespoke is not absent, and the fixture for a bespoke licence would look
+  nothing like this one.
+
+  # WHY THE UNDETERMINED RECORD IS PINNED
+
+  A test asserting only `verdict == UNDETERMINED` would pass if the reason
+  changed to something else entirely — a corpus entry that went missing, an
+  unreadable file, a scanner warning. The reason is the finding. It is pinned as
+  `licence_unresolved`, which is the reason that means what this fixture is
+  about.
+
+findings:
+  - dependency: npm:mystery-package@0.1.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:mystery-package@0.1.0
+    reason: licence_unresolved
+
+warnings: []
+notices: []

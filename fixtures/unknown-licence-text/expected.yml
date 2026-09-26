@@ -1,0 +1,53 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A vendored dependency whose `LICENSE` carries text matching no corpus entry,
+    and whose lockfile declares no licence at all. UNDETERMINED, with
+    **E-SCAN-011** - the warning the catalogue's section 8 row asks for.
+
+    # WHERE THE NOVEL TEXT HAS TO BE FOR THIS TO WORK
+
+    Not in the project's own `LICENSE`. This fixture was first built with the text
+    there and produced zero warnings: the project's own licence is read for
+    `OwnLicence`, and a novel one simply does not resolve. Adding the file at
+    `node_modules/novel-tool/LICENSE` made E-SCAN-011 appear, because that is the
+    path `internal/scanner/vendored.go` reads - it is where a real package manager
+    puts a dependency's licence text.
+
+    So the catalogue row is correct and its wording ("a LICENSE with novel text")
+    is the loose part: the file has to be a *vendored dependency's* licence for
+    the vendored-text reader to see it. That is now pinned by this fixture's
+    layout, and the layout is the assertion.
+
+    # WHY THE DEPENDENCY IS STILL UNDETERMINED
+
+    E-SCAN-011 is `ClassDegrade, ExitOK`: "A human should read it" is the recovery
+    message, and it is the right one. The tool refuses to guess what an
+    unrecognised licence text permits, so the dependency arrives unresolved, gets
+    `licence_unresolved`, and the trap that fires is
+    `trap.licence.absent-all-rights-reserved`.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Replace the novel text with Apache-2.0's and this must resolve: the warning
+    must vanish, the trap must go, and the verdict must become SHIP_CONDITIONAL
+    with the apache-2.0.* set. Remove `node_modules/novel-tool/LICENSE` entirely
+    and the warning must vanish while the verdict stays UNDETERMINED - the
+    difference between "unreadable" and "absent".
+
+findings:
+  - dependency: npm:novel-tool@1.0.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:novel-tool@1.0.0
+    reason: licence_unresolved
+
+warnings:
+  - E-SCAN-011
+
+notices: []

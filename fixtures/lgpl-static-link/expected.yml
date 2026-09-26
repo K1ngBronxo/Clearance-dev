@@ -1,0 +1,56 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    LGPL-3.0, distributed, modified. Four findings, and the pair with
+    lgpl-dynamic-link is deliberately NOT a static-versus-dynamic pair - see that
+    file's `why` for why the tool has no channel for linkage.
+
+    # WHAT THE TWO EXTRA FINDINGS ARE
+
+    Setting `modified: true` adds:
+
+      lgpl-3.0.combined-work-relink       CONDITION  the relink obligation on the
+                                                     combined work
+      lgpl-3.0.modified-library-source    CONDITION  ship the modified library's
+                                                     source
+
+    Both are about modifying the library, and both correctly require `modified`.
+    Neither is about how the library is linked, which is the point being recorded.
+
+    # WHY SHIP_CONDITIONAL AND NOT DO_NOT_SHIP
+
+    LGPL's whole design is to permit proprietary combined works provided the
+    library itself stays free and can be replaced. Every obligation here is
+    satisfiable by a proprietary vendor, unlike GPL's combined-work terms, so the
+    verdict is CONDITION rather than BLOCK. The trap `trap.lgpl.static-linking`
+    stays at CONDITION for the same reason: static linking makes the relink
+    obligation harder, not impossible.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `modified: false` and the two modification findings must go, leaving
+    lgpl-dynamic-link exactly. If they survive, `modified` has stopped gating
+    them.
+
+findings:
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: lgpl-3.0.combined-work-relink
+    severity: CONDITION
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: lgpl-3.0.dynamic-linking-note
+    severity: NOTE
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: lgpl-3.0.modified-library-source
+    severity: CONDITION
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: trap.lgpl.static-linking
+    severity: CONDITION
+
+undetermined: []
+
+warnings: []
+
+notices: []

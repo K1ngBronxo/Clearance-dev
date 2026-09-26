@@ -1,0 +1,42 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: UNDETERMINED
+
+why: >
+  Two facts decide this fixture, and they pull in opposite directions, which is
+  the point. lodash is MIT and the use facts are commercial + distributed, so
+  the attribution obligation fires (CONDITION) and the no-patent-grant note
+  fires (NOTE). But leftpad declares WTFPL and the corpus carries no entry for
+  it, so one dependency cannot be classified at all.
+
+  The verdict is UNDETERMINED, not SHIP, and that is INV-7 doing its job: an
+  unknown must never default to the safe-looking answer. A tool that reported
+  SHIP here because "the only findings were a condition and a note" would be
+  inventing a fact about WTFPL. This fixture is the regression test for that.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined:
+  - id: npm:leftpad@1.0.0
+    reason: no_corpus_entry
+
+# The notice that accompanies the undetermined above.
+#
+# The tool states the same fact twice on purpose, at two different volumes: the
+# undetermined entry is the machine-readable record that something could not be
+# classified, and the notice is the human-readable sentence naming the licence
+# it has no entry for. A user who reads only the summary sees "1 undetermined";
+# a user who reads the notice sees "WTFPL". Pinning the code here means an edit
+# that silences the sentence fails a test rather than quietly making the report
+# less useful.
+warnings: []
+notices:
+  - E-POLICY-001

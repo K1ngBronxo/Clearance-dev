@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: upstream-dynamic-cmd
+  description: A generic process runner. The tool it spawns is chosen at runtime.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

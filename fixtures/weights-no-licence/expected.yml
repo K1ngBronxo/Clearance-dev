@@ -1,0 +1,63 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    Weights with no licence statement anywhere. Not a rare shape - it is the
+    default shape of a model checkpoint copied out of a training run, and of
+    almost every model on an internal artefact store.
+
+    # WHY THE ANSWER IS UNDETERMINED AND NOT SHIP
+
+    Under copyright, absent a licence, the default is that no rights are granted.
+    A scanner that reads "we could not find a licence" as "therefore you may use
+    it" would be exactly wrong, and would be wrong in the direction that costs a
+    user money. INV-7 exists for this: unknown never defaults to ship.
+
+    # THREE FINDINGS, TWO REASONS, ONE DEPENDENCY
+
+    The verdict carries three findings and two unresolved entries for a single
+    weights dependency, and the duplication is worth understanding before it is
+    read as a bug.
+
+    trap.licence.absent-all-rights-reserved is the CATALOGUE layer: this project
+    is in a named, cited failure mode, and the corpus entry says what that mode
+    is. The two undetermined reasons are the resolution layer, and they are
+    written by different components. licence_not_found comes from the weights
+    detector, which knows the four sources it looked in and found nothing in them.
+    licence_unresolved comes from the policy engine, which knows only that the
+    dependency arrived without a usable licence.
+
+    That the same fact reaches the reader twice is a real cost. It is pinned here
+    rather than smoothed over because de-duplicating it is a change to how the two
+    layers hand off, and a fixture that hid the current behaviour would make that
+    change invisible.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Add a LICENSE file beside the weights and this must resolve, dropping both
+    undetermined entries. Add a config.json with any licence at all and the same
+    must happen. If an empty models/ directory still produces a weights
+    dependency, the detector has stopped checking that a file is a model.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: weights:models/model.safetensors
+    reason: licence_not_found
+  - id: weights:models/model.safetensors
+    reason: licence_unresolved
+
+warnings: []
+
+notices: []

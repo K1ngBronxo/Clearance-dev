@@ -1,0 +1,12 @@
+schema_version: 1
+
+project:
+  name: agpl-modified-network
+
+use:
+  commercial: false
+  licence_model: closed-source
+  modified: true
+  network_exposed: true
+  distributed: false
+  saas: true

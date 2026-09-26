@@ -1,0 +1,5 @@
+{
+  "name": "territorial-fixture",
+  "version": "1.0.0",
+  "dependencies": { "demo-lib": "1.0.0" }
+}

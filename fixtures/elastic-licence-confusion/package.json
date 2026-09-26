@@ -1,0 +1,8 @@
+{
+  "name": "elastic-licence-confusion",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "elastic-thing": "^1.0.0"
+  }
+}

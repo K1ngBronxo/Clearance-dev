@@ -1,0 +1,12 @@
+{
+  "name": "clean-small",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "mit-tool": "^1.0.0",
+    "isc-tool": "^2.0.0",
+    "apache-tool": "^3.0.0",
+    "bsd-tool": "^4.0.0",
+    "mit-other": "^5.0.0"
+  }
+}

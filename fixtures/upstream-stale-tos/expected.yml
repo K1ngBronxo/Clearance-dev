@@ -1,0 +1,51 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The corpus's clause is declared BLOCK at HIGH confidence — the strongest
+  statement the schema can make — and the project is still only SHIP
+  CONDITIONAL. That gap is the fixture.
+
+  TWO DOWNGRADES, AND THEY ARE DIFFERENT IN KIND. The first is §4.1's staleness
+  rule: `last_verified` is 2025-01-01 and the window is 180 days, so against
+  the guard suite's injected Today of 2026-09-23 the entry is 630 days old and
+  HIGH becomes MEDIUM. The second is INV-2's confidence gate: a MEDIUM-
+  confidence BLOCK may warn and may not forbid, so BLOCK becomes CONDITION.
+
+  Neither downgrade is a softening for its own sake. The first exists because
+  a summary of a terms-of-service page written over a year ago may describe
+  terms that no longer exist — the corpus is making a claim about a document
+  it has not re-read. The second exists because a curated summary is not
+  primary text, and a tool that does not know must not make a decision that
+  costs someone money.
+
+  WHAT THIS FIXTURE WOULD CATCH. Set `staleness_days: 3650` in the fixture
+  corpus and this must become DO NOT SHIP, with the finding in Blockers. That
+  single number is the difference between "we checked this recently" and "we
+  checked this a long time ago", and it should be able to move a verdict that
+  far. If it cannot, the staleness rule is decorative.
+
+  WHY THE CORPUS IS LOCAL. See fixtures/upstream-stale-tos/corpus/tos/staletool.yaml
+  and guardFixtureCorpus. A date-dependent rule needs a date the test controls;
+  there is no way to write "630 days ago" into the shipped corpus without
+  either ageing every other fixture or making this test drift as the calendar
+  moves.
+
+  THE NOTICE. E-CORPUS-011 is emitted once for the entry, not once per clause,
+  and it is the code that closes the gap between 06-detection-spec-tos.md §7
+  and the implementation — the downgrade used to happen with the code named
+  nowhere. Before it existed, a user reading a MEDIUM confidence on a clause
+  the YAML declared HIGH had no way to learn why.
+
+findings:
+  - dependency: upstream_cli:staletool
+    kind: staletool.tos.prohibited-use
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices:
+  - E-CORPUS-011

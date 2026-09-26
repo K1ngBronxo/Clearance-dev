@@ -1,0 +1,152 @@
+id: licence.gpl-3.0-only
+spdx_id: GPL-3.0-only
+name: GNU General Public License v3.0 only
+family: strong-copyleft
+osi_approved: true
+fsf_libre: true
+permissiveness: 1
+
+obligations:
+  - id: gpl-3.0.convey-verbatim
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      GPL-3.0 §4 requires that verbatim copies you convey include the licence
+      text and keep all copyright notices intact. Conveying the software is what
+      triggers it, not using it.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+      section: "§4"
+      excerpt: "You may convey verbatim copies of the Program's source code as you receive it ... provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Ship the GPL text and the upstream notices with your distribution."
+      confidence: HIGH
+
+  - id: gpl-3.0.modified-source
+    kind: SOURCE_DISCLOSURE
+    severity: BLOCK
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      GPL-3.0 §5 requires that a work based on the Program be licensed as a
+      whole under the GPL and that its Corresponding Source be conveyed. Linking
+      GPL code into a proprietary binary and shipping it breaches this.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+      section: "§5"
+      excerpt: "You may convey a work based on the Program ... provided that you ... license the entire work ... under this License ... and ... convey the Corresponding Source."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: replace
+      suggestion: "Replace the GPL dependency with a permissive one, or release your combined work under the GPL."
+      confidence: HIGH
+
+  - id: gpl-3.0.binary-source-offer
+    kind: SOURCE_DISCLOSURE
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      GPL-3.0 §6 requires that conveying object code or a binary be accompanied
+      by the Corresponding Source, whether by shipping it or by a written offer
+      that is valid for three years.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+      section: "§6"
+      excerpt: "You may convey a covered work in object code form ... provided that you also convey the machine-readable Corresponding Source ... in one of these ways."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: configure
+      suggestion: "Attach the source, or include a dated written offer valid for three years."
+      confidence: HIGH
+
+  - id: gpl-3.0.installation-information
+    kind: SOURCE_DISCLOSURE
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      GPL-3.0 §6 requires Installation Information for a User Product: keys or
+      authorisation codes needed to install a modified version must be provided.
+      This is the anti-lockdown clause and it applies to consumer devices.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+      section: "§6 (installation information)"
+      excerpt: "The requirement to provide Installation Information does not include a requirement to continue to provide support service, warranty, or updates for a work that has been modified or installed by the recipient."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: MEDIUM
+
+  - id: gpl-3.0.patent-grant
+    kind: PATENT_GRANT
+    severity: NOTE
+    when: true
+    message: >
+      GPL-3.0 §11 grants contributors' patent licences to users of the software
+      and terminates them if the user brings a patent suit over the work.
+      Distributors must not impose further restrictions on that grant.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+      section: "§11"
+      excerpt: "Each contributor grants you a non-exclusive, worldwide, royalty-free patent license under the contributor's essential patent claims, to make, use, sell, offer for sale, import and otherwise run, modify and propagate the contents of its contributor version."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+
+  - id: gpl-3.0.no-network-clause
+    kind: SOURCE_DISCLOSURE
+    severity: NOTE
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.network_exposed
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: false
+    message: >
+      The GPL has no network clause. Running GPL software as a network service
+      without conveying a copy does not trigger source disclosure; the AGPL is
+      the licence that adds that obligation.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-faq.html
+      section: "GPL and network use"
+      excerpt: "the GPL does not require you to release your modified version ... merely because you make it available on a server for others to use."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://www.gnu.org/licenses/gpl-3.0.html
+  section: "GNU GPL v3"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

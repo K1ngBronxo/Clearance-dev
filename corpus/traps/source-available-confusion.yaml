@@ -1,0 +1,69 @@
+- id: trap.sspl.not-open-source
+  title: "SSPL is source-available, not open source"
+  summary: >
+    The Server Side Public License is frequently described as open source
+    because its text is public and it derives from the GPL. It is not approved
+    by the Open Source Initiative, and its service condition makes it
+    incompatible with most open-source distribution and packaging policies.
+  when:
+    # NARROWED FROM family == source-available. Three traps share that family —
+    # this one, trap.elastic.licence-confusion and trap.busl.conversion — so a
+    # single SSPL dependency produced three findings, two of them citing a
+    # different vendor's licence.
+    op: "=="
+    field: dep.licence.spdx
+    value: SSPL-1.0
+  scope: dependency
+  severity: BLOCK
+  citation:
+    # SOURCE REPLACED. The previous version cited spdx.org/licenses/SSPL-1.0.html
+    # for a sentence that page does not contain. MongoDB's own FAQ carries the
+    # statement, and is the stronger source: the author of the licence is the
+    # party whose position on its OSI status is authoritative.
+    url: https://www.mongodb.com/licensing/server-side-public-license/faq
+    section: "Are you basing the SSPL on an OSI-recognized open source license?"
+    excerpt: "The SSPL has not been approved by the OSI."
+    excerpt_kind: verbatim
+    retrieved_at: "2026-09-23"
+  confidence: MEDIUM
+  fix:
+    action: replace
+    suggestion: "Replace the SSPL dependency, or review the service condition before offering it as a service."
+    confidence: MEDIUM
+
+- id: trap.elastic.licence-confusion
+  title: "Elastic License 2.0 is not the old open-source licence"
+  summary: >
+    Elastic moved its products from Apache-2.0 to the Elastic License 2.0 and
+    later to the AGPL. Code under the Elastic License is source-available only:
+    it forbids providing the software as a managed service, which a naive
+    "it is on GitHub" reading misses.
+  when:
+    # Narrowed for the same reason as the SSPL trap above: the family is shared,
+    # the licence is not.
+    op: "=="
+    field: dep.licence.spdx
+    value: Elastic-2.0
+  scope: dependency
+  severity: CONDITION
+  citation:
+    # SOURCE REPLACED, and this is the more interesting of the two defects in
+    # this file. The previous excerpt read "The Elastic License 2.0 is a
+    # source-available licence. It is not an open source licence and is not
+    # approved by the Open Source Initiative." Two tells show it was written
+    # rather than copied: it does not appear on the cited page, and it spells
+    # "licence" the British way inside a quotation attributed to an American
+    # company. Every genuine Elastic quote in this corpus uses "license".
+    #
+    # The replacement is Elastic's own sentence, from the announcement that
+    # introduced this licence version.
+    url: https://www.elastic.co/blog/elastic-license-v2
+    section: "SSPL remains an option for the source code"
+    excerpt: "we are still not claiming that either SSPL or the Elastic License are OSI-approved licenses."
+    excerpt_kind: verbatim
+    retrieved_at: "2026-09-23"
+  confidence: MEDIUM
+  fix:
+    action: replace
+    suggestion: "Confirm which licence the exact version carries, and do not assume the historical Apache-2.0 grant still applies."
+    confidence: MEDIUM

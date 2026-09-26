@@ -1,0 +1,47 @@
+## Clearance Verdict — `UNDETERMINED`
+
+**0 blockers · 2 conditions · 1 item unclassified** · 0 dependencies scanned
+
+---
+
+### ⚠️ Conditions
+
+- [ ] **`no-cite`** — MIT. Finding with no citation.
+  - Clause: source
+  - Evidence: `package.json:1`
+  - Confidence: HIGH
+- [ ] **`no-evidence`** — MIT. Finding with no evidence.
+  - Clause: [MIT License](https://opensource.org/license/mit)
+  - Evidence: `NONE RECORDED — this is a bug (INV-1)`
+  - Confidence: HIGH
+
+---
+
+### ℹ️ Notes
+
+- **`no-confidence`** — MIT. Finding with no confidence.
+  - Clause: [MIT License](https://opensource.org/license/mit)
+  - Evidence: `package.json:2`
+  - Confidence: MISSING — this is a bug (E-POLICY-007)
+  - Gate: severity BLOCK → NOTE because confidence is 
+- **`unknown-severity`** — MIT. Finding with an unknown severity.
+  - Clause: [MIT License](https://opensource.org/license/mit)
+  - Evidence: `package.json:3`
+  - Confidence: HIGH
+
+---
+
+### ❓ Unclassified
+
+<sub>These were seen and could not be classified. They are not passes; INV-7 forbids rounding an unknown to a safe-looking answer.</sub>
+
+- **`local:orphan.dat`** — unknown error code
+  - This entry carries an error code the taxonomy does not know.
+  - Error: `E-NOT-A-REAL-CODE`
+  - Action: supply the missing fact, or remove the file from the scan
+
+---
+
+<sub>This is an informational finding based on the licence text as published on the date recorded. It is not legal advice. Ambiguous clauses are flagged as such. Important decisions should be reviewed by a qualified professional.</sub>
+
+<sub>Clearance v0.9.1 · intent `9f2c1b7a4e8d`</sub>

@@ -1,0 +1,50 @@
+# The fixture-local corpus.
+#
+# # WHY THIS FIXTURE SUPPLIES ITS OWN CORPUS
+#
+# The rule under test is the territorial-commercial-gate pattern of
+# PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part B §5: a
+# licence obligation of kind TERRITORIAL_GATE whose `when` reads the declared
+# `territories` list.
+#
+# The shipped corpus carries no licence with such a clause, and it should not:
+# asserting that a named, real licence requires prior written permission in a
+# named jurisdiction is a legal claim, and the corpus is where that claim would
+# have to be sourced. So the fixture supplies the clause, exactly as
+# fixtures/upstream-stale-tos supplies the date its rule is about. The licence
+# is deliberately a `LicenseRef-` identifier — the SPDX spelling for "a licence
+# that is not on the SPDX list" — so that nothing here is mistaken for a
+# statement about a real licence.
+id: licence.territorial-demo
+spdx_id: LicenseRef-territorial-demo
+name: Territorial Demo Licence
+family: custom
+osi_approved: false
+fsf_libre: false
+permissiveness: 2
+
+obligations:
+  - id: territorial-demo.territorial-commercial-gate
+    kind: TERRITORIAL_GATE
+    severity: CONDITION
+    when:
+      op: and
+      l: { field: use.commercial, op: "==", value: true }
+      r: { field: territories, op: contains, value: "RU" }
+    message: >
+      Commercial use of this work in the declared jurisdiction requires prior
+      written application under clause 2.3 of the licence.
+    citation:
+      url: https://example.test/territorial-demo
+      section: "2.3"
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://example.test/territorial-demo
+  section: "Territorial Demo Licence"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

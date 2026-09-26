@@ -1,0 +1,50 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    LGPL-3.0, distributed, unmodified. Two findings - and one of them is a trap
+    about static linking, which this tree never declared.
+
+    # THE OBSERVATION THAT MATTERS
+
+    `trap.lgpl.static-linking` fires here at CONDITION, and
+    `lgpl-3.0.dynamic-linking-note` fires at NOTE. Both fire, on the same
+    dependency, in the same run.
+
+    That is not a contradiction in the engine, and it is not an accident of this
+    fixture: **nothing in a manifest, a lockfile or `clearance.config.yml` states
+    whether a dependency is linked statically or dynamically.** There is no
+    channel for the fact. So the corpus carries a trap for a distinction the
+    scanner cannot observe, and the honest thing it can do is warn about the
+    riskier branch while annotating the safer one - which is what it does.
+
+    # WHY THE CATALOGUE'S static/dynamic PAIR IS NOT A REAL PAIR
+
+    The catalogue lists `lgpl-dynamic-link/` and `lgpl-static-link/` as two rows
+    differing in linkage. They cannot differ in linkage. The pair built here
+    differs in `use.modified` instead, because that is the only axis the tool has -
+    which is why lgpl-static-link carries two extra findings that have nothing to
+    do with static linking. Read the two files together; the difference between
+    them is modification, not linkage, and the fixture names are aspirational.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    If a linkage signal is ever added to the config, this fixture must stop firing
+    `trap.lgpl.static-linking` when it declares dynamic linking, and
+    lgpl-static-link must keep it. Until then, both firing is the truthful output.
+
+findings:
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: lgpl-3.0.dynamic-linking-note
+    severity: NOTE
+  - dependency: npm:lgpl-tool@3.0.0
+    kind: trap.lgpl.static-linking
+    severity: CONDITION
+
+undetermined: []
+
+warnings: []
+
+notices: []

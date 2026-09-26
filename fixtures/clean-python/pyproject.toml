@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "clean-python"
+version = "0.1.0"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+certifi = "^2024.2.2"
+requests = "^2.31.0"

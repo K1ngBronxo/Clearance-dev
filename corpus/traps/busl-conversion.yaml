@@ -1,0 +1,38 @@
+id: trap.busl.conversion
+title: "A BUSL licence that converts to open source later"
+summary: >
+  The Business Source License is source-available for a limited period and then
+  converts to a stated open-source licence on its Change Date. Until that date
+  the production-use grant is restricted, so a project that assumes it is
+  already open source may be shipping under terms it cannot meet.
+when:
+  # NARROWED FROM family == source-available, which this trap shared with the
+  # SSPL and Elastic traps. Named exactly, the trap is correct and — see the
+  # note at the foot of this file — currently unfireable, because the corpus
+  # carries no BUSL-1.1 entry for it to match. That is a gap in the corpus, not
+  # in the trap, and it is recorded rather than papered over.
+  op: "=="
+  field: dep.licence.spdx
+  value: BUSL-1.1
+scope: dependency
+severity: CONDITION
+citation:
+  # PARAPHRASE REPLACED WITH THE REAL TEXT. The previous excerpt — "The
+  # Business Source License grants production use rights subject to the
+  # Additional Use Grant, and converts to the Change License on the Change
+  # Date." — reads like the licence and is not the licence. It is a summary
+  # written by the corpus author and presented as a quotation.
+  #
+  # The two sentences below are the licence's own opening paragraph under
+  # "Terms", quoted whole. Note that the licence does not number its sections:
+  # it has named headings, "Terms" and "Covenants of Licensor".
+  url: https://spdx.org/licenses/BUSL-1.1.html
+  section: "Terms"
+  excerpt: "The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensed Work. The Licensor may make an Additional Use Grant, above, permitting limited production use."
+  excerpt_kind: verbatim
+  retrieved_at: "2026-09-23"
+confidence: MEDIUM
+fix:
+  action: replace
+  suggestion: "Check the Change Date and Additional Use Grant for the exact version, or use the dependency only in non-production."
+  confidence: MEDIUM

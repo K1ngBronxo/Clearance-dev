@@ -1,0 +1,10 @@
+schema_version: 1
+project:
+  name: elastic-licence-confusion
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: true
+  distributed: false
+  saas: true

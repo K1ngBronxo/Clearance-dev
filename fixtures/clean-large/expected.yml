@@ -1,0 +1,404 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        500 permissive dependencies in one manifest and one lockfile. This is the
+        catalogue's performance row: the claim under test is that volume alone does
+        not change the verdict, and the warning that volume is what turns a scanner
+        into a liability.
+
+        Every fourth dependency is Apache-2.0 and therefore earns the patent-grant
+        NOTE; the other three quarters are MIT, ISC and BSD-3-Clause and earn
+        nothing. That gives exactly 125 findings for 500 dependencies - the fixture
+        records the per-dependency rate, so a change that starts emitting a note per
+        dependency, or that drops the Apache-2.0 grant, changes 125 to something
+        else and this row says so.
+
+        The verdict is SHIP. A tool that returned CONDITION or UNDETERMINED because
+        the tree was large would be hallucinating a legal fact out of a file count.
+
+findings:
+  - dependency: npm:pkg-002@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-006@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-010@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-014@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-018@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-022@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-026@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-030@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-034@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-038@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-042@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-046@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-050@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-054@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-058@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-062@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-066@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-070@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-074@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-078@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-082@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-086@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-090@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-094@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-098@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-102@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-106@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-110@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-114@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-118@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-122@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-126@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-130@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-134@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-138@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-142@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-146@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-150@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-154@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-158@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-162@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-166@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-170@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-174@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-178@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-182@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-186@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-190@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-194@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-198@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-202@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-206@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-210@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-214@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-218@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-222@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-226@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-230@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-234@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-238@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-242@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-246@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-250@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-254@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-258@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-262@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-266@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-270@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-274@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-278@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-282@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-286@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-290@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-294@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-298@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-302@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-306@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-310@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-314@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-318@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-322@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-326@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-330@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-334@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-338@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-342@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-346@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-350@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-354@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-358@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-362@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-366@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-370@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-374@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-378@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-382@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-386@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-390@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-394@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-398@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-402@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-406@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-410@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-414@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-418@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-422@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-426@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-430@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-434@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-438@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-442@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-446@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-450@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-454@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-458@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-462@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-466@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-470@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-474@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-478@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-482@1.0.2
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-486@1.0.6
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-490@1.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-494@1.0.4
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: npm:pkg-498@1.0.8
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

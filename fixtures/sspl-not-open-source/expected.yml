@@ -1,0 +1,79 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared. Two of the
+# three findings below are declared BLOCK and land as CONDITION.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The Server Side Public License is the licence most often mistaken for open
+  source, because its text is public, it derives from the GPL, and it ships
+  from a company everyone has heard of. It is not approved by the Open Source
+  Initiative, and its section 13 service condition reaches the whole service
+  stack. This fixture is a project offering an SSPL component as a service.
+
+  # WHY THE VERDICT IS NOT DO NOT SHIP, AND WHY THAT IS NOT A BUG
+
+  The corpus declares sspl-1.0.service-source BLOCK and
+  trap.sspl.not-open-source BLOCK, and the verdict is SHIP CONDITIONAL. That
+  gap is INV-2 working, and this fixture is one of the clearest places to see
+  it.
+
+  Both findings carry confidence MEDIUM, because both rest on a *curated
+  summary* of a licence rather than on text the corpus author read line by
+  line. INV-2 says a tool that does not know must not make a decision that
+  costs someone money: a MEDIUM-confidence BLOCK may warn, and may not forbid.
+  So both are gated down to CONDITION by the confidence gate, and the verdict
+  is SHIP CONDITIONAL.
+
+  If either line ever reads BLOCK in the output, one of two things happened.
+  Either the clause's confidence was raised — which the loader forbids without
+  a published `correction` block (INV-8) — or the gate stopped being applied.
+  Both are regressions this fixture would catch.
+
+  # THE THREE FINDINGS, AND WHY THEY ARE NOT REDUNDANT
+
+  1. sspl-1.0.service-source is the OBLIGATION layer. It answers "what does
+     section 13 require of you?" — release the Service Source Code for the
+     whole stack, including the management and orchestration layers around the
+     program. It is gated on `use.saas == true`.
+
+  2. trap.sspl.not-open-source is the CATALOGUE layer. It answers "which named
+     failure mode is this project in?" — this is a source-available licence
+     being treated as an open-source one. Its predicate is `when: true`, so it
+     fires for any SSPL dependency regardless of use.
+
+  3. sspl-1.0.not-open-source is the obligation-layer statement of the same
+     OSI-status fact, as a NOTE. It is not gated, because "this licence is not
+     OSI-approved" is true of every use.
+
+  Findings 2 and 3 overlap, and that is the deliberate two-layer duplication
+  described at length in weights-cc-by-nc/expected.yml. Findings 1 and 2 do not
+  overlap: you can comply with section 13 in full and still be shipping a
+  licence you have mislabelled as open source to your own procurement process.
+
+  # WHY THE TRAP IS KEYED ON THE IDENTIFIER
+
+  `dep.licence.spdx == SSPL-1.0`, not `family == source-available`. Three traps
+  share that family — this one, trap.elastic.licence-confusion and
+  trap.busl.conversion — so keyed on the family, one SSPL dependency produced
+  three findings, two of them citing a different vendor's licence. See
+  elastic-licence-confusion/expected.yml for the other end of that.
+
+findings:
+  - dependency: npm:mongo-thing@1.0.0
+    kind: sspl-1.0.service-source
+    severity: CONDITION
+  - dependency: npm:mongo-thing@1.0.0
+    kind: trap.sspl.not-open-source
+    severity: CONDITION
+  - dependency: npm:mongo-thing@1.0.0
+    kind: sspl-1.0.not-open-source
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

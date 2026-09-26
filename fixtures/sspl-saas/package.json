@@ -1,0 +1,8 @@
+{
+  "name": "sspl-saas",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "sspl-tool": "^1.0.0"
+  }
+}

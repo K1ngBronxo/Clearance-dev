@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clearance",
+          "version": "0.9.1",
+          "informationUri": "https://clearance.dev",
+          "rules": [
+            {
+              "id": "clearance.undetermined.licence_file_unreadable",
+              "name": "Unclassified dependency",
+              "shortDescription": {
+                "text": "Clearance could not classify this dependency"
+              },
+              "helpUri": "https://clearance.dev/docs/undetermined",
+              "properties": {
+                "clearance.reason": "licence_file_unreadable"
+              }
+            },
+            {
+              "id": "clearance.undetermined.no_licence_found",
+              "name": "Unclassified dependency",
+              "shortDescription": {
+                "text": "Clearance could not classify this dependency"
+              },
+              "helpUri": "https://clearance.dev/docs/undetermined",
+              "properties": {
+                "clearance.reason": "no_licence_found"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "clearance.undetermined.licence_file_unreadable",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Unclassified: licence file unreadable. The LICENSE file declares charset latin-1; only UTF-8 is supported.. Clearance does not know whether this is safe, and does not round an unknown to a pass."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "clearance.undetermined.no_licence_found",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Unclassified: no licence found. No licence text was found beside the weight file and no metadata declares one.. Clearance does not know whether this is safe, and does not round an unknown to a pass."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "models/x.bin"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

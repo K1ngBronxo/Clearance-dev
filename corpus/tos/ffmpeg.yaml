@@ -1,0 +1,29 @@
+platform: ffmpeg
+display_name: FFmpeg
+kind: binary
+summary: >
+  FFmpeg is a program rather than a service. Invoking the binary a machine
+  already has does not vendor its code, so its licence does not reach your own
+  program — but shipping the binary does, and FFmpeg builds are LGPL or GPL
+  depending on how they were configured. This entry exists because the spec's
+  worked example treats `exec.Command("ffmpeg", …)` as a finding, and it is
+  the only corpus entry whose clauses are about a program rather than terms of
+  service.
+detect:
+  bins: [ffmpeg, ffprobe, ffplay]
+restrictive_clauses:
+  - id: ffmpeg.tos.binary-licence
+    text_summary: >
+      Invoking a system ffmpeg binary does not vendor its code, so its licence
+      does not reach your own program. If you redistribute the binary — inside a
+      container image, an installer, or a bundled release — the licence of that
+      particular build applies to the binary you ship, and FFmpeg builds are
+      LGPL or GPL depending on their configuration.
+    severity: CONDITION
+    citation:
+      url: https://www.ffmpeg.org/legal.html
+      section: "License"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+last_verified: "2026-09-18"
+staleness_days: 365

@@ -1,0 +1,74 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: DO_NOT_SHIP
+
+why: >
+  The clearest blocker in the corpus, and the one a licence tool must never miss.
+  A closed-source product links a GPL-3.0-only library and distributes the
+  result. The whole combined work falls under the GPL, and the proprietary build
+  cannot comply.
+
+  # WHY IT IS A BLOCKER AND NOT A CONDITION
+
+  Every other finding in this fixture is a condition, and the difference is
+  worth stating precisely. "Ship the source with your binary" is a condition —
+  it is a thing you can do, and the corpus asks you to do it. This one is not.
+  A condition is a requirement you can satisfy without changing what you are
+  shipping; releasing a closed-source product under the GPL changes what you
+  are shipping. There is no arrangement of the existing product that satisfies
+  it, so it is a blocker.
+
+  trap.gpl.proprietary-binary is the finding that carries that, and it is
+  BLOCK at HIGH confidence — no gate applies, so the verdict is DO NOT SHIP
+  rather than SHIP CONDITIONAL.
+
+  # THE PREDICATE, AND WHY BOTH HALVES ARE LOAD-BEARING
+
+  `dep.licence.family == strong-copyleft` AND
+  `use.licence_model == closed-source`.
+
+  Neither alone is a problem. GPL-3.0 in an open-source project is ordinary —
+  the obligations below are satisfied by doing nothing unusual. Closed-source
+  software with permissive dependencies is the normal case. It is the
+  conjunction that is unsurvivable, and this fixture is the conjunction.
+
+  `strong-copyleft` is the family rather than the SPDX identifier here, unlike
+  the LGPL and Apache traps, and that is deliberate: the clause is about the
+  *class* of licence, so a future GPL-2.0-only entry inherits the trap without
+  anyone editing it. GPL-3.0-only is currently the only member, so the
+  distinction is invisible today — which is the point of choosing the family
+  where the family is the right question.
+
+  # THE OBLIGATIONS BESIDE IT
+
+  gpl-3.0.binary-source-offer and gpl-3.0.convey-verbatim are CONDITIONS. They
+  are the requirements a project *could* meet — attach the source or a
+  three-year written offer, and keep the licence and notices intact — which is
+  exactly why they are not blockers and why their presence here is not a
+  contradiction. gpl-3.0.installation-information is a NOTE at MEDIUM
+  confidence: §6's "Installation Information" requirement is about User
+  Products and its application to a server-side deployment is an interpretation,
+  so it may inform and may not forbid. gpl-3.0.patent-grant is the §11 grant.
+
+findings:
+  - dependency: npm:gnu-thing@2.0.0
+    kind: trap.gpl.proprietary-binary
+    severity: BLOCK
+  - dependency: npm:gnu-thing@2.0.0
+    kind: gpl-3.0.binary-source-offer
+    severity: CONDITION
+  - dependency: npm:gnu-thing@2.0.0
+    kind: gpl-3.0.convey-verbatim
+    severity: CONDITION
+  - dependency: npm:gnu-thing@2.0.0
+    kind: gpl-3.0.installation-information
+    severity: NOTE
+  - dependency: npm:gnu-thing@2.0.0
+    kind: gpl-3.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

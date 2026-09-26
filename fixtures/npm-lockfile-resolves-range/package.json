@@ -1,0 +1,8 @@
+{
+  "name": "npm-lockfile-resolves-range",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.0.0"
+  }
+}

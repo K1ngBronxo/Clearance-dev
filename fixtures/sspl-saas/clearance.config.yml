@@ -1,0 +1,12 @@
+schema_version: 1
+
+project:
+  name: sspl-saas
+
+use:
+  commercial: false
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: true

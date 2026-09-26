@@ -1,0 +1,206 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:54380f5e-eddd-58ae-b08a-74d551a25bbb",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-24T08:00:00Z",
+    "tools": [
+      {
+        "vendor": "Clearance",
+        "name": "clearance",
+        "version": "0.9.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "acme-web",
+      "version": "0.0.0"
+    },
+    "properties": [
+      {
+        "name": "clearance:corpus-version",
+        "value": "2026.09.24"
+      },
+      {
+        "name": "clearance:corpus-signed",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "cargo:serde@1.0.0",
+      "name": "serde",
+      "version": "1.0.0",
+      "purl": "pkg:cargo/serde@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm:some-agpl-lib@3.0.0",
+      "name": "some-agpl-lib",
+      "version": "3.0.0",
+      "purl": "pkg:npm/some-agpl-lib@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "AGPL-3.0-only"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "BLOCK"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "copyleft.network"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "HIGH"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://www.gnu.org/licenses/agpl-3.0.html"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm:tiny-mit@1.0.0",
+      "name": "tiny-mit",
+      "version": "1.0.0",
+      "purl": "pkg:npm/tiny-mit@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "NOTE"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "notice.required"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "LOW"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://opensource.org/license/mit"
+        }
+      ]
+    },
+    {
+      "type": "machine-learning-model",
+      "bom-ref": "weights:models/llama-3.1-8b.bin",
+      "name": "models/llama-3.1-8b.bin",
+      "licenses": [
+        {
+          "license": {
+            "name": "Llama-3.1-Community"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "weights"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "BLOCK"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "licence.custom"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "HIGH"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://llama.meta.com/llama3_1/license/"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "acme-web",
+      "dependsOn": [
+        "npm:some-agpl-lib@3.0.0",
+        "npm:tiny-mit@1.0.0"
+      ]
+    },
+    {
+      "ref": "cargo:serde@1.0.0"
+    },
+    {
+      "ref": "npm:some-agpl-lib@3.0.0"
+    },
+    {
+      "ref": "npm:tiny-mit@1.0.0"
+    },
+    {
+      "ref": "weights:models/llama-3.1-8b.bin"
+    }
+  ],
+  "properties": [
+    {
+      "name": "clearance:verdict",
+      "value": "DO_NOT_SHIP"
+    },
+    {
+      "name": "clearance:intent-hash",
+      "value": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    }
+  ]
+}

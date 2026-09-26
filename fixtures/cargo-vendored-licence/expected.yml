@@ -1,0 +1,52 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The Cargo counterpart to fixtures/declared-vs-actual-conflict's mechanism, and
+  the fixture that proves a Cargo dependency's licence can be resolved at all.
+  Neither Cargo.toml nor Cargo.lock records a dependency's licence, so the only
+  place `serde`'s licence exists is `vendor/serde/LICENSE` — and the scanner
+  reads it, recognises MIT by its text, and attaches it to the package the
+  lockfile resolved.
+
+  WHY THE FINDINGS ARE THE ASSERTION AND NOT THE VERDICT. If the vendored file
+  were not read, serde's licence would be unresolved, the corpus's absent-licence
+  trap would fire, and the verdict would be UNDETERMINED with a
+  `licence_unresolved` record — the exact output of
+  fixtures/cargo-lockfile-beats-manifest, whose manifest is identical and whose
+  tree simply lacks this file. So the presence of the two MIT findings, keyed on
+  `cargo:serde@1.0.210`, is what distinguishes "resolved from the vendored copy"
+  from "not resolved at all". A fixture that asserted only SHIP CONDITIONAL
+  would not.
+
+  WHY `distributed: true`. MIT says nothing at all unless the project
+  distributes: mit.attribution and mit.no-patent-grant are both gated on
+  `use.distributed`. With it false this fixture would be a clean SHIP and would
+  prove nothing about the resolved licence — the two findings are the evidence
+  that the licence was actually attached.
+
+  WHY THE LICENCE FILE IS A STUB. The scanner fingerprints on two phrases that
+  appear verbatim in MIT's canonical text, and this file carries both. Writing
+  out the full licence would add nothing and would be one more thing to keep in
+  sync; the recognition rule is what is under test, not the licence text.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete vendor/serde/LICENSE and
+  the two findings must be replaced by the absent-licence trap and an
+  UNDETERMINED verdict. Replace the file's contents with novel prose and the
+  scanner must refuse to guess: E-SCAN-011, unresolved, and the same
+  UNDETERMINED outcome — a wrong identification would be worse than none.
+
+findings:
+  - dependency: cargo:serde@1.0.210
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: cargo:serde@1.0.210
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

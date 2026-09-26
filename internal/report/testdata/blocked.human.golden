@@ -1,0 +1,51 @@
+CLEARANCE VERDICT — acme-web
+========================================
+SHIP:        DO NOT SHIP
+BLOCKERS:    2
+CONDITIONS:  0
+SCANNED:     9 dependencies · 1 weight file
+CORPUS:      2026.09.24 · signed ✓
+
+BLOCKERS
+
+[BLOCK]         some-agpl-lib                   AGPL-3.0-only
+                clause:     AGPL-3.0 §13 — Remote Network Interaction
+                source:     https://www.gnu.org/licenses/agpl-3.0.html
+                finding:    AGPL network clause contradicts a closed-source deployment
+                reason:     The dependency is licensed under the AGPL, which requires that users
+                            interacting with a modified version over a network be offered the
+                            Corresponding Source. The declared intent is a closed-source service, so
+                            the obligation cannot be met without a licence change or removing the
+                            dependency.
+                evidence:   package-lock.json:1042-1048 — "license": "AGPL-3.0-only"
+                trap:       trap.agpl.network-service
+                confidence: HIGH
+                fix:        Replace with a permissively licensed alternative. (alternative:
+                            crawl4ai)
+
+[BLOCK]         models/llama-3.1-8b.bin         Llama-3.1-Community
+                clause:     Llama 3.1 Community License — Additional Commercial Terms
+                source:     https://llama.meta.com/llama3_1/license/
+                finding:    Model weights carry a bespoke community licence
+                reason:     The weights are governed by a bespoke community licence that is not an
+                            OSI-approved licence and carries field-of-use restrictions the declared
+                            intent does not satisfy.
+                evidence:   models/README.md:1-3
+                trap:       trap.weights.mau-threshold
+                confidence: HIGH
+
+NOTES
+
+[NOTE]          tiny-mit                        MIT
+                clause:     MIT License
+                source:     https://opensource.org/license/mit
+                finding:    Notice file presence could not be confirmed
+                reason:     The package declares MIT but no NOTICE file was found in the vendored
+                            directory.
+                evidence:   node_modules/tiny-mit/package.json:1
+                confidence: LOW — the tool could not classify this confidently
+
+----------------------------------------
+This is an informational finding based on the licence text as published on the
+date recorded. It is not legal advice. Ambiguous clauses are flagged as such.
+Important decisions should be reviewed by a qualified professional.

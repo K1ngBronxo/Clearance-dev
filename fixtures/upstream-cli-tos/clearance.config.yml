@@ -1,0 +1,15 @@
+schema_version: 1
+
+project:
+  name: upstream-cli-tos
+  description: A video pipeline that shells out to a system binary.
+
+# Nothing here is unusual. That is the fixture's point: the upstream obligation
+# is triggered by a line of code, not by anything a user would think to declare.
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

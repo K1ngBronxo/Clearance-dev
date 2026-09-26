@@ -1,0 +1,63 @@
+# Clearance — .gitignore
+# ---------------------------------------------------------------------------
+# Two things are ignored here, for two different reasons:
+#   1. build output        — regenerable, and a committed binary is a lie.
+#   2. compiled corpus     — a supply-chain control, not tidiness. See below.
+# ---------------------------------------------------------------------------
+
+# --- Go build output -------------------------------------------------------
+/clearance
+/clearance.exe
+# NOTE: there is deliberately no rule for `corpus-build` here, and there used
+# to be one. `/corpus-build` matched the corpus compiler's SOURCE DIRECTORY as
+# well as any binary of that name, so git silently refused to track
+# `corpus-build/main.go` and `corpus-build/sign.go` — the only program in the
+# repository that can sign a corpus. A fresh clone could not compile the corpus
+# at all: `make corpus`, `make corpus-sign` and `make corpus-verify` all failed
+# with "directory not found", and the build guard that walks the script
+# directories failed with it. The binary is covered by `/corpus-build.exe`
+# below and by `*.exe` in the repo-root .gitignore; the source directory must
+# never be ignored. See LOGS.md, D-030.
+/corpus-build.exe
+*.test
+cover.out
+/dist/
+
+# --- Agent scratch space ---------------------------------------------------
+# Local analysis artefacts. They live inside the module during a working
+# session, so without a rule here a `git add -A` could commit them as if they
+# were source. Named `.scratch/` precisely so nobody mistakes it for a feature.
+/.scratch/
+
+# --- Corpus build artefacts (NEVER commit) ---------------------------------
+# The signed corpus bundle is a *release artefact*, not source. The source of
+# truth is the YAML under corpus/**/*.yml.
+#
+# Committing the compiled bundle would (a) create a second source of truth that
+# can drift from the YAML, and (b) defeat the offline-key control: the signature
+# is produced by an Ed25519 key that never touches a build server or a
+# contributor machine (ADR-003, INV-9). If the bundle were tracked, a pull
+# request could modify the thing the binary trusts without ever touching the
+# YAML a reviewer reads.
+corpus.json
+corpus.json.sig
+corpus.version.json
+# Guard against the old spelling of the signature file so a stale local file
+# cannot be committed by accident. The frozen name is corpus.json.sig.
+corpus.sig
+
+# The staging directory `make corpus-dist` writes, which is what a release
+# archive carries next to the binary. Its contents are already covered by the
+# rules above; this names the directory so the intent is legible.
+/corpus-dist/
+
+# The OFFLINE signing private key. The PUBLIC half is tracked deliberately
+# (corpus-public-key.hex) because it is not a secret and CI needs it to stamp
+# the build. The private half is the only thing that can sign a corpus, so it
+# must never be one `git add -A` away from being published.
+corpus-signing.key
+*.corpus-key
+
+# --- OS / editor noise -----------------------------------------------------
+.DS_Store
+Thumbs.db

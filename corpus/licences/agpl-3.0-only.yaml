@@ -1,0 +1,127 @@
+id: licence.agpl-3.0-only
+spdx_id: AGPL-3.0-only
+name: GNU Affero General Public License v3.0 only
+family: network-copyleft
+osi_approved: true
+fsf_libre: true
+permissiveness: 1
+
+obligations:
+  - id: agpl-3.0.network-disclosure
+    kind: NETWORK_DISCLOSURE
+    severity: BLOCK
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.network_exposed
+        value: true
+      r:
+        op: "=="
+        field: use.modified
+        value: true
+    message: >
+      AGPL-3.0 §13 requires that if you run a modified version and let users
+      interact with it over a network, you must offer those users the
+      Corresponding Source. Offering a modified AGPL service is a distribution.
+    citation:
+      url: https://www.gnu.org/licenses/agpl-3.0.html
+      section: "§13"
+      excerpt: "if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network ... an opportunity to receive the Corresponding Source of your version."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: replace
+      suggestion: "Replace the AGPL dependency, or publish the Corresponding Source and offer it to network users."
+      confidence: HIGH
+
+  - id: agpl-3.0.network-unmodified
+    kind: NETWORK_DISCLOSURE
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.network_exposed
+        value: true
+      r:
+        op: "=="
+        field: use.modified
+        value: false
+    message: >
+      AGPL-3.0 §13 binds modification. Serving an unmodified AGPL work is not
+      itself a §13 trigger, but a downstream patch turns the same deployment
+      into one. Many teams cannot promise they will never patch.
+    citation:
+      url: https://www.gnu.org/licenses/agpl-3.0.html
+      section: "§13 (unmodified)"
+      excerpt: "Notwithstanding any other provision of this License, if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network ... an opportunity to receive the Corresponding Source."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: MEDIUM
+    fix:
+      action: configure
+      suggestion: "Pin the dependency to a released version and forbid local patches, or avoid the AGPL dependency."
+      confidence: MEDIUM
+
+  - id: agpl-3.0.modified-source
+    kind: SOURCE_DISCLOSURE
+    severity: BLOCK
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      AGPL-3.0 §5 requires a work based on the Program to be licensed as a whole
+      under the AGPL, with its Corresponding Source conveyed. Shipping a
+      proprietary binary built on AGPL code breaches it.
+    citation:
+      url: https://www.gnu.org/licenses/agpl-3.0.html
+      section: "§5"
+      excerpt: "You may convey a work based on the Program ... provided that you ... license the entire work ... under this License ... and ... convey the Corresponding Source."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: replace
+      suggestion: "Replace the AGPL dependency with a permissively licensed equivalent."
+      confidence: HIGH
+
+  - id: agpl-3.0.licence-inclusion
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      AGPL-3.0 §4 requires that verbatim copies you convey carry the licence
+      text and retain the copyright notices. This applies to any distribution of
+      the software.
+    citation:
+      url: https://www.gnu.org/licenses/agpl-3.0.html
+      section: "§4"
+      excerpt: "You may convey verbatim copies of the Program's source code as you receive it ... provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Ship the AGPL text and upstream notices with your distribution."
+      confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://www.gnu.org/licenses/agpl-3.0.html
+  section: "GNU AGPL v3"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

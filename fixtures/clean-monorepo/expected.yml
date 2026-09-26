@@ -1,0 +1,29 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        A workspace root with two packages under it, each with its own manifest, its
+        own lockfile and its own single MIT dependency (`left-pad`, `dayjs`).
+
+        This is the row that tests scope: a monorepo is scanned as more than one
+        project, and the risk it guards against is contamination, where one
+        package's dependency list leaks into another's or the root's manifest is
+        mistaken for the only one. The verdict is SHIP with **no findings at all**,
+        which is the strongest form of the assertion available here - it is not
+        "the right findings came out", it is "nothing at all came out".
+
+        The root manifest lists no dependencies and declares `private: true`; the
+        two MIT dependencies are permissive and carry no patent grant, so they
+        produce nothing.
+
+findings:
+  []
+
+undetermined: []
+
+warnings: []
+
+notices: []

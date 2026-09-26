@@ -1,0 +1,35 @@
+id: trap.weights.cc-by-nc-commercial
+title: "Non-commercial weights used in a commercial product"
+summary: >
+  Model weights are a dependency with their own licence. A weight file under
+  CC BY-NC 4.0 cannot be used in a product that charges, earns revenue or
+  supports a commercial service, however permissive the surrounding code is.
+when:
+  op: and
+  l:
+    op: and
+    l:
+      op: "=="
+      field: dep.kind
+      value: weights
+    r:
+      op: "=="
+      field: dep.licence.family
+      value: non-commercial
+  r:
+    op: "=="
+    field: use.commercial
+    value: true
+scope: dependency
+severity: BLOCK
+citation:
+  url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+  section: "§2(a)(1) (weights)"
+  excerpt: "reproduce and Share the Licensed Material, in whole or in part, for NonCommercial purposes only."
+  excerpt_kind: unverified
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+fix:
+  action: replace
+  suggestion: "Swap the weights for a commercially licensed model, or obtain a separate licence from the rights holder."
+  confidence: HIGH

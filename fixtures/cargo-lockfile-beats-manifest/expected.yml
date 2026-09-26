@@ -1,0 +1,54 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  The Cargo half of the lockfile-preference rule, and the half where the rule is
+  load-bearing rather than tidy. `Cargo.toml` declares `serde = "1.0"`, which is
+  a caret requirement, not a version: it means ">=1.0.0, <2.0.0". `Cargo.lock`
+  resolves it to exactly 1.0.210. The undetermined record's id carries the
+  resolved version, so it is the assertion: if the manifest had won, the id
+  would read `cargo:serde@1.0`.
+
+  WHY THE VERDICT IS UNDETERMINED RATHER THAN SHIP. Cargo.lock records no
+  licence — crates.io metadata is not fetched, because the scanner has no
+  network (INV-3). So serde's licence cannot be resolved from anything in this
+  tree, and INV-7 forbids guessing. `licence_unresolved` is the honest answer,
+  and it is a different record from `no_corpus_entry`: the tool is not saying
+  "this licence is unknown to me", it is saying "I found no licence at all".
+
+  WHY THE ROOT PACKAGE IS ABSENT FROM THE EXPECTATION. Cargo.lock lists the
+  project itself as a `[[package]]` with no `source`, and the scanner drops it:
+  a local crate is part of the project, and counting it would let the project
+  block itself on its own licence. The only dependency here is serde, so a
+  second finding keyed on the root would mean the local-crate rule had broken.
+
+  WHY THERE IS A FINDING EVEN THOUGH THE LICENCE DID NOT RESOLVE. The corpus's
+  trap `trap.licence.absent-all-rights-reserved` fires on
+  `dep.licence.resolved == false`, and the engine evaluates dependency-scoped
+  traps in the `licence_unresolved` branch precisely because that is the case
+  the trap is about. Its citation is choosealicense.com's explanation that no
+  licence means no permission; it is declared BLOCK at MEDIUM confidence, so the
+  confidence gate lands it as a CONDITION. It is the one finding here, and it is
+  what turns "I could not resolve a licence" into a statement with a
+  consequence.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete Cargo.lock and the id
+  must become `cargo:serde@1.0` — the requirement, not the resolution. Add a
+  `vendor/serde/LICENSE` file and the licence resolves, so BOTH the undetermined
+  record and the trap finding must disappear and the verdict must rise above
+  UNDETERMINED. Both are the right reason.
+
+findings:
+  - dependency: cargo:serde@1.0.210
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: cargo:serde@1.0.210
+    reason: licence_unresolved
+
+warnings: []
+notices: []

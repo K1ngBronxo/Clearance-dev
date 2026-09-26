@@ -1,0 +1,63 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    `package-lock.json` is not JSON. `package.json` declares `lodash: ^4.17.21`.
+    The lockfile cannot resolve, so the manifest is used, and a range is not a
+    version - the corpus has no entry for `lodash@^4.17.21` and cannot get one.
+    The verdict is UNDETERMINED and the reason is `licence_unresolved`.
+
+    # WHY THE ANSWER IS UNDETERMINED RATHER THAN A GUESS
+
+    Every fact needed to answer is here except the one that matters: this project
+    depends on lodash, lodash is MIT, and nobody can say from this tree whether
+    4.17.21 or 4.17.20 was installed. Reporting MIT anyway would be correct most of
+    the time and would be a fabricated resolution, which is the failure INV-7
+    exists to forbid. The scanner's own note on NPM.UnsupportedLockfiles makes the
+    same argument for pnpm and yarn: a heuristic parse produces a dependency graph
+    that is quietly wrong, and a quietly wrong graph produces a confident verdict
+    about a project that does not exist.
+
+    # TWO WARNINGS WITH ONE CODE, AND WHY THAT IS NOT A DUPLICATE
+
+    This fixture asserts E-PARSE-001 twice, which reads like a repeated warning
+    until you follow the two call sites. They are different facts that share a
+    code:
+
+      scanner.go:175  the lockfile did not parse
+      scanner.go:206  therefore the graph is range-based, not resolution-based
+
+    The second message says so in as many words: "Using 'package.json' instead of
+    'package-lock.json': versions are requirements, not resolutions." The comment
+    above it explains that the second warning exists so that a reader of the JSON
+    can see WHY versions look like ranges.
+
+    The fixture harness compares warning CODES only (guardWarningCodes drops the
+    message), so two facts behind one code are indistinguishable here from one
+    warning emitted twice. That is a limitation of the assertion rather than of
+    the engine, and it is pinned rather than smoothed over because collapsing the
+    two warnings into one would lose the second fact for a JSON consumer.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Repair the lockfile so it resolves `lodash` to an exact `4.17.21` and both
+    warnings must vanish and the verdict must become SHIP_CONDITIONAL, matching
+    the MIT pair. Delete the manifest as well and the run has no dependency left
+    to be unresolved about.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:lodash@4.17.21
+    reason: licence_unresolved
+
+warnings:
+  - E-PARSE-001
+  - E-PARSE-001
+
+notices: []

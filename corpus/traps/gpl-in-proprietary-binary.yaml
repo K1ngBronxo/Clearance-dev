@@ -1,0 +1,30 @@
+id: trap.gpl.proprietary-binary
+title: "GPL code linked into a proprietary binary"
+summary: >
+  Linking a GPL-3.0 library into a closed-source program and distributing the
+  result places the whole combined work under the GPL. The usual proprietary
+  binary build cannot comply, so the dependency is a hard blocker rather than a
+  condition to be met later.
+when:
+  op: and
+  l:
+    op: "=="
+    field: dep.licence.family
+    value: strong-copyleft
+  r:
+    op: "=="
+    field: use.licence_model
+    value: closed-source
+scope: dependency
+severity: BLOCK
+citation:
+  url: https://www.gnu.org/licenses/gpl-3.0.html
+  section: "§5 (combined work)"
+  excerpt: "You may convey a work based on the Program ... provided that you ... license the entire work ... under this License ... and ... convey the Corresponding Source."
+  excerpt_kind: unverified
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+fix:
+  action: replace
+  suggestion: "Replace the GPL dependency with a permissive one, or release the combined work under the GPL."
+  confidence: HIGH

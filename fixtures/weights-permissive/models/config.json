@@ -1,0 +1,9 @@
+{
+  "_name_or_path": "example/permissive-model",
+  "architectures": [
+    "LlamaForCausalLM"
+  ],
+  "model_type": "llama",
+  "license": "apache-2.0",
+  "torch_dtype": "float16"
+}

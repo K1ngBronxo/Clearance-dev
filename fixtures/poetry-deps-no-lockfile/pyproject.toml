@@ -1,0 +1,8 @@
+[tool.poetry]
+name = "poetry-deps-no-lockfile"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+certifi = "^2024.2.2"
+django = "^5.0"

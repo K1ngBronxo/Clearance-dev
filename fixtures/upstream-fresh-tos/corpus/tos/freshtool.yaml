@@ -1,0 +1,31 @@
+# A fixture-local corpus. See upstream-stale-tos/corpus/tos/staletool.yaml and
+# guardFixtureCorpus in internal/guard_helpers_test.go for why a date-dependent
+# rule needs a corpus whose dates the test controls.
+#
+# This is the FRESH half of the stale/fresh pair. `last_verified` is 2026-09-01
+# and the guard suite injects Today = 2026-09-23, so the entry is 22 days old
+# against a 180-day window. Nothing downgrades, and the clause below is the
+# strongest statement the schema can make: BLOCK at HIGH.
+platform: freshtool
+display_name: FreshTool
+kind: hosted-service
+summary: >
+  A placeholder platform whose only purpose is to be recent. The clause below is
+  declared BLOCK at HIGH confidence and must survive to the verdict unchanged,
+  so that the pair with upstream-stale-tos isolates the staleness rule.
+detect:
+  bins: [freshtool]
+restrictive_clauses:
+  - id: freshtool.tos.prohibited-use
+    text_summary: >
+      A clause that is declared as an outright prohibition. A freshly verified
+      entry keeps its declared severity, so this must reach the verdict as a
+      blocker rather than being softened by the confidence gate.
+    severity: BLOCK
+    citation:
+      url: https://example.invalid/freshtool/terms
+      section: "Prohibited Use"
+      retrieved_at: "2026-09-01"
+    confidence: HIGH
+last_verified: "2026-09-01"
+staleness_days: 180

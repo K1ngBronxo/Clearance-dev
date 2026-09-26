@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: upstream-sdk-import
+  description: A project whose only dependency is a hosted service's official SDK.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

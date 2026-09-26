@@ -1,0 +1,236 @@
+name: 'Clearance'
+description: >-
+  Download a checksum-verified Clearance release binary and run it against a
+  project. The Action contains no judgement of its own: it downloads, verifies,
+  runs, and reports the exit code. All decisions live in the binary, so the
+  Action can never drift from the CLI.
+
+author: 'K1NGBRONXO'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+# ---------------------------------------------------------------------------
+# The Action is deliberately thin (PLAN/01-ARCHITECTURE/09-interfaces-and-
+# contracts.md section 4: "The Action contains no logic"). It:
+#   1. resolves the release for the requested version,
+#   2. downloads the platform archive and verifies its SHA-256 against the
+#      release's checksums.txt BEFORE extracting or running anything,
+#   3. runs `clearance check`, captures the exit code, and exposes it.
+# A checksum that does not verify aborts the step. There is no "continue
+# anyway" path.
+# ---------------------------------------------------------------------------
+
+inputs:
+  version:
+    description: >-
+      The Clearance release to download: a version such as 1.0.0 or v1.0.0, or
+      "latest". The binary is checksum-verified against the release's
+      checksums.txt regardless of which is chosen.
+    required: false
+    default: 'latest'
+
+  path:
+    description: 'The project directory to scan, relative to the workspace root.'
+    required: false
+    default: '.'
+
+  strict:
+    description: >-
+      When "true", pass --strict to the binary, so an UNDETERMINED verdict
+      exits 5 and fails the job. When "false" (the default), UNDETERMINED
+      exits 0 and the job passes with a warning in the log.
+    required: false
+    default: 'false'
+
+  args:
+    description: >-
+      Additional arguments passed to `clearance check`, as a single string,
+      for example: --fail-on CONDITION --allow-medium-blockers. These are
+      appended after the Action's own flags. See docs/ci.md for the flag list.
+    required: false
+    default: ''
+
+outputs:
+  verdict:
+    description: >-
+      The verdict class from the machine-readable output: SHIP,
+      SHIP_CONDITIONAL, DO_NOT_SHIP, or UNDETERMINED. Empty if the run failed
+      before a verdict was produced.
+    value: ${{ steps.check.outputs.verdict }}
+
+  exit-code:
+    description: >-
+      The process exit code from `clearance check`: 0 ok, 1 DO NOT SHIP,
+      2 config error, 3 corpus error, 4 internal error, 5 UNDETERMINED with
+      --strict. The five codes are a frozen contract.
+    value: ${{ steps.check.outputs.exit-code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download and verify the Clearance binary
+      id: install
+      shell: bash
+      env:
+        CLEARANCE_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+
+        version="${CLEARANCE_VERSION}"
+
+        # ── platform ────────────────────────────────────────────────────────
+        case "$(uname -s)" in
+          Linux)                goos=linux ;;
+          Darwin)               goos=darwin ;;
+          MINGW*|MSYS*|CYGWIN*) goos=windows ;;
+          *) echo "::error::Clearance: unsupported OS '$(uname -s)'"; exit 1 ;;
+        esac
+        case "$(uname -m)" in
+          x86_64|amd64)   goarch=amd64 ;;
+          arm64|aarch64)  goarch=arm64 ;;
+          *) echo "::error::Clearance: unsupported architecture '$(uname -m)'"; exit 1 ;;
+        esac
+
+        case "$goos" in
+          windows) ext=zip ;;
+          *)       ext=tar.gz ;;
+        esac
+
+        # ── resolve the release tag ─────────────────────────────────────────
+        if [ "$version" = "latest" ]; then
+          tag="$(curl -fsSL https://api.github.com/repos/clearance-dev/clearance/releases/latest \
+            | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+            | head -n1 \
+            | sed 's/.*"\([^"]*\)"$/\1/')"
+          if [ -z "$tag" ]; then
+            echo "::error::Clearance: could not resolve the latest release tag"
+            exit 1
+          fi
+        else
+          tag="v${version#v}"
+        fi
+        ver="${tag#v}"
+
+        # The archive name embeds the version without the leading "v", matching
+        # the .goreleaser.yml name_template: clearance_{version}_{os}_{arch}.
+        asset="clearance_${ver}_${goos}_${goarch}"
+        base="https://github.com/clearance-dev/clearance/releases/download/${tag}"
+
+        # ── download ────────────────────────────────────────────────────────
+        dl="${RUNNER_TEMP:-/tmp}/clearance-dl"
+        rm -rf "$dl"; mkdir -p "$dl"
+        echo "Downloading ${asset}.${ext} from ${base}"
+        curl -fsSL -o "$dl/${asset}.${ext}" "${base}/${asset}.${ext}"
+        curl -fsSL -o "$dl/checksums.txt"   "${base}/checksums.txt"
+
+        # ── verify BEFORE extracting or running ─────────────────────────────
+        # checksums.txt is signed with cosign in release.yml (checksums.txt.sig).
+        # This step verifies the archive against that signed list; verifying the
+        # cosign signature over checksums.txt itself is the caller's choice, and
+        # the command is in SECURITY.md.
+        cd "$dl"
+        if ! grep -F "${asset}.${ext}" checksums.txt > expected.txt; then
+          echo "::error::Clearance: ${asset}.${ext} is not listed in checksums.txt"
+          exit 1
+        fi
+        if command -v sha256sum >/dev/null 2>&1; then
+          sha256sum -c expected.txt
+        else
+          shasum -a 256 -c expected.txt
+        fi
+
+        # ── extract and expose on PATH ──────────────────────────────────────
+        if [ "$ext" = "zip" ]; then
+          if command -v unzip >/dev/null 2>&1; then
+            unzip -q "${asset}.zip"
+          else
+            tar -xf "${asset}.zip"   # bsdtar handles zip on the Windows runner
+          fi
+        else
+          tar -xzf "${asset}.tar.gz"
+        fi
+
+        bin="$dl/bin"; mkdir -p "$bin"
+        if [ -f "clearance.exe" ]; then
+          cp clearance.exe "$bin/"
+        else
+          cp clearance "$bin/"
+        fi
+        chmod +x "$bin"/clearance "$bin"/clearance.exe 2>/dev/null || true
+        echo "$bin" >> "$GITHUB_PATH"
+
+    - name: Run clearance check
+      id: check
+      shell: bash
+      env:
+        CLEARANCE_PATH: ${{ inputs.path }}
+        CLEARANCE_STRICT: ${{ inputs.strict }}
+        CLEARANCE_ARGS: ${{ inputs.args }}
+      run: |
+        # No `set -e`: the whole point is to READ the exit code, so a non-zero
+        # exit from the binary must not abort the step before we classify it.
+        set -uo pipefail
+
+        strict_flag=""
+        if [ "${CLEARANCE_STRICT}" = "true" ]; then
+          strict_flag="--strict"
+        fi
+
+        out="${RUNNER_TEMP:-/tmp}/clearance-verdict.json"
+
+        # --format json so the verdict class can be read without a JSON tool;
+        # --output so the machine-readable result is kept for later steps.
+        # shellcheck disable=SC2086
+        clearance check "${CLEARANCE_PATH}" \
+          --format json --output "$out" ${strict_flag} ${CLEARANCE_ARGS}
+        code=$?
+
+        verdict=""
+        if [ -f "$out" ]; then
+          verdict="$(grep -o '"verdict"[[:space:]]*:[[:space:]]*"[^"]*"' "$out" \
+            | head -n1 | sed 's/.*"\([^"]*\)"$/\1/' || true)"
+        fi
+        echo "Clearance verdict: ${verdict:-<none>} (exit ${code})"
+
+        {
+          echo "verdict=${verdict}"
+          echo "exit-code=${code}"
+        } >> "$GITHUB_OUTPUT"
+
+        # ── decide whether the job fails ────────────────────────────────────
+        case "$code" in
+          0)
+            exit 0
+            ;;
+          5)
+            # UNDETERMINED with --strict. Without --strict the binary cannot
+            # exit 5, so this branch only fails when strict was requested.
+            if [ "${CLEARANCE_STRICT}" = "true" ]; then
+              echo "::error::Clearance: UNDETERMINED (--strict). Resolve the unknowns or drop strict."
+              exit 5
+            fi
+            exit 0
+            ;;
+          1)
+            echo "::error::Clearance: DO NOT SHIP - a HIGH-confidence blocking obligation was found."
+            exit 1
+            ;;
+          2)
+            echo "::error::Clearance: configuration error - fix clearance.config.yml, not your code."
+            exit 2
+            ;;
+          3)
+            echo "::error::Clearance: corpus error - missing, unsigned, tampered, or unsupported corpus."
+            exit 3
+            ;;
+          4)
+            echo "::error::Clearance: internal error - this is a Clearance bug; please report it."
+            exit 4
+            ;;
+          *)
+            echo "::error::Clearance: unexpected exit code ${code}."
+            exit "$code"
+            ;;
+        esac

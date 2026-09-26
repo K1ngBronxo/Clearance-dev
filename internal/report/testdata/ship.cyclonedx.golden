@@ -1,0 +1,131 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:1a3ba922-daea-5654-ac4f-d1bc756cce5e",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-24T08:00:00Z",
+    "tools": [
+      {
+        "vendor": "Clearance",
+        "name": "clearance",
+        "version": "0.9.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "acme-web",
+      "version": "0.0.0"
+    },
+    "properties": [
+      {
+        "name": "clearance:corpus-version",
+        "value": "2026.09.24"
+      },
+      {
+        "name": "clearance:corpus-signed",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "npm:@mendable/firecrawl-js@1.2.3",
+      "name": "@mendable/firecrawl-js",
+      "version": "1.2.3",
+      "purl": "pkg:npm/@mendable/firecrawl-js@1.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "cargo:serde@1.0.0",
+      "name": "serde",
+      "version": "1.0.0",
+      "purl": "pkg:cargo/serde@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        }
+      ]
+    },
+    {
+      "type": "machine-learning-model",
+      "bom-ref": "weights:models/embed.bin",
+      "name": "models/embed.bin",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "weights"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "acme-web",
+      "dependsOn": [
+        "npm:@mendable/firecrawl-js@1.2.3",
+        "weights:models/embed.bin"
+      ]
+    },
+    {
+      "ref": "npm:@mendable/firecrawl-js@1.2.3"
+    },
+    {
+      "ref": "cargo:serde@1.0.0"
+    },
+    {
+      "ref": "weights:models/embed.bin"
+    }
+  ],
+  "properties": [
+    {
+      "name": "clearance:verdict",
+      "value": "SHIP"
+    },
+    {
+      "name": "clearance:intent-hash",
+      "value": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    }
+  ]
+}

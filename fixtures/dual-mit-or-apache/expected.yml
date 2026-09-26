@@ -1,0 +1,69 @@
+# The verdict this fixture must produce.
+#
+# THIS FIXTURE CURRENTLY PINS A DEFECT. Read the `why` before "fixing" it.
+verdict: UNDETERMINED
+
+why: >
+  An SPDX EXPRESSION, not a licence id. The lockfile declares dual-tool as
+  `MIT OR Apache-2.0` - two licences we hold corpus entries for, joined by the
+  operator that means "the consumer picks". The catalogue
+  (PLAN/04-QUALITY/02-fixture-catalogue.md section 2) says this fixture must
+  produce `SHIP`, and is right to: either branch alone is `SHIP`, so the
+  disjunction is `SHIP`.
+
+  It does not. It produces UNDETERMINED, one unclassified dependency
+  (`no_corpus_entry`) and `E-POLICY-001`. The resolver looks the manifest
+  string up as a single entry key, finds no entry named "MIT OR Apache-2.0",
+  and reports the licence as unrecognised - which is the same finding an
+  invented id like `FOO-1.0` gets. It cannot tell an unknown licence from a
+  known pair.
+
+  # WHY THIS IS A DEFECT AND NOT A GAP
+
+  `MIT OR Apache-2.0` does not fail because handling is absent. It fails
+  because the failure is reported as "no corpus entry", which is TRUE and
+  therefore not obviously wrong to a reader - while the correct reading is
+  "we have both entries and did not try". The difference matters to a user:
+  one says your licence is exotic, the other says our resolver is incomplete.
+
+  It is bounded, but not in the direction users assume. `no_corpus_entry`
+  cannot cause a false SHIP: unknown never defaults to ship (INV-7), so the
+  failure is safe. What it costs is availability, and it costs it on exactly
+  the dependencies that are most deliberately licensed. Dual-licensed code
+  is not exotic - it is the standard way a project offers you a choice, and a
+  scanner that answers "unknown licence" to `MIT OR Apache-2.0` gets switched
+  off by the first person who checks it.
+
+  # THE SPECIFICATION, AND WHERE IT STOPS
+
+  `PLAN/02-SPECIFICATIONS/04-detection-spec-code-licence.md` section 5
+  ("SPDX expression handling") specifies the intended behaviour: evaluate
+  BOTH branches and let the verdict reflect the more favourable one, with a
+  NOTE recording the choice. That behaviour is not implemented anywhere in
+  the tree. This fixture is the only executable record of that.
+
+  # WHAT TO DO WHEN SECTION 5 LANDS
+
+  Flip this file to `SHIP`, and make the notice a NOTE naming the chosen
+  branch rather than `E-POLICY-001`. Do not flip the file without changing
+  the code: a fixture edited to match an intent that no code implements is
+  the "a name that checks nothing" defect this repository keeps rediscovering,
+  written into the test suite itself.
+
+  # AND WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Change the lockfile to the single id `MIT` and everything clears - verdict
+  SHIP, no unclassified entries, no notice. If that stops being true, the
+  resolver has broken on the plain non-expression path, which is a worse bug
+  than the one this fixture pins.
+
+findings: []
+
+undetermined:
+  - id: npm:dual-tool@1.0.0
+    reason: no_corpus_entry
+
+warnings: []
+
+notices:
+  - E-POLICY-001

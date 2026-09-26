@@ -1,0 +1,55 @@
+CLEARANCE VERDICT — edge-cases
+========================================
+SHIP:        UNDETERMINED
+BLOCKERS:    0
+CONDITIONS:  2
+SCANNED:     0 dependencies
+CORPUS:      not loaded
+REASON:      1 item could not be classified
+
+CONDITIONS
+
+[COND]          no-cite                         MIT
+                clause:     MISSING — this is a bug (E-POLICY-002)
+                finding:    Finding with no citation
+                reason:     This finding exists to pin the MISSING CITATION placeholder.
+                evidence:   package.json:1
+                confidence: HIGH
+
+[COND]          no-evidence                     MIT
+                clause:     MIT License
+                source:     https://opensource.org/license/mit
+                finding:    Finding with no evidence
+                reason:     This finding exists to pin the NONE RECORDED placeholder.
+                evidence:   NONE RECORDED — this is a bug (INV-1)
+                confidence: HIGH
+
+NOTES
+
+[BLOCK]         no-confidence                   MIT
+                clause:     MIT License
+                source:     https://opensource.org/license/mit
+                finding:    Finding with no confidence
+                reason:     This finding exists to pin the E-POLICY-007 placeholder.
+                evidence:   package.json:2
+                gate:       severity BLOCK → NOTE because confidence is LOW
+                confidence: MISSING — this is a bug (E-POLICY-007)
+
+[?]             unknown-severity                MIT
+                clause:     MIT License
+                source:     https://opensource.org/license/mit
+                finding:    Finding with an unknown severity
+                reason:     This finding exists to pin the [?] tag.
+                evidence:   package.json:3
+                confidence: HIGH
+
+UNDETERMINED
+
+[UNDETERMINED]  orphan.dat                      unknown error code
+                error:      E-NOT-A-REAL-CODE — This entry carries an error code the taxonomy does not know.
+                action:     supply the missing fact, or remove the file from the scan
+
+----------------------------------------
+This is an informational finding based on the licence text as published on the
+date recorded. It is not legal advice. Ambiguous clauses are flagged as such.
+Important decisions should be reviewed by a qualified professional.

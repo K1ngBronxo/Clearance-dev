@@ -1,0 +1,28 @@
+## Clearance Verdict — `UNDETERMINED`
+
+**0 blockers · 0 conditions · 2 items unclassified** · 2 dependencies scanned · corpus v2026.09.24
+
+<sub>Also scanned: 1 weight file</sub>
+
+---
+
+### ❓ Unclassified
+
+<sub>These were seen and could not be classified. They are not passes; INV-7 forbids rounding an unknown to a safe-looking answer.</sub>
+
+- **`npm:leftpad@1.0.0`** — licence file unreadable
+  - The LICENSE file declares charset latin-1; only UTF-8 is supported.
+  - Error: `E-PARSE-010`
+  - Evidence: `package.json:3`
+  - Action: Re-save as UTF-8
+- **`weights:models/x.bin`** — no licence found
+  - No licence text was found beside the weight file and no metadata declares one.
+  - Error: `E-SCAN-010`
+  - Evidence: `models/x.bin:1`
+  - Action: Locate the licence, or remove the file
+
+---
+
+<sub>This is an informational finding based on the licence text as published on the date recorded. It is not legal advice. Ambiguous clauses are flagged as such. Important decisions should be reviewed by a qualified professional.</sub>
+
+<sub>Clearance v0.9.1 · corpus v2026.09.24 · intent `9f2c1b7a4e8d`</sub>

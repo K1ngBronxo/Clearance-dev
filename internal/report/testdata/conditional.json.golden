@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "verdict": "SHIP_CONDITIONAL",
+  "project": "acme-web",
+  "summary": {
+    "dependencies": 5,
+    "weight_files": 0,
+    "upstream_clis": 1,
+    "blockers": 0,
+    "conditions": 2,
+    "undetermined": 0
+  },
+  "blockers": [],
+  "conditions": [
+    {
+      "id": "f-net-002",
+      "dependency_id": "pypi:torch@2.4.0",
+      "kind": "network.disclosure",
+      "severity": "BLOCK",
+      "confidence": "MEDIUM",
+      "title": "Network disclosure clause may apply",
+      "reason": "A network-interaction clause appears to apply, but the clause text is ambiguous about whether an internal-only deployment counts as interaction.",
+      "citation": {
+        "url": "https://www.gnu.org/licenses/agpl-3.0.html",
+        "section": "AGPL-3.0 §13 — Remote Network Interaction",
+        "excerpt": "if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network an opportunity to receive the Corresponding Source",
+        "excerpt_kind": "verbatim"
+      },
+      "licence": "BSD-3-Clause",
+      "evidence": [
+        {
+          "path": "requirements.txt",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ],
+      "predicate": null
+    },
+    {
+      "id": "f-attr-001",
+      "dependency_id": "npm:@mendable/firecrawl-js@1.2.3",
+      "kind": "attribution.required",
+      "severity": "CONDITION",
+      "confidence": "HIGH",
+      "title": "Attribution notice must be preserved",
+      "reason": "The dependency is distributed under a licence whose attribution clause requires the notice to travel with every redistribution of the software, including a bundled web build.",
+      "citation": {
+        "url": "https://opensource.org/license/mit",
+        "section": "MIT License — the copyright notice and this permission notice shall be included",
+        "excerpt": "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
+        "excerpt_kind": "paraphrase"
+      },
+      "licence": "MIT",
+      "evidence": [
+        {
+          "path": "package.json",
+          "line_start": 12,
+          "line_end": 12
+        }
+      ],
+      "fix": {
+        "action": "add-notice",
+        "suggestion": "Include the dependency's NOTICE file in the distributed bundle.",
+        "confidence": "HIGH"
+      },
+      "predicate": {
+        "op": "cmp",
+        "field": "use.distributed",
+        "cmp_op": "==",
+        "value": true
+      }
+    }
+  ],
+  "notes": [
+    {
+      "id": "f-lic-003",
+      "dependency_id": "cargo:leftpad@1.0.0",
+      "kind": "licence.ambiguous",
+      "severity": "BLOCK",
+      "confidence": "LOW",
+      "title": "Licence text could not be classified",
+      "reason": "The licence file is a short custom notice that names no SPDX identifier and the tool could not map it to a known licence.",
+      "citation": {
+        "url": "https://example.invalid/leftpad/LICENSE",
+        "section": "LICENSE — custom notice",
+        "excerpt": "This software may be used, but the authors accept no liability and reserve all other rights.",
+        "excerpt_kind": "unverified"
+      },
+      "licence": "",
+      "evidence": [
+        {
+          "path": "Cargo.lock",
+          "line_start": 88,
+          "line_end": 90,
+          "excerpt": "name = \"leftpad\""
+        }
+      ],
+      "predicate": null,
+      "undetermined_field": "licence_model"
+    }
+  ],
+  "undetermined": [],
+  "meta": {
+    "tool_version": "0.9.1",
+    "corpus_version": "2026.09.24",
+    "corpus_signed": true,
+    "intent_hash": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a",
+    "config_path": "clearance.config.yml",
+    "scanned_at": 1758700800,
+    "duration_ms": 42,
+    "build_commit": "3b1f2a7",
+    "build_provenance": "local"
+  }
+}

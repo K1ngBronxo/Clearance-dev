@@ -1,0 +1,86 @@
+id: licence.cc-by-nc-4.0
+spdx_id: CC-BY-NC-4.0
+name: Creative Commons Attribution-NonCommercial 4.0 International
+family: non-commercial
+osi_approved: false
+fsf_libre: false
+permissiveness: 1
+
+obligations:
+  - id: cc-by-nc-4.0.non-commercial
+    kind: NON_COMMERCIAL
+    severity: BLOCK
+    when:
+      op: "=="
+      field: use.commercial
+      value: true
+    message: >
+      CC BY-NC 4.0 §2(a)(1) limits the grant to NonCommercial purposes only.
+      Charging for a product that uses the licensed material, or using it to
+      earn revenue, is outside the licence.
+    citation:
+      url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+      section: "§2(a)(1)"
+      excerpt: "reproduce and Share the Licensed Material, in whole or in part, for NonCommercial purposes only."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: replace
+      suggestion: "Replace the NC-licensed material with a permissive alternative, or obtain a separate commercial licence."
+      confidence: HIGH
+
+  - id: cc-by-nc-4.0.non-commercial-adaptations
+    kind: NON_COMMERCIAL
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.modified
+      value: true
+    message: >
+      CC BY-NC 4.0 §2(a)(1)(B) limits Adapted Material to NonCommercial purposes
+      as well. Fine-tuning or merging the licensed material does not escape the
+      NonCommercial restriction.
+    citation:
+      url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+      section: "§2(a)(1)(B)"
+      excerpt: "produce, reproduce, and Share Adapted Material for NonCommercial purposes only."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: replace
+      suggestion: "Do not derive from NC material for a commercial product."
+      confidence: HIGH
+
+  - id: cc-by-nc-4.0.attribution
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      CC BY-NC 4.0 §3(a) requires attribution: retain the creator's name, a
+      copyright notice, a licence notice and a link to the licence, and indicate
+      if you made changes.
+    citation:
+      url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+      section: "§3(a)"
+      excerpt: "If You Share the Licensed Material ... You must retain the identification of the creator(s) ... a copyright notice ... a notice that refers to this Public License."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Credit the creator and link the CC BY-NC 4.0 licence wherever the material appears."
+      confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+  section: "CC BY-NC 4.0"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

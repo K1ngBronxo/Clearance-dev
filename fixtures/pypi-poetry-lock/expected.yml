@@ -1,0 +1,58 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A poetry.lock and nothing else. The file is TOML with an array of `[[package]]`
+  tables rather than JSON, and this fixture asserts that the TOML reader finds
+  every entry in it: both certifi and requests appear as undetermined records,
+  keyed on the versions the lockfile resolved.
+
+  WHY TWO PACKAGES AND NOT ONE. One entry would pass under a reader that only
+  understood the first table. Two entries, in the order poetry happens to write
+  them, prove the array-of-tables walk is complete. The list is sorted by the
+  harness, so this is an assertion about the set, not about file order — which
+  is the right thing to assert, because a graph that depended on file order
+  would violate INV-6.
+
+  WHY EVERYTHING IS UNDETERMINED. poetry.lock records no licence field, and
+  PyPI metadata is not fetched — the scanner makes no network calls by design
+  (INV-3). So neither package's licence can be resolved from this tree, and INV-7
+  says the tool must not guess. `licence_unresolved` is the record for "I found
+  no licence at all", which is the true statement here. The corpus's
+  absent-licence trap fires once per dependency — `dep.licence.resolved ==
+  false` — and lands as a CONDITION after the confidence gate, because it is
+  declared BLOCK at MEDIUM. Two dependencies therefore produce two conditions
+  and two undetermined records, and the verdict is UNDETERMINED because an
+  unknown outranks a condition.
+
+  WHY THE USE FACTS ARE ALL FALSE BUT COMMERCIAL. Nothing about this fixture is
+  about obligations — the dependencies never reach a corpus entry — so the use
+  facts exist only to satisfy the config's required fields. Setting them true
+  would not change the verdict, and would make the fixture look like it was
+  about something it is not.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete one `[[package]]` table
+  and its pair of records must vanish — a fixture that no longer shows the entry
+  it is named for. Add a `pyproject.toml` declaring a licence and the project's
+  own licence changes, though not these records: a manifest does not supply a
+  dependency's licence.
+
+findings:
+  - dependency: pypi:certifi@2024.2.2
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+  - dependency: pypi:requests@2.31.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: pypi:certifi@2024.2.2
+    reason: licence_unresolved
+  - id: pypi:requests@2.31.0
+    reason: licence_unresolved
+
+warnings: []
+notices: []

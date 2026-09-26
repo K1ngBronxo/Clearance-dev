@@ -1,0 +1,30 @@
+code: US
+name: United States
+notes: >
+  US law adds obligations that are independent of the software licence:
+  anti-circumvention rules, export controls and patent law all operate whether
+  or not the code is permissively licensed.
+gates:
+  - id: us.dmca-anticircumvention
+    summary: >
+      Circumventing a technical protection measure that controls access to a
+      copyrighted work is unlawful under the DMCA, independently of the licence.
+      This matters when a licence keys functionality to a paid tier.
+    severity: NOTE
+    citation:
+      url: https://www.law.cornell.edu/uscode/text/17/1201
+      section: "§1201"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: us.export-control
+    summary: >
+      Export-control rules can restrict the release of certain encryption or
+      advanced-computing software and model weights to listed parties or
+      destinations. Export status is a fact about the item, not about its
+      licence.
+    severity: NOTE
+    citation:
+      url: https://www.bis.doc.gov/index.php/regulations/export-administration-regulations-ear
+      section: "EAR"
+      retrieved_at: "2026-09-18"
+    confidence: LOW

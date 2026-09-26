@@ -1,0 +1,26 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        A Cargo project with two permissive dependencies: `log` (MIT) and `serde`
+        (Apache-2.0). Same shape as clean-go, one ecosystem over.
+
+        `serde` earns the Apache-2.0 patent-grant NOTE; `log` earns nothing. The
+        package's own licence is declared as MIT in Cargo.toml and is not a
+        dependency, so it contributes no finding - the fixture's own licence is what
+        downstream users of this project inherit, and it is not licence-checked
+        against itself.
+
+findings:
+  - dependency: cargo:serde@1.0.210
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

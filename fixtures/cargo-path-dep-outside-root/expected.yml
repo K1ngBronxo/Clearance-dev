@@ -1,0 +1,53 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A Cargo path dependency that points above the scanned root:
+  `internal-helper = { path = "../internal-helper" }`. The dependency is kept in
+  the graph, and its licence is unresolvable — because the file that would
+  resolve it is outside the root and INV-4 forbids reading it.
+
+  WHY THE DEPENDENCY IS NOT DROPPED. This is the whole point, and it is a
+  decision rather than an accident. There are two shapes of path dependency: one
+  that resolves inside the root (a workspace member, whose files the tree scan
+  already covers) and one that resolves outside it (a sibling checkout the
+  scanner must not read). At parse time they are indistinguishable — both are
+  just a path — so the scanner carries the raw path forward and resolves it
+  itself. The inside-root case is dropped, because counting it would
+  double-count the project's own licence and let the project block itself. The
+  outside-root case is KEPT, with `Resolved: false`, because dropping it would
+  be a false pass: a real dependency would vanish from the verdict and the user
+  would never learn that a dependency exists whose terms were not read.
+
+  WHY THE VERDICT IS UNDETERMINED. An unresolved licence is not "probably fine"
+  — INV-7 forbids rounding it up. The undetermined record says
+  `licence_unresolved`, and the corpus's absent-licence trap fires alongside it
+  (`dep.licence.resolved == false`), landing as a CONDITION after the confidence
+  gate because it is declared BLOCK at MEDIUM.
+
+  WHY THE ID CARRIES NO VERSION. A path dependency has no registry version, and
+  the parser deliberately invents none — `cargo:internal-helper`, not
+  `cargo:internal-helper@0.0.0`. A fabricated version in the evidence for a
+  finding is exactly the kind of confident-looking detail this product refuses
+  to print.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Point the path at a directory
+  that exists inside the root — a workspace member — and the dependency must be
+  dropped entirely: no finding, no record, SHIP. Delete the path dependency and
+  the fixture must fall to SHIP with nothing at all, which is the silent-drop
+  failure this fixture exists to prevent.
+
+findings:
+  - dependency: cargo:internal-helper
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: cargo:internal-helper
+    reason: licence_unresolved
+
+warnings: []
+notices: []

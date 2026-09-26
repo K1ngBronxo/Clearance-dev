@@ -1,0 +1,58 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: DO_NOT_SHIP
+
+why: >
+    GPL-3.0, closed-source, distributed. Five findings including a BLOCK.
+
+    # THE FULL LADDER, WHICH IS THE POINT OF THIS FIXTURE
+
+    GPL-3.0 carries four obligations and this tree trips all of them:
+
+      gpl-3.0.binary-source-offer      CONDITION  ship the source with the binary
+      gpl-3.0.convey-verbatim          CONDITION  pass on the licence unchanged
+      gpl-3.0.installation-information NOTE       anti-lockdown terms
+      gpl-3.0.patent-grant             NOTE       the patent grant
+
+    plus trap.gpl.proprietary-binary at BLOCK, which is the named failure mode: a
+    closed-source binary that cannot comply with the combined-work terms.
+
+    A fixture asserting only the BLOCK would not notice if the four obligations
+    stopped firing, and the obligations are what a user has to act on.
+
+    # COMPARE WITH gpl-internal-only, ONE DIRECTORY OVER
+
+    That fixture is this tree with `distributed: false`. Read the two together:
+    they are the pair that shows what the `distributed` boolean does and does not
+    change. The answer is recorded there, in full, including the part that is
+    wrong.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `distributed: false` and the two CONDITIONs must disappear -
+    gpl-3.0.binary-source-offer and gpl-3.0.convey-verbatim are both about
+    conveying, and nothing is conveyed.
+
+findings:
+  - dependency: npm:gpl-tool@3.0.0
+    kind: gpl-3.0.binary-source-offer
+    severity: CONDITION
+  - dependency: npm:gpl-tool@3.0.0
+    kind: gpl-3.0.convey-verbatim
+    severity: CONDITION
+  - dependency: npm:gpl-tool@3.0.0
+    kind: gpl-3.0.installation-information
+    severity: NOTE
+  - dependency: npm:gpl-tool@3.0.0
+    kind: gpl-3.0.patent-grant
+    severity: NOTE
+  - dependency: npm:gpl-tool@3.0.0
+    kind: trap.gpl.proprietary-binary
+    severity: BLOCK
+
+undetermined: []
+
+warnings: []
+
+notices: []

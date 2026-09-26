@@ -1,0 +1,39 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: DO_NOT_SHIP
+
+why: >
+    AGPL-3.0, modified by you, exposed to the network, offered as a service. Both
+    the licence's own network clause and the trap fire, and both are BLOCK.
+
+    # WHY TWO BLOCKS AND NOT ONE
+
+    agpl-3.0.network-disclosure is the corpus entry's own obligation: AGPL section
+    13 requires that a modified version offered to remote users offer them the
+    Corresponding Source. trap.agpl.modified-network-service is the named, cited
+    failure mode the corpus exists to make legible. They are different artefacts -
+    an obligation drawn from the licence text, a trap drawn from the reviewed
+    catalogue - and a fixture that asserted only one would not notice if the other
+    stopped firing.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `modified: false` and the network-disclosure BLOCK must go, leaving
+    agpl-unmodified-network: one CONDITION, still SHIP_CONDITIONAL. Set
+    `network_exposed` and `saas` to false as well and AGPL's obligations stop
+    attaching entirely, which is agpl-unmodified-internal, a plain SHIP.
+
+findings:
+  - dependency: npm:agpl-tool@3.0.0
+    kind: agpl-3.0.network-disclosure
+    severity: BLOCK
+  - dependency: npm:agpl-tool@3.0.0
+    kind: trap.agpl.modified-network-service
+    severity: BLOCK
+
+undetermined: []
+
+warnings: []
+
+notices: []

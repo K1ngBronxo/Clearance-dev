@@ -1,0 +1,68 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    The clean path: Apache-2.0 weights beside Apache-2.0 code, with nothing in
+    the tree that objects to either. This is the fixture that says the weights
+    detector is not a machine for finding problems - point it at a permitted
+    combination and it produces the ordinary permissive verdict.
+
+    # WHY IT IS CONDITIONAL RATHER THAN PLAIN SHIP
+
+    The catalogue (PLAN/04-QUALITY/02-fixture-catalogue.md section 3) lists this
+    row as SHIP - the clean path. The engine returns SHIP CONDITIONAL, and the
+    engine is right. Clean here means the LICENCE resolves with nothing
+    blocking, which it does. It does not mean the licence asks nothing of you.
+
+    Apache-2.0 asks two things of anyone who distributes it: ship the licence
+    text, and carry the NOTICE file. This project declares distributed: true.
+    Those are conditions, not failures, and the verdict name says exactly that.
+    A fixture asserting plain SHIP here would be asserting that a permissive
+    licence comes with no obligations, which is the belief this product exists
+    to correct.
+
+    # WHAT THE SEVEN FINDINGS ARE
+
+    Four belong to the weights: the two distribution conditions above, plus
+    apache-2.0.patent-grant (whose predicate is `when: true`, so it fires on any
+    resolved Apache-2.0 entry) and apache-2.0.trademark-exclusion. The fifth is
+    trap.patent.retaliation, which Apache-2.0 section 3 trips by itself.
+
+    Two belong to the code dependency, and they are deliberately the same pair a
+    pure-MIT fixture produces: mit.attribution at CONDITION and mit.no-patent-grant
+    at NOTE. Keeping a real code dependency in the tree means this fixture asserts
+    that the weights result is ADDED to the code result rather than replacing it.
+    A weights fixture with no code dependency would not notice if the scanner
+    started treating a model as the whole project.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set the licence in config.json to cc-by-nc-4.0 and this must equal the
+    weights-cc-by-nc fixture: three BLOCKs. Set `distributed` to false and the
+    two distribution conditions must vanish from both the weights and the code
+    dependency, leaving the three notes.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.patent.retaliation
+    severity: NOTE

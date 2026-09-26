@@ -1,0 +1,42 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP
+
+why: >
+  The spec's §7 row: "Platform detected, no corpus entry". The requirement is
+  explicit - "A platform with no corpus entry produces an INFO, not silence."
+
+  WHY THIS IS THE FIXTURE THAT MATTERS MOST. A scanner's credibility is built
+  on the cases where it knows it does not know. If `yt-dlp` produced nothing at
+  all, the user would read a clean report and conclude there is no upstream
+  obligation; there may well be one. The Notice is what converts "I found
+  nothing" into "I found this and have no terms for it", which is a different
+  sentence and the true one.
+
+  WHY IT IS A NOTICE AND NOT THE SPEC'S INFO FINDING. The spec asks for an INFO
+  finding; the build renders a Notice instead, and the deviation is deliberate
+  rather than convenient. INV-1 says no finding exists without a resolvable
+  citation, and the citation gate is structural - newFinding resolves a
+  citation first and returns an error if it cannot. A finding for yt-dlp would
+  therefore have to cite a clause, and the corpus has none. The only ways to
+  satisfy the letter of the spec would be to fabricate a citation or to weaken
+  INV-1, and the second is how a citation gate stops being a gate.
+
+  WHAT IS LOST. A finding appears in the machine-readable output and in SARIF;
+  a Notice appears in the human output. A CI system parsing JSON will not see
+  this one. That is a real gap and it is recorded as such rather than papered
+  over - the honest fix is an `info` severity in the verdict schema, which is a
+  schema change and not a corpus edit.
+
+  WHAT IS NOT LOST. The verdict. SHIP here means "no known obligation
+  contradicts the declared intent", which is exactly right: nothing is known
+  about yt-dlp. The Notice is what keeps that from reading as "all clear".
+
+findings: []
+
+undetermined: []
+warnings: []
+notices:
+  - E-CORPUS-004

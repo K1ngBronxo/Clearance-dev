@@ -1,0 +1,59 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    The last resort that still works: a licence named in prose, in a markdown
+    file that is neither README.md nor MODEL_CARD.md. The scanner reads it at LOW
+    confidence - the lowest band in the product - and resolves Apache-2.0.
+
+    # WHY THE FILE IS NOT CALLED README.md
+
+    It cannot be. A licence named in the BODY of README.md is never read by this
+    scanner, and weights-prose-only is the fixture that pins that. The prose
+    reader runs last and deliberately excludes README.md and MODEL_CARD.md on the
+    grounds that they were already consulted at a higher confidence - which is
+    true of their frontmatter and false of their body.
+
+    So this fixture answers a narrower question than it first appears to: not
+    "does prose work?" but "does prose work when the file is one the higher
+    confidence readers do not claim?". It does. That is what separates a
+    mis-scoped exclusion from a missing reader, and it is why both fixtures
+    exist.
+
+    # THE CONFIDENCE IS THE POINT
+
+    LOW is not a defect here, it is the honest band for inferring a licence from
+    a sentence. The finding set carries no marker of which source answered, so
+    the fixture asserts the resolved licence through its obligations: the
+    apache-2.0.* set, identical to the frontmatter fixture.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Reword the sentence so no pattern in proseLicencePatterns matches - say
+    "released under a permissive licence" - and this must become UNDETERMINED.
+    Delete MODEL_NOTES.md entirely and it must equal weights-no-licence.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.patent.retaliation
+    severity: NOTE

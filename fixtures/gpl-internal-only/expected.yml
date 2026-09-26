@@ -1,0 +1,72 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: DO_NOT_SHIP
+
+why: >
+    GPL-3.0 in a closed-source project that is NOT distributed and NOT exposed to
+    a network. The verdict is DO_NOT_SHIP. **This fixture pins a defect**, and the
+    defect is worth reading before anyone "fixes" this file.
+
+    # THE OBSERVATION
+
+    The only difference between this tree and gpl-distributed is
+    `distributed: false`. The two CONDITIONs go away, correctly: they are about
+    conveying, and nothing is conveyed. What does not go away is the BLOCK.
+    `trap.gpl.proprietary-binary` fires identically in both trees.
+
+    # THE MECHANISM, FROM THE CORPUS
+
+    `corpus/traps/gpl-in-proprietary-binary.yaml`:
+
+      when:
+        op: and
+        l: {op: "==", field: dep.licence.family, value: strong-copyleft}
+        r: {op: "==", field: use.licence_model, value: closed-source}
+
+    **There is no term for `use.distributed` anywhere in that predicate.** The
+    trap's own summary, however, reads: "Linking a GPL-3.0 library into a
+    closed-source program AND DISTRIBUTING the result places the whole combined
+    work under the GPL." The prose claims a distribution gate; the predicate does
+    not implement one.
+
+    # WHY THAT IS THE WRONG ANSWER, FROM THIS REPOSITORY'S OWN SPEC
+
+    `PLAN/02-SPECIFICATIONS/01-config-spec.md:72` documents the field as:
+
+      | `distributed` | bool | yes | Whether binaries/source leave your
+      control. Triggers GPL distribution duties. |
+
+    So the spec says `distributed` is precisely the switch for GPL distribution
+    duties, and the trap that is supposed to implement a GPL distribution duty
+    ignores it. GPL section 5's obligations attach on conveying; internal use
+    inside one organisation is not conveying. The result is DO_NOT_SHIP for a
+    build that has done nothing wrong - a false block, which is the failure mode
+    the detection specs name as the one that destroys a scanner's credibility.
+
+    # WHY THIS IS PINNED AND NOT FIXED
+
+    The repair is one clause in a corpus predicate plus a re-sign of the bundle,
+    and corpus YAML is a batched, announced edit under TEAM.md section 4. It is
+    reported in COORDINATION/TEAM.md as F10 rather than applied unilaterally.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    When the trap gains a `use.distributed` term, this fixture must become SHIP
+    with only `gpl-3.0.patent-grant` left - the NOTE has no distribution gate,
+    which is correct, since the patent grant travels with the code either way.
+    That single flip is the whole test.
+
+findings:
+  - dependency: npm:gpl-tool@3.0.0
+    kind: gpl-3.0.patent-grant
+    severity: NOTE
+  - dependency: npm:gpl-tool@3.0.0
+    kind: trap.gpl.proprietary-binary
+    severity: BLOCK
+
+undetermined: []
+
+warnings: []
+
+notices: []

@@ -1,0 +1,24 @@
+Clearance
+Copyright 2026 K1NGBRONXO
+
+this project is by K1NGBRONXO
+
+This product includes software developed by K1NGBRONXO.
+
+-------------------------------------------------------------------------------
+About this file
+-------------------------------------------------------------------------------
+
+Apache-2.0 section 4(d) requires that a redistributor of this work keep a
+readable copy of this file's attribution notices. It is deliberately short: the
+project carries no third-party dependencies at runtime (see ADR-001), so there
+are no bundled components to attribute here.
+
+Clearance must be exemplary about licence compliance, because it is a licence
+tool. `make dogfood` runs `clearance check .` against this repository, and it
+must pass honestly.
+
+The compiled corpus is distributed separately from the binary and is licensed
+CC-BY-4.0, as stated in PLAN/08-BUSINESS/03-legal-posture.md section 6. It is a
+data artefact, not a code dependency, and it is not covered by the Apache-2.0
+grant above.

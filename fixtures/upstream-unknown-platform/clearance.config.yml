@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: upstream-unknown-platform
+  description: A pipeline that shells out to a tool the corpus has never heard of.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

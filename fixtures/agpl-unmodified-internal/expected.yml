@@ -1,0 +1,34 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+    AGPL-3.0, unmodified, never distributed, never exposed to a network. Zero
+    findings.
+
+    # WHY THE STRONGEST COPYLEFT LICENCE PRODUCES A CLEAN SHIP
+
+    AGPL's obligations attach on conveying the work, or on offering a MODIFIED
+    version to remote users. Neither happens here. Running a program inside your
+    own organisation is not distribution, and a scanner that flagged it would be
+    inventing a duty the licence does not impose.
+
+    The pairs matter more than the single case. agpl-modified-network is this same
+    dependency at the other end of both axes, and the two fixtures differ only in
+    three config booleans. If the AGPL entry's predicates stopped reading the
+    intent, these two would collapse to the same verdict and every other test in
+    the repository would stay green.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `network_exposed: true` and this must become SHIP_CONDITIONAL, not
+    DO_NOT_SHIP: unmodified network use is not the modified case.
+
+findings: []
+
+undetermined: []
+
+warnings: []
+
+notices: []

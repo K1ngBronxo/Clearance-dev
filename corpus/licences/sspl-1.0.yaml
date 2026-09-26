@@ -1,0 +1,74 @@
+id: licence.sspl-1.0
+spdx_id: SSPL-1.0
+name: Server Side Public License v1
+family: source-available
+osi_approved: false
+fsf_libre: false
+permissiveness: 1
+
+obligations:
+  - id: sspl-1.0.service-source
+    kind: NETWORK_DISCLOSURE
+    severity: BLOCK
+    when:
+      op: "=="
+      field: use.saas
+      value: true
+    message: >
+      SSPL-1.0 §13 requires that if you offer the program's functionality as a
+      service, you release the Service Source Code for the whole service stack,
+      including management and orchestration layers. This reaches far beyond the
+      program itself.
+    citation:
+      url: https://www.mongodb.com/legal/licensing/server-side-public-license
+      section: "§13 Offering the Program as a Service"
+      # REWRITTEN. The previous excerpt stitched two fragments with "...", which
+      # is a different thing from a quotation: an ellipsis joins text that is
+      # not adjacent, so a reader cannot check it in one place. The excerpt is
+      # now one contiguous span, quoted whole.
+      #
+      # It is the first sentence of §13 only. §13's second paragraph defines
+      # "Service Source Code" and is the clause that makes this obligation
+      # reach the whole service stack (management software, user interfaces,
+      # APIs, automation, monitoring, backup, storage, hosting). That paragraph
+      # is 535 characters, so quoting both would exceed the 400-character
+      # limit. The scope it describes is stated in the message above, and the
+      # clause itself is one paragraph below the quoted one at the cited URL.
+      excerpt: "If you make the functionality of the Program or a modified version available to third parties as a service, you must make the Service Source Code available via network download to everyone at no charge, under the terms of this License."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+    fix:
+      action: replace
+      suggestion: "Replace the SSPL dependency with a permissively licensed datastore, or do not offer it as a service."
+      confidence: MEDIUM
+
+  - id: sspl-1.0.not-open-source
+    kind: PLATFORM_TOS
+    severity: NOTE
+    when: true
+    message: >
+      SSPL-1.0 is source-available, not open source. It is not approved by the
+      Open Source Initiative, and its §13 service condition makes it
+      incompatible with most open-source distribution policies.
+    citation:
+      # SOURCE REPLACED. An earlier draft cited spdx.org/licenses/SSPL-1.0.html
+      # with the excerpt "This license is not approved by the Open Source
+      # Initiative." That sentence is not on the SPDX page. It IS on MongoDB's
+      # own FAQ, which is the better source anyway: the party who wrote the
+      # licence is the party whose statement about its OSI status matters.
+      url: https://www.mongodb.com/licensing/server-side-public-license/faq
+      section: "Are you basing the SSPL on an OSI-recognized open source license?"
+      excerpt: "The SSPL has not been approved by the OSI."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://www.mongodb.com/legal/licensing/server-side-public-license
+  section: "Server Side Public License"
+  retrieved_at: "2026-09-23"
+confidence: MEDIUM
+last_verified: "2026-09-23"

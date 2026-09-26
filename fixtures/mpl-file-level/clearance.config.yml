@@ -1,0 +1,12 @@
+schema_version: 1
+
+project:
+  name: mpl-file-level
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: true
+  network_exposed: false
+  distributed: true
+  saas: false

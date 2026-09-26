@@ -1,0 +1,46 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    `package.json` is not JSON. `package-lock.json` is valid and resolves lodash to
+    an exact version. The verdict is the ordinary MIT-pair verdict, and the only
+    trace of the malformed file is one E-PARSE-002 warning.
+
+    # WHY THE VERDICT IS UNAFFECTED
+
+    A lockfile resolves and a manifest only declares, so the lockfile is the
+    source of the dependency graph and the manifest is the fallback. Here the
+    fallback was never needed: the lockfile parsed, it carried the same
+    dependency, and the two agree. The malformed manifest therefore costs the run
+    nothing except the project's own declared licence, which is read from the
+    manifest's `license` key and is therefore absent - and which is not reported
+    as a finding, because a project's own licence is not a dependency's problem.
+
+    # WHY THE WARNING IS A DEGRADE AND NOT A FAILURE
+
+    E-PARSE-002 is ClassDegrade, ExitOK: a file that cannot be parsed is a weaker
+    graph that says so, not a reason to abandon a scan that may have twenty other
+    ecosystems to read. The scanner's scanProject comment says the same thing, and
+    the alternative - treating one bad file as a fatal error - would make the tool
+    useless on a real tree, where one generated file is routinely unparseable.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Corrupt the lockfile as well and this must become UNDETERMINED with a second
+    warning: no resolution, so the graph falls back to a range, and a range cannot
+    be looked up in the corpus. That is malformed-lockfile, one directory over.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+warnings:
+  - E-PARSE-002
+
+notices: []

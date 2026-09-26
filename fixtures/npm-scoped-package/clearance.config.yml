@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: npm-scoped-package
+  description: A dependency whose npm name carries a scope.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: true
+  saas: false

@@ -1,0 +1,67 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A manifest declaring `lodash: ^1.2.0` and NO lockfile at all. The verdict is
+    UNDETERMINED with `licence_unresolved`.
+
+    # THE CATALOGUE EXPECTS "MEDIUM confidence, a note about the range"
+
+    The verdict is UNDETERMINED instead, and the reason is the honest one: a range
+    is not a version, the corpus has no entry for `lodash@^1.2.0`, and no entry
+    could be correct for it. The same reasoning is written into the header comment
+    of `internal/parsers/npm.go`.
+
+    # WHAT THE TOOL DOES WITH THE RANGE, VERIFIED RATHER THAN ASSUMED
+
+    Two facts, and they point in opposite directions, so both are recorded:
+
+      - The dependency is displayed as `npm:lodash@1.2.0`, with the caret
+        stripped. `internal/parsers/parser.go:144` says this is deliberate: the
+        version is cleaned "only for display; IsRange records the truth".
+      - `IsRange` IS read: `internal/scanner/scanner.go:294` records it as
+        dependency metadata `version_is_requirement`.
+
+    So the range is not lost, and it is also not visible. `version_is_requirement`
+    is written onto the dependency's metadata and no report renders it -
+    `internal/report/{human,json,markdown}.go` read only the *verdict's* Meta (tool
+    version, corpus version, duration), never a dependency's. A user of this build
+    therefore sees `lodash@1.2.0`, a version this project did not ask for and may
+    never have installed.
+
+    **Note what this fixture does NOT claim.** It does not claim the caret-
+    stripping is a bug: stripping is documented and deliberate, and the truth is
+    preserved in `IsRange`. What it pins is the second half - that the preserved
+    truth reaches no reader. That is the same shape as the rest of this
+    repository's defect history: a field set by five parsers and rendered by none.
+
+    # WHY THERE IS NO WARNING HERE, UNLIKE malformed-lockfile
+
+    `internal/scanner/scanner.go:206` emits the "versions are requirements, not
+    resolutions" warning only when a lockfile EXISTS and failed to parse. With no
+    lockfile there is no such branch and no warning is emitted, so this case - the
+    more common one for a freshly written manifest - is the quieter of the two.
+    That is a gap in the warning logic rather than a defect in the verdict, and it
+    is the reason the catalogue's "a note about the range" is unmet even in the
+    warning channel.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Add a lockfile resolving `lodash` to an exact version and this must become
+    SHIP_CONDITIONAL with the MIT pair. If it does not, the manifest is still
+    being preferred over a lockfile that exists.
+
+findings:
+  - dependency: npm:lodash@1.2.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:lodash@1.2.0
+    reason: licence_unresolved
+
+warnings: []
+
+notices: []

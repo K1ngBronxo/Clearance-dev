@@ -1,0 +1,40 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP
+
+why: >
+        The manifest asks for `lodash: ^4.17.0`. The lockfile resolves `lodash` to
+        **5.0.0**, which is outside that range, and records its licence as
+        Apache-2.0. Two disagreements in one tree, deliberately: a version and a
+        licence.
+
+        Observed: the lockfile wins on both. The dependency is reported as
+        `npm:lodash@5.0.0`, and the licence used is the lockfile's - the single
+        finding is the Apache-2.0 patent-grant NOTE, which the manifest does not
+        contain and could not have supplied. The catalogue's expectation ("the
+        lockfile wins") is confirmed.
+
+        # WHAT IS NOT HERE, WHICH IS THE POINT OF THE ROW
+
+        `0 warning(s), 0 notice(s)`. Nothing in the run observes that the lockfile
+        disagrees with the manifest, and the version reported is one the manifest
+        forbids. Reporting the lockfile's resolution is the right call - it is what
+        the build actually installs - but resolving a version the manifest excludes
+        without a word is a silent divergence: the user's declared intent and the
+        tree that ships are different, and the report does not distinguish them.
+
+        Recorded as an observation, not asserted as correct. If a divergence notice
+        is added, this fixture goes red and that is the intended prompt.
+
+findings:
+  - dependency: npm:lodash@5.0.0
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+
+undetermined: []
+
+warnings: []
+
+notices: []

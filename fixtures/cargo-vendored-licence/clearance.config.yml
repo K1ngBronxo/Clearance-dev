@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: cargo-vendored-licence
+  description: A Cargo crate whose licence is resolved from its vendored copy.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: true
+  saas: false

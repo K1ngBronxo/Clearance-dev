@@ -1,0 +1,54 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    BUSL-1.1 in the dependency, and the corpus carries no entry for it. The
+    dependency cannot be evaluated, so the verdict is UNDETERMINED with
+    `no_corpus_entry` and an E-POLICY-001 notice.
+
+    # THIS FIXTURE PINS A CORPUS GAP, NOT A CODE DEFECT
+
+    `corpus/licences/` holds twelve identifiers (agpl-3.0-only, apache-2.0,
+    bsd-3-clause, cc-by-nc-4.0, elastic-2.0, gpl-3.0-only, isc, lgpl-3.0-only,
+    llama-3.1-community, mit, mpl-2.0, sspl-1.0). BUSL-1.1 is not one of them,
+    even though `corpus/traps/busl-conversion.yaml` exists and is written for
+    exactly this licence. So the trap keyed on the identifier alone still fires -
+    `trap.busl.conversion`, CONDITION - and no obligation can be computed from the
+    licence text, because there is none to compute from.
+
+    The catalogue calls for two rows, `busl-active-grant` and `busl-expired-grant`,
+    whose difference is the grant window. **That difference is not observable by
+    this tool**: the window lives in the licence text, and a corpus entry would
+    have to encode it. Both rows are therefore built, and both produce the same
+    output, which is the honest record of the gap rather than a pretence of
+    coverage.
+
+    # WHY UNDETERMINED IS THE RIGHT ANSWER GIVEN THE GAP
+
+    BUSL grants real rights - commercial use below a revenue threshold, and after
+    the change date the licence converts to Apache-2.0. A tool with no entry for
+    it could guess permissive (wrong for a large company, right later) or guess
+    restrictive (wrong later, right now). Inventing either would be a fabricated
+    resolution, which is what INV-7 forbids. `no_corpus_entry` is the answer that
+    tells the truth about the tool's knowledge.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Add a `busl-1.1` entry to `corpus/licences/` and both fixtures must move off
+    `no_corpus_entry`. If they do not, the corpus index is not being consulted.
+
+findings:
+  - dependency: npm:busl-tool@1.1.0
+    kind: trap.busl.conversion
+    severity: CONDITION
+
+undetermined:
+  - id: npm:busl-tool@1.1.0
+    reason: no_corpus_entry
+
+warnings: []
+
+notices:
+  - E-POLICY-001

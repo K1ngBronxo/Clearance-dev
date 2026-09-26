@@ -1,0 +1,131 @@
+id: licence.apache-2.0
+spdx_id: Apache-2.0
+name: Apache License 2.0
+family: permissive
+osi_approved: true
+fsf_libre: true
+permissiveness: 5
+
+obligations:
+  - id: apache-2.0.licence-inclusion
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      Apache-2.0 §4(a) requires that you give every recipient of the work or a
+      derivative work a copy of the licence. Ship the LICENSE text alongside
+      anything you distribute.
+    citation:
+      url: https://www.apache.org/licenses/LICENSE-2.0
+      section: "§4(a)"
+      excerpt: "You must give any other recipients of the Work or Derivative Works a copy of this License."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Include the dependency's LICENSE file in your distribution."
+      confidence: HIGH
+
+  - id: apache-2.0.notice-retention
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      Apache-2.0 §4(d) requires you to retain the contents of any NOTICE file
+      that the dependency ships, and to reproduce it in your distribution. A
+      NOTICE file is separate from the licence text and is easy to drop.
+    citation:
+      url: https://www.apache.org/licenses/LICENSE-2.0
+      section: "§4(d)"
+      excerpt: "If the Work includes a NOTICE text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Copy the dependency's NOTICE file contents into your own NOTICE or credits file."
+      confidence: HIGH
+
+  - id: apache-2.0.state-changes
+    kind: STATE_CHANGES
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      Apache-2.0 §4(b) requires any modified file to carry prominent notices
+      stating that you changed it. This applies only when you both modify and
+      distribute; it does not apply to unmodified redistribution.
+    citation:
+      url: https://www.apache.org/licenses/LICENSE-2.0
+      section: "§4(b)"
+      excerpt: "You must cause any modified files to carry prominent notices stating that You changed the files."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Add a short change notice to the header of every file you modified."
+      confidence: HIGH
+
+  - id: apache-2.0.patent-grant
+    kind: PATENT_GRANT
+    severity: NOTE
+    when: true
+    message: >
+      Apache-2.0 §3 grants a patent licence from contributors, but it terminates
+      if you initiate patent litigation alleging that the work infringes. The
+      grant is real, and it is conditional on you not suing over the work.
+    citation:
+      url: https://www.apache.org/licenses/LICENSE-2.0
+      section: "§3"
+      excerpt: "If You institute patent litigation against any entity ... alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+
+  - id: apache-2.0.trademark-exclusion
+    kind: BRAND_EXCLUSION
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      Apache-2.0 §6 grants no right to use the licensor's trade names,
+      trademarks, service marks or product names. A fork that ships under the
+      upstream name has a trademark problem, not a copyright one.
+    citation:
+      url: https://www.apache.org/licenses/LICENSE-2.0
+      section: "§6"
+      excerpt: "This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: rebrand
+      suggestion: "If you fork and ship, rename the product and replace its logo and icon."
+      confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  section: "Apache License 2.0"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

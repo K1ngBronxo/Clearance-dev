@@ -1,0 +1,1 @@
+{"name":"env-in-vendored-dep","version":"1.0.0","license":"MIT","dependencies":{"bar":"^1.0.0"}}

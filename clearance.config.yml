@@ -1,0 +1,62 @@
+# Clearance's own declared intent.
+#
+# `make dogfood` runs `clearance check .` against this repository, and
+# PLAN/08-BUSINESS/03-legal-posture.md §5 says it "must pass, and it must pass
+# honestly". This file is what makes that possible: without it the scan stops at
+# E-CFG-001, because a tool whose whole thesis is that a verdict requires a
+# declared intent cannot verdict on itself without one.
+#
+# The values below are claims about the product, not about the corpus, and each
+# one is the answer to a question the engine actually asks.
+schema_version: 1
+
+project:
+  name: clearance
+  description: >
+    A licence, model-weights and platform-terms scanner that returns a verdict.
+    Apache-2.0 (see LICENSE), with a CC-BY-4.0 corpus (see corpus/SCHEMA.md).
+
+use:
+  # Clearance has a hosted tier in the plan, so the project is commercial. This
+  # is the honest answer even though the CLI itself is free: the question the
+  # engine asks is "does this earn revenue", not "is this particular artefact
+  # sold".
+  commercial: true
+
+  # Apache-2.0. Stated rather than inferred, because the engine never reads the
+  # project's own licence file to answer it — that would be the scanner deciding
+  # a fact the user is supposed to declare.
+  licence_model: open-source
+
+  # The corpus is edited, but no vendored third-party code is. `modified` is
+  # about the dependencies, and declaring it true would make AGPL's §13
+  # obligation fire on any network-exposed AGPL dependency for a reason that does
+  # not apply.
+  modified: false
+
+  # The CLI opens no socket during a scan and the plan's hosted tier is not
+  # built. When it is, this becomes true and the AGPL/SSPL network clauses start
+  # applying to the service — which is exactly the change the field exists to
+  # make visible.
+  network_exposed: false
+
+  # Release binaries and source are published, so this is true. It is the flag
+  # that turns Apache-2.0's licence-inclusion and notice-retention obligations
+  # on, which is why the repository carries a LICENSE and a NOTICE rather than
+  # merely claiming Apache-2.0 in prose.
+  distributed: true
+
+  saas: false
+
+policy:
+  ignore:
+    - path: fixtures/**
+      reason: >
+        The fixtures are test data, not dependencies of this product. Every one
+        of them is a deliberately non-compliant project — that is what makes it
+        a fixture — so scanning them as Clearance's own dependencies would
+        report a GPL blocker against the repository whose job is to detect GPL
+        blockers. The ignore is scoped to the directory and the reason is
+        recorded here rather than left to a comment, because E-SCAN-020 refuses
+        an unexplained ignore: a blocker hidden without a stated reason is
+        indistinguishable from a blocker hidden.

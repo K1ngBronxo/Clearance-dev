@@ -1,0 +1,8 @@
+{
+  "name": "no-licence-at-all",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "mystery-package": "^0.1.0"
+  }
+}

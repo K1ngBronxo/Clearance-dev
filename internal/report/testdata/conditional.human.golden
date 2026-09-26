@@ -1,0 +1,55 @@
+CLEARANCE VERDICT — acme-web
+========================================
+SHIP:        SHIP CONDITIONAL
+BLOCKERS:    0
+CONDITIONS:  2
+SCANNED:     5 dependencies · 1 upstream CLI
+CORPUS:      2026.09.24 · signed ✓
+
+CONDITIONS
+
+[BLOCK]         torch                           BSD-3-Clause
+                clause:     AGPL-3.0 §13 — Remote Network Interaction
+                source:     https://www.gnu.org/licenses/agpl-3.0.html
+                finding:    Network disclosure clause may apply
+                reason:     A network-interaction clause appears to apply, but the clause text is
+                            ambiguous about whether an internal-only deployment counts as
+                            interaction.
+                evidence:   requirements.txt:4
+                gate:       severity BLOCK → CONDITION because confidence is MEDIUM
+                confidence: MEDIUM — clause text is ambiguous
+                    “if you modify the Program, your modified version must prominently offer all
+                    users interacting with it remotely through a computer network an opportunity
+                    to receive the Corresponding Source”
+
+[COND]          @mendable/firecrawl-js          MIT
+                clause:     MIT License — the copyright notice and this permission notice shall be included
+                source:     https://opensource.org/license/mit
+                finding:    Attribution notice must be preserved
+                reason:     The dependency is distributed under a licence whose attribution clause
+                            requires the notice to travel with every redistribution of the software,
+                            including a bundled web build.
+                evidence:   package.json:12
+                confidence: HIGH
+                fix:        Include the dependency's NOTICE file in the distributed bundle.
+
+NOTES
+
+[BLOCK]         leftpad
+                clause:     LICENSE — custom notice
+                source:     https://example.invalid/leftpad/LICENSE
+                finding:    Licence text could not be classified
+                reason:     The licence file is a short custom notice that names no SPDX identifier
+                            and the tool could not map it to a known licence.
+                evidence:   Cargo.lock:88-90 — name = "leftpad"
+                gate:       severity BLOCK → NOTE because confidence is LOW
+                confidence: LOW — the tool could not classify this confidently
+                    Clearance's reading (not yet checked against the source):
+                    This software may be used, but the authors accept no liability and reserve all
+                    other rights.
+                needs:      declare use.licence_model in the config to resolve this
+
+----------------------------------------
+This is an informational finding based on the licence text as published on the
+date recorded. It is not legal advice. Ambiguous clauses are flagged as such.
+Important decisions should be reviewed by a qualified professional.

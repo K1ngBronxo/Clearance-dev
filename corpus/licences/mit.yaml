@@ -1,0 +1,64 @@
+id: licence.mit
+spdx_id: MIT
+name: MIT License
+family: permissive
+osi_approved: true
+fsf_libre: true
+permissiveness: 5
+
+obligations:
+  - id: mit.attribution
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      MIT requires the copyright notice and the permission notice to travel with
+      every copy or substantial portion you distribute. It does not require you
+      to publish your own source.
+    citation:
+      url: https://opensource.org/license/mit
+      section: "Permission notice"
+      excerpt: "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Keep the dependency's LICENSE text and copyright line in your distribution."
+      confidence: HIGH
+
+  - id: mit.no-patent-grant
+    kind: PATENT_GRANT
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      MIT grants copyright permissions only and contains no express patent
+      licence, so a distributor relying on it receives no patent grant from the
+      authors. Where a patent grant matters, Apache-2.0 §3 supplies one.
+    citation:
+      url: https://opensource.org/license/mit
+      section: "Scope of grant"
+      excerpt: "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: MEDIUM
+    fix:
+      action: replace
+      suggestion: "Prefer an Apache-2.0 dependency when you need an express patent grant."
+      alternative: Apache-2.0
+      confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://opensource.org/license/mit
+  section: "MIT License"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

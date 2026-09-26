@@ -1,0 +1,46 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity - the band the finding landed in
+# after the confidence gate - not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  One BSD-3-Clause dependency, distributed. BSD-3 is the permissive licence with
+  the clause MIT does not have: the no-endorsement clause, which is a
+  brand-exclusion note rather than a copyright duty.
+
+  # THE THREE FINDINGS
+
+  bsd-3-clause.source-retention (ATTRIBUTION, CONDITION) and
+  bsd-3-clause.binary-reproduction (LICENCE_INCLUSION, CONDITION) are the two
+  distribution duties. bsd-3-clause.no-endorsement (BRAND_EXCLUSION, NOTE) is
+  the third clause - you may not use the authors' names to promote your fork -
+  and it is a NOTE because it constrains promotion, not distribution.
+
+  # WHY THE FOURTH PERMISSIVE LICENCE IS WORTH A FIXTURE
+
+  The suite already pins MIT, ISC and Apache-2.0. BSD-3 is the one whose
+  obligations do NOT reduce to "keep the notice": the no-endorsement clause is a
+  different KIND (BRAND_EXCLUSION) on the same entry. A resolver that flattened
+  every permissive entry to ATTRIBUTION would keep MIT, ISC and Apache green
+  while losing this, and nothing else in the suite would notice.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Set `use.distributed: false` and all three must disappear, because every BSD-3
+  obligation is gated on distribution.
+
+findings:
+  - dependency: npm:bsd-tool@1.0.0
+    kind: bsd-3-clause.binary-reproduction
+    severity: CONDITION
+  - dependency: npm:bsd-tool@1.0.0
+    kind: bsd-3-clause.source-retention
+    severity: CONDITION
+  - dependency: npm:bsd-tool@1.0.0
+    kind: bsd-3-clause.no-endorsement
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

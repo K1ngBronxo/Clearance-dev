@@ -1,0 +1,36 @@
+## Clearance Verdict — `SHIP_CONDITIONAL`
+
+**0 blockers · 2 conditions** · 5 dependencies scanned · corpus v2026.09.24
+
+<sub>Also scanned: 1 upstream tool</sub>
+
+---
+
+### ⚠️ Conditions
+
+- [ ] **`torch`** — BSD-3-Clause. Network disclosure clause may apply.
+  - Clause: [AGPL-3.0 §13 — Remote Network Interaction](https://www.gnu.org/licenses/agpl-3.0.html)
+  - Evidence: `requirements.txt:4`
+  - Confidence: MEDIUM — clause text is ambiguous
+  - Gate: severity BLOCK → CONDITION because confidence is MEDIUM
+- [ ] **`@mendable/firecrawl-js`** — MIT. Attribution notice must be preserved.
+  - Clause: [MIT License — the copyright notice and this permission notice shall be included](https://opensource.org/license/mit)
+  - Evidence: `package.json:12`
+  - Confidence: HIGH
+  - Fix: Include the dependency's NOTICE file in the distributed bundle.
+
+---
+
+### ℹ️ Notes
+
+- **`leftpad`**. Licence text could not be classified.
+  - Clause: [LICENSE — custom notice](https://example.invalid/leftpad/LICENSE)
+  - Evidence: `Cargo.lock:88-90 — name = "leftpad"`
+  - Confidence: LOW — the tool could not classify this confidently
+  - Gate: severity BLOCK → NOTE because confidence is LOW
+
+---
+
+<sub>This is an informational finding based on the licence text as published on the date recorded. It is not legal advice. Ambiguous clauses are flagged as such. Important decisions should be reviewed by a qualified professional.</sub>
+
+<sub>Clearance v0.9.1 · corpus v2026.09.24 (signed) · intent `9f2c1b7a4e8d`</sub>

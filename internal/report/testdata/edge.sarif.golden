@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clearance",
+          "version": "0.9.1",
+          "informationUri": "https://clearance.dev",
+          "rules": [
+            {
+              "id": "citation.absent",
+              "name": "Finding with no citation",
+              "shortDescription": {
+                "text": "Finding with no citation"
+              },
+              "helpUri": "https://clearance.dev/docs/rules/citation.absent",
+              "properties": {
+                "clearance.confidence": "HIGH",
+                "clearance.licence": "MIT",
+                "clearance.severity": "CONDITION"
+              }
+            },
+            {
+              "id": "clearance.undetermined.unknown_error_code",
+              "name": "Unclassified dependency",
+              "shortDescription": {
+                "text": "Clearance could not classify this dependency"
+              },
+              "helpUri": "https://clearance.dev/docs/undetermined",
+              "properties": {
+                "clearance.reason": "unknown_error_code"
+              }
+            },
+            {
+              "id": "confidence.absent",
+              "name": "Finding with no confidence",
+              "shortDescription": {
+                "text": "Finding with no confidence"
+              },
+              "helpUri": "https://opensource.org/license/mit",
+              "properties": {
+                "clearance.licence": "MIT",
+                "clearance.severity": "NOTE"
+              }
+            },
+            {
+              "id": "evidence.absent",
+              "name": "Finding with no evidence",
+              "shortDescription": {
+                "text": "Finding with no evidence"
+              },
+              "helpUri": "https://opensource.org/license/mit",
+              "properties": {
+                "clearance.confidence": "HIGH",
+                "clearance.licence": "MIT",
+                "clearance.severity": "CONDITION"
+              }
+            },
+            {
+              "id": "severity.unknown",
+              "name": "Finding with an unknown severity",
+              "shortDescription": {
+                "text": "Finding with an unknown severity"
+              },
+              "helpUri": "https://opensource.org/license/mit",
+              "properties": {
+                "clearance.confidence": "HIGH",
+                "clearance.licence": "MIT",
+                "clearance.severity": "NOTE"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "citation.absent",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "no-cite (MIT): This finding exists to pin the MISSING CITATION placeholder. (confidence: HIGH)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "evidence.absent",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "no-evidence (MIT): This finding exists to pin the NONE RECORDED placeholder. (confidence: HIGH)"
+          }
+        },
+        {
+          "ruleId": "confidence.absent",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "no-confidence (MIT): This finding exists to pin the E-POLICY-007 placeholder."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "severity.unknown",
+          "ruleIndex": 4,
+          "level": "note",
+          "message": {
+            "text": "unknown-severity (MIT): This finding exists to pin the [?] tag. (confidence: HIGH)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "clearance.undetermined.unknown_error_code",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Unclassified: unknown error code. This entry carries an error code the taxonomy does not know.. Clearance does not know whether this is safe, and does not round an unknown to a pass."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "unlicensed-package",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "unlicensed-tool": "^1.0.0"
+  }
+}

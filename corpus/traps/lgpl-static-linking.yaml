@@ -1,0 +1,35 @@
+id: trap.lgpl.static-linking
+title: "Static linking against an LGPL library"
+summary: >
+  LGPL-3.0 permits proprietary applications to link the library, but only while
+  the user can replace it with a modified version. Static linking removes that
+  replaceability, so the application must ship the object files and build
+  scripts needed to relink, or the LGPL is breached.
+when:
+  op: and
+  l:
+    op: "=="
+    # NARROWED FROM family == weak-copyleft. That family is LGPL-3.0-only *and*
+    # MPL-2.0, and MPL-2.0 has no relinking requirement: it is file-level
+    # copyleft, satisfied by publishing the modified files. Keyed on the family,
+    # this trap fired on MPL-2.0 dependencies and told their users to ship
+    # relinkable object files, which is advice for a licence they do not have.
+    field: dep.licence.spdx
+    value: LGPL-3.0-only
+  r:
+    op: "=="
+    field: use.distributed
+    value: true
+scope: dependency
+severity: CONDITION
+citation:
+  url: https://www.gnu.org/licenses/lgpl-3.0.html
+  section: "§4 (static linking)"
+  excerpt: "Convey the Minimal Corresponding Source ... and the Corresponding Application Code in a form suitable for, and under terms that permit, the user to recombine or relink the Application with a modified version of the Linked Version."
+  excerpt_kind: unverified
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+fix:
+  action: configure
+  suggestion: "Link the LGPL library dynamically, or ship the relinkable object files and build scripts."
+  confidence: HIGH

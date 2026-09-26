@@ -1,0 +1,8 @@
+{
+  "name": "sspl-not-open-source",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "mongo-thing": "^1.0.0"
+  }
+}

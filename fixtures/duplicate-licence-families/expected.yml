@@ -1,0 +1,66 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: DO_NOT_SHIP
+
+why: >
+        Two strong-copyleft dependencies in one tree, from different families with
+        different obligations: `gplpkg` under GPL-3.0 and `agplpkg` under AGPL-3.0.
+        Both licences are recognised from vendored licence text, both versions pinned
+        by the lockfile, and the declared intent is `licence_model: closed-source`
+        with `distributed: true`.
+
+        Observed: DO_NOT_SHIP, 6 findings, of which one is a BLOCK:
+
+          gplpkg  trap.gpl.proprietary-binary        BLOCK
+          gplpkg  gpl-3.0.binary-source-offer        CONDITION
+          gplpkg  gpl-3.0.convey-verbatim            CONDITION
+          gplpkg  gpl-3.0.installation-information   NOTE
+          gplpkg  gpl-3.0.patent-grant               NOTE
+          agplpkg agpl-3.0.licence-inclusion         CONDITION
+
+        # THE ONE FINDING THAT IS NOT HERE, AND WHY IT IS CORRECT
+
+        AGPL-3.0's defining obligation is the network clause, and `agplpkg` earns
+        exactly one finding - licence inclusion - because the config declares
+        `network_exposed: false` and `saas: false`. The AGPL network hook is
+        therefore not triggered, and that is the right answer rather than a gap: an
+        AGPL dependency in a tree that is neither exposed nor offered as a service
+        creates no source-disclosure duty to network users.
+
+        An earlier draft of this fixture declared all four intent flags false and the
+        row produced a single finding on `gplpkg` and **nothing at all** for
+        `agplpkg` - the AGPL dependency was invisible. That is worth recording,
+        because "no finding" and "no obligation" look identical in a report and were
+        only distinguishable by reading the config back. The config here names the
+        distribution and closed-source intent explicitly, so the row tests the
+        conflict rather than the quiet case.
+
+findings:
+  - dependency: npm:agplpkg@1.0.0
+    kind: agpl-3.0.licence-inclusion
+    severity: CONDITION
+  - dependency: npm:gplpkg@1.0.0
+    kind: gpl-3.0.binary-source-offer
+    severity: CONDITION
+  - dependency: npm:gplpkg@1.0.0
+    kind: gpl-3.0.convey-verbatim
+    severity: CONDITION
+  - dependency: npm:gplpkg@1.0.0
+    kind: gpl-3.0.installation-information
+    severity: NOTE
+  - dependency: npm:gplpkg@1.0.0
+    kind: gpl-3.0.patent-grant
+    severity: NOTE
+  - dependency: npm:gplpkg@1.0.0
+    kind: trap.gpl.proprietary-binary
+    severity: BLOCK
+
+undetermined:
+  []
+
+warnings:
+  []
+
+notices: []

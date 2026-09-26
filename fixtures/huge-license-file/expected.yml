@@ -1,0 +1,66 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: UNDETERMINED
+
+why: >
+        A dependency whose only licence file is oversized: `node_modules/foo/LICENSE`
+        is 257.2 KiB, the manifest declares no licence, and the lockfile entry
+        carries none either. Nothing else in the tree can answer the question.
+
+        Observed: UNDETERMINED, with `E-SCAN-006` (skipped, too large to parse) and
+        `E-SCAN-011` (unrecognised text, a human should read it) as warnings, the
+        dependency on the `licence_unresolved` list, and
+        `trap.licence.absent-all-rights-reserved` as a CONDITION.
+
+        That is the wanted degradation: an unreadable licence is an unread licence,
+        and the answer is "unknown", not "fine". The verdict is the assertion; the
+        two warnings are what make it legible.
+
+        # THE CATALOGUE SAID 2 GB. THE LIMIT IS 256 KiB.
+
+        Section 7 of the catalogue reads "A 2 GB `LICENSE` -> `E-SCAN-006`, recorded
+        not parsed". The code is right and the size is not. Measured, there are two
+        separate bounds and neither is 2 GB:
+
+          - `internal/scanner/scanner.go:47` `licenceLimit()` returns 256 KiB when
+            `Options.MaxLicenceFileSize` is unset - and nothing in the tree ever
+            sets it, so 256 KiB is the effective bound for a licence read
+            (`internal/scanner/vendored.go:208`).
+          - `internal/safefs/root.go:239` refuses any read above
+            `Limits.MaxFileSize`, which defaults to 8 MiB
+            (`internal/safefs/root.go:49`).
+
+        Both funnel to the same code, so the observable behaviour is one error at two
+        thresholds. This fixture sits just over the lower one.
+
+        A second measured result worth recording, because it was suspected and then
+        disproved: the 256 KiB bound does NOT silently truncate. A licence whose
+        identifying phrases sit past 256 KiB is refused outright with E-SCAN-006, not
+        read partially and misrecognised. Probed with the MIT text at the head of a
+        400 KiB file and again at the tail - identical output, identical code, both
+        refused. Had it truncated instead, the same file would report a licence the
+        dependency does not have.
+
+        # WHY THIS ROW'S FILE IS 257 KiB AND NOT 2 GB
+
+        The row has to exceed the real bound, so it has to carry a real file. 257 KiB
+        is the smallest honest size; the text is repetitive and compresses to almost
+        nothing in the pack. It is the price of asserting the threshold rather than
+        quoting it.
+
+findings:
+  - dependency: npm:foo@1.0.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:foo@1.0.0
+    reason: licence_unresolved
+
+warnings:
+  - E-SCAN-006
+  - E-SCAN-011
+
+notices: []

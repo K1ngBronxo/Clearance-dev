@@ -1,0 +1,71 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The lockfile says lodash is MIT. The LICENSE file inside node_modules/lodash
+  is the GNU Affero General Public License. The two disagree, and the
+  disagreement is itself the finding: the more restrictive licence governs, and
+  the package's own metadata has now been shown to be unreliable — so every
+  other declaration it makes is suspect.
+
+  # WHY THE FIXTURE IS DELIBERATELY THIS SMALL
+
+  One dependency, one finding. The use facts are all false except `commercial`,
+  and that is chosen rather than incidental: with `distributed` false, none of
+  AGPL's own obligations apply, and with `network_exposed` and `modified` false,
+  trap.agpl.modified-network-service does not fire either. What is left is the
+  conflict trap alone, which is the thing this fixture is named after.
+
+  The earlier draft of this fixture used GPL-3.0 as the vendored licence and
+  `distributed: true`. That made it fire trap.gpl.proprietary-binary at BLOCK
+  as well, so the fixture became a second copy of gpl-proprietary-binary with
+  eight findings and the conflict buried in the middle of them. A fixture that
+  proves four things at once fails for reasons that have nothing to do with the
+  one it is named for.
+
+  # WHAT THE TWO DEPENDENCIES ARE
+
+  The scan produces two dependencies, not one, and that is the mechanism
+  working. The package keeps its declared licence (MIT, from the lockfile); the
+  vendored file becomes a separate `vendored:` dependency carrying the actual
+  text. They are kept apart because merging them would destroy exactly the
+  disagreement worth reporting. crosscheck.go's second check selects on
+  `Licence.Source == "vendored_file"` and reads `Metadata["declared_licence"]`,
+  which is the key the scanner writes for precisely this comparison.
+
+  # WHY THE CONFLICT TRAP IS GRAPH-SCOPED
+
+  Because it needs two dependencies' facts at once — the declared licence on one,
+  the actual on the other — and a predicate is evaluated against one dependency.
+  The trap's `when` (`dep.kind == vendored`) is only the precondition that keeps
+  the check cheap; the comparison, the permissiveness ordering and the reason
+  line are code. That split is why the corpus declares `scope: graph` and why
+  the engine skips graph-scoped traps in its per-dependency pass. Evaluating the
+  precondition there as well would emit a second, weaker copy of this finding.
+
+  # WHAT THE FIXTURE PROVES THAT THE VERDICT DOES NOT
+
+  The verdict is SHIP CONDITIONAL, and a single finding at CONDITION is a thin
+  thing to hang a verdict on. What is actually asserted is the *direction* of
+  the comparison: the conflict fires because the declared licence (MIT,
+  permissiveness 5) is MORE permissive than the actual one (AGPL, permissiveness
+  1). Flip them — a manifest declaring AGPL over a vendored MIT file — and this
+  must stop firing, because a manifest that understates its obligations is a
+  different and much less interesting problem than one that overstates them.
+
+  The LICENSE file in this fixture is the real AGPL header and preamble, then a
+  note that the body is omitted. The scanner fingerprints on the two phrases in
+  the header, so a stub is enough; writing out 34KB of licence text into a
+  fixture would add nothing and would be one more thing to keep in sync.
+
+findings:
+  - dependency: vendored:node_modules/lodash/LICENSE
+    kind: trap.declared-vs-actual-conflict
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

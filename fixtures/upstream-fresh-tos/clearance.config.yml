@@ -1,0 +1,16 @@
+schema_version: 1
+
+project:
+  name: upstream-fresh-tos
+  description: A project that invokes a platform whose corpus summary is current.
+
+# Identical to upstream-stale-tos's use block on purpose. The only difference
+# between the two fixtures is a date inside the corpus, so the pair isolates the
+# staleness rule and nothing else.
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

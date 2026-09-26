@@ -1,0 +1,67 @@
+id: trap.licence.absent-all-rights-reserved
+title: "No licence means all rights reserved"
+summary: >
+  A dependency with no licence statement is not free to use. Copyright is
+  granted by default, so absent a licence the author retains every exclusive
+  right and grants none. This is the single most common misreading of a public
+  repository, and the honest verdict is UNDETERMINED rather than permissive.
+when:
+  op: and
+  l:
+    # REPOINTED FROM family == custom, WHICH WAS A FALSE FINDING.
+    #
+    # The family `custom` means "a bespoke licence the corpus will not reduce to a
+    # standard one". In this corpus the only member is the Llama 3.1 Community
+    # License — which grants commercial use below 700 million MAU. So keyed on the
+    # family, this trap printed "No licence means all rights reserved" on a
+    # dependency whose licence expressly permits the use, and cited a page about
+    # software with no licence at all. That is a false positive carrying a
+    # mismatched citation, which is the worst output this product can produce.
+    #
+    # `custom` means bespoke. Bespoke is not absent. The trap is about absent.
+    op: "=="
+    field: dep.licence.resolved
+    value: false
+  r:
+    # NARROWED WHEN THE ASSET LAYER LANDED.
+    #
+    # An `asset` node — a brand signal in a vendored dependency — has no
+    # licence, so `dep.licence.resolved` is false for it and this trap fired on
+    # every one of them. The finding was wrong twice over: its subject is a
+    # dependency with no copyright grant, and an asset node is not one (its
+    # terms are the trademark, and trap.assets.brand-reserved is the trap for
+    # it); and its citation is choosealicense.com's page about software with no
+    # licence, which says nothing about a reserved logo. That is the
+    # mismatched-citation failure this trap's own left-hand comment exists to
+    # prevent, arriving from the other direction.
+    #
+    # The exclusion is on the kind rather than on the licence, because the
+    # asset node's absent licence is the truth and the kind is what makes the
+    # truth irrelevant. It is expressed here, in data, rather than in the
+    # engine, so that the next kind to arrive is judged by its predicate and not
+    # by a Go switch.
+    op: "!="
+    field: dep.kind
+    value: "asset"
+scope: dependency
+severity: BLOCK
+citation:
+  url: https://choosealicense.com/no-permission/
+  section: "For users"
+  # REWORDED (trivially) FIXED. The previous excerpt expanded the source's
+  # contraction — "does not" where the page says "doesn't". A one-word
+  # difference is still a difference, and "verbatim" has to mean verbatim or
+  # it means nothing. Restored to the page's exact text, including its
+  # typographic apostrophe, which is what a reader will see when they open the
+  # URL.
+  #
+  # The section label was also corrected: the page has no heading called
+  # "No license"; the sentence sits under "For users".
+  excerpt: "If you find software that doesn’t have a license, that generally means you have no permission from the creators of the software to use, modify, or share the software."
+  excerpt_kind: verbatim
+  retrieved_at: "2026-09-23"
+confidence: MEDIUM
+fix:
+  action: replace
+  suggestion: "Locate a licence for the dependency, obtain written permission, or remove the dependency."
+  confidence: MEDIUM

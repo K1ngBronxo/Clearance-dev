@@ -1,0 +1,47 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The parser package's headline rule, pinned end to end: "when a lockfile exists
+  for an ecosystem the manifest is ignored for version resolution." The manifest
+  asks for `lodash: ^4.0.0`; the lockfile resolves it to 4.17.21. Every finding
+  below is keyed on `npm:lodash@4.17.21`, and that version is the whole
+  assertion. If the manifest won, the same dependency would be reported as
+  `npm:lodash@4.0.0` and this fixture would fail on the dependency id rather
+  than on the verdict.
+
+  WHY THE VERSION MATTERS MORE THAN THE VERDICT. A range-based verdict is a
+  verdict about a project that may not exist: `^4.0.0` matches 4.0.0 through
+  4.x, and a licence that changed at 4.1.0 would be attributed wrongly. The
+  finding set here happens to be identical either way — MIT at both ends — so a
+  fixture that only asserted "SHIP CONDITIONAL with two MIT findings" would pass
+  even if the parser had silently used the range. Pinning the resolved version
+  is what makes the fixture about the rule it is named for.
+
+  WHY THE USE FACTS ARE WHAT THEY ARE. `distributed: true` with `commercial:
+  true` is the minimum that makes MIT say anything at all: mit.attribution
+  (CONDITION) fires on distribution, and mit.no-patent-grant (NOTE) rides
+  alongside it. `modified`, `network_exposed` and `saas` are false because
+  nothing in this fixture is about them, and leaving them true would add
+  findings from other layers and bury the parser claim.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete package-lock.json and the
+  dependency must fall back to the manifest: `npm:lodash@4.0.0`, MIT unresolved
+  because an npm manifest carries no per-dependency licence, and the verdict
+  UNDETERMINED with a licence_unresolved record. That is the honest failure of
+  a project with no lockfile, and it is a different fixture's job to pin it.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

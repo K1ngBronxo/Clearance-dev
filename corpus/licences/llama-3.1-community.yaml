@@ -1,0 +1,122 @@
+id: licence.llama-3.1-community
+spdx_id: Llama-3.1-Community
+name: Llama 3.1 Community License Agreement
+family: custom
+osi_approved: false
+fsf_libre: false
+permissiveness: 3
+
+# SOURCE NOTE (2026-09-23)
+#
+# The licence's former home, https://www.llama.com/llama3_1/license/, is dead:
+# it now serves "This page isn't available." and the replacement Meta page
+# (developer.meta.com/ai/llama3_1/license/) is dead in the same way. The
+# canonical machine-readable copy that resolves is the LICENSE file Meta
+# committed to its own gated-but-publicly-viewable model repository:
+#
+#   https://huggingface.co/meta-llama/Llama-3.1-70B/blob/main/LICENSE
+#
+# Every excerpt below was diffed against that file on 2026-09-23. The raw
+# /raw/main/ path on the 8B repository returns 403 (the repository is gated);
+# the /blob/ view on the 70B repository is public and is what is cited.
+
+obligations:
+  - id: llama-3.1.mau-gate
+    kind: SCALE_GATE
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.commercial
+        value: true
+      r:
+        op: ">"
+        field: scale.mau
+        value: 700000000
+    message: >
+      The Llama 3.1 Community License grants commercial use, but §2 requires a
+      separate licence from Meta once the product passes 700 million monthly
+      active users. Below that threshold the grant stands.
+    citation:
+      url: https://huggingface.co/meta-llama/Llama-3.1-70B/blob/main/LICENSE
+      section: "§2 Additional Commercial Terms"
+      # The cited licence has no §4. It numbers its sections 1–7 and puts the
+      # MAU gate under §2, "Additional Commercial Terms". An earlier draft
+      # labelled this "§4", which was invented, and an invented section is a
+      # broken citation in a product whose whole claim is that it points at the
+      # clause.
+      #
+      # The excerpt is a contiguous verbatim span, cut at a clause boundary to
+      # fit the 400-character limit. It is not a summary of the clause; it is
+      # the first 319 characters of it.
+      excerpt: "If, on the Llama 3.1 version release date, the monthly active users of the products or services made available by or for Licensee, or Licensee's affiliates, is greater than 700 million monthly active users in the preceding calendar month, you must request a license from Meta, which Meta may grant to you in its sole discretion"
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+    fix:
+      action: configure
+      suggestion: "Track monthly active users and request a Meta licence before crossing the threshold."
+      confidence: MEDIUM
+
+  - id: llama-3.1.attribution
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      The Llama 3.1 Community License requires distributed copies to carry the
+      licence, and derivatives to display the "Built with Llama" attribution in
+      a related website, UI or documentation.
+    citation:
+      url: https://huggingface.co/meta-llama/Llama-3.1-70B/blob/main/LICENSE
+      section: "§1.b.i"
+      # SUBSTANTIVE CORRECTION, not a rewording. The notice the licence
+      # requires is "Built with Llama". The previous excerpt said "Built with
+      # Meta Llama 3.1", which is a different string, and a user following it
+      # would have displayed the wrong attribution. This is the worst class of
+      # defect the corpus can carry: not a missing fact, an incorrect one, in
+      # a field rendered inside quotation marks.
+      #
+      # The label is correct as written: the licence numbers this 1, then b,
+      # then i.
+      excerpt: '(B) prominently display "Built with Llama" on a related website, user interface, blogpost, about page, or product documentation.'
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+    fix:
+      action: attribute
+      suggestion: "Display the \"Built with Llama\" notice wherever the model powers your product. Note that §1.b.i also requires \"Llama\" at the start of any model you train from it."
+      confidence: MEDIUM
+
+  - id: llama-3.1.acceptable-use
+    kind: PLATFORM_TOS
+    severity: CONDITION
+    when: true
+    message: >
+      The Llama 3.1 Community License incorporates the Llama 3.1 Acceptable Use
+      Policy. Prohibited uses include certain surveillance, deception and
+      harmful-content applications, independent of the commercial grant.
+    citation:
+      # The Acceptable Use Policy URL named inside the licence is dead: the
+      # policy page returns nothing. The citation is therefore moved to the
+      # licence itself, which is where the obligation actually lives — §1.b.iv
+      # incorporates the AUP by reference, so the clause a user needs is here
+      # and not on a page that no longer exists.
+      url: https://huggingface.co/meta-llama/Llama-3.1-70B/blob/main/LICENSE
+      section: "§1.b.iv"
+      excerpt: "Your use of the Llama Materials must comply with applicable laws and regulations (including trade compliance laws and regulations) and adhere to the Acceptable Use Policy for the Llama Materials (available at https://llama.meta.com/llama3_1/use-policy), which is hereby incorporated by reference into this Agreement."
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://huggingface.co/meta-llama/Llama-3.1-70B/blob/main/LICENSE
+  section: "Llama 3.1 Community License"
+  retrieved_at: "2026-09-23"
+confidence: MEDIUM
+last_verified: "2026-09-23"

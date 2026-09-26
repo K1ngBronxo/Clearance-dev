@@ -1,0 +1,43 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP
+
+why: >
+  This fixture is the control for the territorial pair, and a control is the
+  only thing that tells a reader whether the other two prove anything.
+
+  The tree is byte-identical to fixtures/territorial-gate and
+  fixtures/territorial-undeclared. The licence carries the same
+  TERRITORIAL_GATE obligation, gated on `territories contains "RU"`. The only
+  difference is the declared intent: `territories: [US]`.
+
+  US is not RU, so the predicate is FALSE — a definite non-applicability, not
+  an unknown — and the obligation is silently skipped. That silence is correct:
+  an obligation that does not apply is not a finding, and emitting one for every
+  clause that does not bite is how a findings list becomes something a reader
+  scrolls past.
+
+  # WHAT WOULD MAKE THIS FIXTURE FAIL FOR THE RIGHT REASON
+
+  If this fixture ever produces a finding, the `contains` operator has stopped
+  distinguishing membership from non-membership on a list field — the same
+  operator the whole territorial clause pattern rests on. If it starts
+  returning UNDETERMINED, an undeclared-list path has begun treating a DECLARED
+  list as undeclared.
+
+  # THE READING OF "A TERRITORY WITH NO GATES"
+
+  The fixture catalogue describes this case as "a territory with no gates".
+  Read as a jurisdiction-overlay case, that is a declared territory whose
+  corpus entry has no `gates:` — and that layer is inert (see the note in
+  fixtures/territorial-gate/expected.yml), so it would be a vacuous fixture
+  today. Read as a licence-clause case, which is what this file pins, it is a
+  declared territory the clause does not gate. The expected verdict — no
+  finding — is the same under both readings; the second is the one the live
+  code path can actually assert.
+
+findings: []
+undetermined: []
+warnings: []
+notices: []

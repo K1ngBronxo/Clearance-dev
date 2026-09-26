@@ -1,0 +1,71 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A YAML anchor/alias expansion bomb sits in `pnpm-lock.yaml`. The build is
+    refused at the lockfile and continues; the verdict is UNDETERMINED because the
+    only remaining source is the manifest's range.
+
+    # THE CATALOGUE EXPECTS E-PARSE-008, AND E-PARSE-008 CANNOT FIRE HERE
+
+    PLAN/04-QUALITY/02-fixture-catalogue.md section 7 lists this row as "a YAML
+    anchor bomb in a manifest" producing E-PARSE-008. There is no such thing as a
+    YAML manifest in this tool's ecosystem set, and the reason is worth stating
+    precisely because it is a property of the design rather than an oversight:
+
+      - every manifest the parsers read is JSON or TOML or Go module syntax:
+        package.json, Cargo.toml, go.mod, pyproject.toml, requirements.txt
+      - the only YAML files in any ecosystem table are pnpm-lock.yaml and yarn.lock
+      - both are in NPM.UnsupportedLockfiles (internal/parsers/npm.go:30), which
+        exists because their formats drift enough between versions that a
+        heuristic parse would be quietly wrong
+
+    So a YAML bomb cannot reach safeyaml from a scanned tree. safeyaml is called
+    only by the user's own config (internal/config/load.go:128), the user's org
+    policy file (internal/policyfile/policy.go:202), the AI key file
+    (internal/cli/cmd_ai.go:157) and the signed corpus
+    (internal/corpus/load.go:83). None of those is an artefact a dependency can
+    supply.
+
+    # WHAT THIS FIXTURE THEREFORE PROVES, AND WHAT IT DOES NOT
+
+    It proves the payload is refused and cannot produce an unsafe verdict: the
+    lockfile is rejected, the tool degrades and says so, and the answer is
+    UNDETERMINED rather than a SHIP inferred from an exploded document. It does
+    not exercise the anchor refusal itself. That refusal is unit-tested at the
+    decoder, in internal/safeyaml/safeyaml_test.go:250 (TestBillionLaughs), where
+    the payload is handed straight to the parser and E-PARSE-008 is asserted.
+
+    # WHERE THE HARDENING ACTUALLY MATTERS, AND A DEFECT BESIDE IT
+
+    The reachable YAML path is the config file, and a bomb placed there behaves
+    differently from a bomb here: it aborts the run, prints E-PARSE-008, emits no
+    verdict at all, and EXITS 0 - because E-PARSE-008 is declared ClassDegrade,
+    ExitOK. A plain config error (E-CFG-002) exits 2 for the same absence of a
+    verdict. That inconsistency is recorded in COORDINATION/TEAM.md, not asserted
+    here, because the fixture harness calls config.Load directly and treats any
+    config error as fatal: a fixture cannot reach that state.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Replace the bomb with an ordinary parseable pnpm-lock.yaml and this must stay
+    E-PARSE-001 - the file is refused for being an unsupported FORMAT, not for
+    being a bomb - while the warning count stays at one, because
+    NPM.UnsupportedLockfiles leaves p.Lockfile empty and the second
+    range-fallback warning has no lockfile to name.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:lodash@4.17.21
+    reason: licence_unresolved
+
+warnings:
+  - E-PARSE-001
+
+notices: []

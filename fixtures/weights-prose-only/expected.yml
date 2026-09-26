@@ -1,0 +1,73 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    THIS FIXTURE PINS A DEFECT. Read the `why` before "fixing" it.
+
+    The catalogue (PLAN/04-QUALITY/02-fixture-catalogue.md section 3) lists this
+    row as weights-prose-only - "Weights + a prose mention" - expecting
+    "resolved, MEDIUM". It is not resolved. The licence is named in plain English
+    in README.md, and the scanner returns UNDETERMINED with licence_not_found.
+
+    # THE MECHANISM, WHICH IS NARROWER THAN "PROSE IS UNSUPPORTED"
+
+    Prose reading works. weights-prose-sibling, created beside this fixture, is
+    the same tree with the same sentence in MODEL_NOTES.md instead of README.md,
+    and it resolves Apache-2.0 at LOW confidence.
+
+    README.md is the only file that fails, and it fails for a one-line reason.
+    The scanner reads README.md at two different confidences: the frontmatter
+    reader takes the structured `license:` key at HIGH, and a prose reader runs
+    last for any other markdown file. That last reader skips README.md and
+    MODEL_CARD.md with the comment "already consulted at a higher confidence".
+    True of the frontmatter; false of the body. A licence written in the body of
+    a README is therefore not read by anyone.
+
+    # WHY THIS IS THE DEFECT CLASS, NOT JUST A GAP
+
+    The comment is a claim, and nothing checks it. "Already consulted at a higher
+    confidence" is the shape this repository keeps rediscovering: a name asserting
+    a behaviour that no code performs. It is the same defect as a `-X` flag naming
+    a symbol that does not exist, or a Makefile target running a test nobody
+    wrote. Here it costs a licence: the most ordinary way a person states a
+    model licence in a README is exactly the way this scanner cannot see.
+
+    The failure is safe - UNDETERMINED, never a false SHIP - so this is a
+    completeness defect, not a correctness one. It is still the difference
+    between a tool that answers and a tool that says it does not know.
+
+    # WHAT TO DO WHEN IT IS FIXED
+
+    Flip this file to SHIP_CONDITIONAL with the apache-2.0.* findings, matching
+    weights-prose-sibling, and record the confidence as LOW. Do not flip it
+    without fixing the reader: a fixture edited to match an intent no code
+    implements is the same defect written into the test suite.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    As it stands, changing the README body to a licence that no pattern matches
+    must keep this fixture UNDETERMINED - proving it is the README exclusion and
+    not the pattern table that decides the outcome.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: weights:models/model.safetensors
+    reason: licence_not_found
+  - id: weights:models/model.safetensors
+    reason: licence_unresolved
+
+warnings: []
+
+notices: []

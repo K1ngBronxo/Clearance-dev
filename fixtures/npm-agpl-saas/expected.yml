@@ -1,0 +1,84 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. This file is data,
+# not a snapshot of current behaviour: `why` states the claim, so a future
+# reader can tell whether a failure means the code regressed or the claim was
+# wrong. A fixture that only recorded what the code happened to print would
+# certify nothing.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: DO_NOT_SHIP
+
+why: >
+  AGPL-3.0 section 13 requires that a user interacting with a *modified*
+  version over a network be offered the Corresponding Source. This fixture is
+  the conjunction the clause needs: commercial + closed-source + modified +
+  network_exposed. Offering a modified AGPL service is a distribution, so the
+  obligation bites and the verdict is DO NOT SHIP. Flip `modified` to false in
+  clearance.config.yml and this must stop being DO NOT SHIP - which is the
+  misconception the fixture exists to document.
+
+  TWO LAYERS ON ONE DEPENDENCY. This fixture carries three findings, and the
+  second and third are not the code layer repeating itself. `firecrawl@1.2.3`
+  is simultaneously (a) an AGPL-3.0 code dependency and (b) the SDK for a
+  hosted service whose own terms are a separate document governing a separate
+  act. That is the case 06-detection-spec-tos.md section 1 describes as "the
+  obligation that lives in the fifth place nobody reads": a code-licence
+  scanner sees the first and is structurally blind to the second. Neither
+  finding subsumes the other - you can satisfy AGPL section 13 in full and
+  still breach the Acceptable Use clause, and vice versa.
+
+  The platform findings arrive through the `import` signal, because the
+  dependency is visible in package-lock.json with no source scan at all. That
+  is the point: "this project calls Firecrawl" is legible from the lockfile.
+
+  NOTE THE EFFECTIVE SEVERITY OF firecrawl.tos.resale. The corpus declares it
+  BLOCK and it lands as CONDITION, because its confidence is MEDIUM and this
+  project has not set `allow_medium_blockers`. INV-2 is that a tool which does
+  not know must not make a decision that costs someone money: a curated
+  summary of a web page is not the same kind of evidence as a licence file, so
+  it may warn and it may not forbid. If this line ever reads BLOCK, either the
+  clause's confidence was raised without a `correction` block (which the
+  loader forbids) or the gate stopped being applied.
+
+  # THE FOURTH FINDING, WHICH IS THE CATALOGUE LAYER
+
+  trap.agpl.modified-network-service fires alongside the obligation above, and
+  the two overlap on purpose. The obligation is the licence entry answering
+  "what does AGPL section 13 require of you?"; the trap is corpus/traps/
+  answering "which named failure mode is this project in?". Both are BLOCK and
+  both cite section 13, which means a reader sees the same prohibition twice.
+
+  That is the cost of keeping the two layers separate, and the layers are kept
+  separate because the catalogue has to express failure modes an obligation
+  cannot — a graph-level code-versus-weights divergence, or a dependency with no
+  licence at all. De-duplicating them would mean the tool chose which of two
+  true statements to withhold, and the only signal it could choose on is the
+  citations, which is a heuristic rather than a rule.
+
+  WHAT THIS FINDING ACTUALLY PINS is a predicate fix. The trap's `when` tested
+  network exposure and the licence family but NOT `use.modified`, even though
+  its title and summary both say "modified". Against this fixture — modified:
+  true — nothing changed, which is exactly why the omission was invisible. It
+  would have shown up on the *unmodified* case, where the AGPL entry's own
+  agpl-3.0.network-unmodified obligation rates the same deployment CONDITION
+  with the reason "serving an unmodified AGPL work is not itself a section 13
+  trigger". The trap would have overridden that to BLOCK. Two parts of the
+  corpus contradicting each other, and the louder one winning by accident.
+
+findings:
+  - dependency: npm:firecrawl@1.2.3
+    kind: agpl-3.0.network-disclosure
+    severity: BLOCK
+  - dependency: npm:firecrawl@1.2.3
+    kind: firecrawl.tos.automation
+    severity: CONDITION
+  - dependency: npm:firecrawl@1.2.3
+    kind: firecrawl.tos.resale
+    severity: CONDITION
+  - dependency: npm:firecrawl@1.2.3
+    kind: trap.agpl.modified-network-service
+    severity: BLOCK
+
+undetermined: []

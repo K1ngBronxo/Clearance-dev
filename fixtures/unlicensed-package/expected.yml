@@ -1,0 +1,74 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A dependency declaring `UNLICENSED` - npm's own convention for "this package
+    is not licensed for use". UNDETERMINED with `no_corpus_entry`, zero findings.
+
+    # WHY ZERO FINDINGS IS THE INTERESTING PART
+
+    Read this beside `unknown-spdx-id`, which is one string away from it. That
+    fixture declares `FOO-1.0` and gets a CONDITION claiming all rights are
+    reserved. This one declares `UNLICENSED` - a string that says the same thing
+    more plainly - and gets no finding at all.
+
+    The reason is written into `internal/config/spdx.go:125`, under a comment
+    that reads "Marker values that appear in real manifests":
+
+        "UNLICENSED", "SEE LICENSE IN LICENSE", "NOASSERTION", "NONE",
+
+    Those four are members of `knownSPDX` by deliberate design. So
+    `LicenceRefFromString` (`internal/scanner/scanner.go:426`) normalises the
+    string, `ValidSPDX` accepts it, and the reference arrives with
+    `Resolved: true`. It is a NAME IT UNDERSTANDS, and the corpus has no
+    obligations filed under it, so the answer is `no_corpus_entry` and
+    E-POLICY-001 - the same answer as a licence nobody has got round to
+    cataloguing, rather than the answer for a licence that grants nothing.
+
+    **So the pair inverts.** `FOO-1.0`, a string the tool cannot read at all,
+    earns `trap.licence.absent-all-rights-reserved`. `UNLICENSED`, which says
+    in plain English that all rights are reserved, earns nothing. The trap's
+    predicate is `dep.licence.resolved == false`, so the CONDITION is attached
+    to *parse failure* rather than to *absent permission* - and the two fixtures
+    sit one string apart, which is what makes the pair worth keeping.
+
+    The mitigation is real and should be stated: `UNLICENSED` reaches
+    UNDETERMINED, and INV-7 requires that it never rounds to a pass. No user is
+    told they may ship. What they are not told is that the dependency declared
+    itself off-limits, which is a stronger statement than "we have not
+    catalogued this identifier".
+
+    Note also `NormaliseSPDX` at `internal/config/spdx.go:213`, which maps
+    `proprietary` and `Proprietary` onto `UNLICENSED`. A manifest that says
+    "proprietary" therefore takes this same path, which is the right thing for
+    it to do and is the reason the marker list exists at all.
+
+    Nothing here should be read as a claim that the outcome is unsafe. UNDETERMINED
+    is the correct verdict for `UNLICENSED` under any reading.
+
+    # WHY UNDETERMINED IS CORRECT REGARDLESS
+
+    `UNLICENSED` means the author has granted nothing. A tool that read it as
+    permissive would be wrong in the direction that costs money, and one that read
+    it as a definite BLOCK would be inventing a legal conclusion from a
+    package-manager convention. "We cannot determine this" is the honest answer,
+    and INV-7 requires that it never rounds to a pass.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Change the declaration to `MIT` and this must become a clean SHIP with no
+    mit.attribution (`distributed: false`). If the change leaves it UNDETERMINED,
+    the resolver is not reading the lockfile's licence field.
+
+findings: []
+
+undetermined:
+  - id: npm:unlicensed-tool@1.0.0
+    reason: no_corpus_entry
+
+warnings: []
+
+notices:
+  - E-POLICY-001

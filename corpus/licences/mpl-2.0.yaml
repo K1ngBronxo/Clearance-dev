@@ -1,0 +1,111 @@
+id: licence.mpl-2.0
+spdx_id: MPL-2.0
+name: Mozilla Public License 2.0
+family: weak-copyleft
+osi_approved: true
+fsf_libre: true
+permissiveness: 3
+
+obligations:
+  - id: mpl-2.0.source-disclosure
+    kind: SOURCE_DISCLOSURE
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      MPL-2.0 §3.1 is file-level copyleft. Source form of the covered software,
+      including your modifications to those files, must be made available under
+      the MPL when you distribute it. Your other files may stay proprietary.
+    citation:
+      url: https://www.mozilla.org/en-US/MPL/2.0/
+      section: "§3.1"
+      excerpt: "All distribution of Covered Software in Source Code Form, including any Modifications that You create or to which You contribute, must be under the terms of this License."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: configure
+      suggestion: "Keep your changes to MPL files in separate, clearly licensed files and publish their source."
+      confidence: HIGH
+
+  - id: mpl-2.0.executable-notice
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      MPL-2.0 §3.2 requires that when you distribute executable form you inform
+      recipients how they can obtain the Source Code Form, and that you include
+      the licence notice. The source offer is a positive duty, not silence.
+    citation:
+      url: https://www.mozilla.org/en-US/MPL/2.0/
+      section: "§3.2"
+      excerpt: "If You distribute Covered Software in Executable Form then ... You must also inform recipients that the Source Code Form of the Covered Software is governed by the terms of this License, and how they can obtain a copy of this License."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Ship a written offer describing where recipients can obtain the source."
+      confidence: HIGH
+
+  - id: mpl-2.0.larger-work
+    kind: LICENCE_INCLUSION
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      MPL-2.0 §3.3 lets you distribute a Larger Work that combines covered
+      software with proprietary files, provided the covered files remain under
+      the MPL and the combination is not used to restrict the covered part.
+    citation:
+      url: https://www.mozilla.org/en-US/MPL/2.0/
+      section: "§3.3"
+      excerpt: "You may create and distribute a Larger Work under terms of Your choice, provided that You also comply with the requirements of this License for the Covered Software."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+
+  - id: mpl-2.0.patent-termination
+    kind: PATENT_GRANT
+    severity: NOTE
+    when: true
+    message: >
+      MPL-2.0 §5.2 grants a patent licence that terminates if you initiate
+      patent litigation over the covered software. Contributors grant patents,
+      and the grant is withdrawn from a party who sues.
+    citation:
+      url: https://www.mozilla.org/en-US/MPL/2.0/
+      section: "§5.2"
+      excerpt: "If You initiate litigation against any entity ... alleging that a Contributor Version directly or indirectly infringes any patent, then the rights granted to You ... under this License shall terminate."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://www.mozilla.org/en-US/MPL/2.0/
+  section: "Mozilla Public License 2.0"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"
+correction:
+  reason: "Re-read the canonical MPL-2.0 text and confirmed the file-level scope of §3.1 against the licence page rather than a secondary summary."
+  evidence: "https://www.mozilla.org/en-US/MPL/2.0/"
+  from: MEDIUM
+  to: HIGH
+  corrected_at: "2026-09-18"
+  corrected_by: "maintainer:corpus-team"

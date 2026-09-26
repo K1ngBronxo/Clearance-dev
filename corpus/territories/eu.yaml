@@ -1,0 +1,31 @@
+code: EU
+name: European Union
+notes: >
+  Member-state law and EU directives can add obligations on top of the licence.
+  They rarely forbid shipping, but they can require disclosure or a separate
+  authorisation that the software licence does not mention.
+gates:
+  - id: eu.database-right
+    summary: >
+      The EU sui generis database right protects the investment in obtaining
+      and presenting a database, independently of copyright. Extracting
+      substantial parts of a database can infringe it even where the software
+      licence permits the extraction.
+    severity: NOTE
+    citation:
+      url: https://eur-lex.europa.eu/eli/dir/1996/9/oj
+      section: "Art. 7"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: eu.ai-act-transparency
+    summary: >
+      Providers of general-purpose AI models placed on the EU market may owe
+      documentation, copyright-policy and training-content summaries under the
+      AI Act. The obligation attaches to the provider's role, not to the model's
+      software licence.
+    severity: NOTE
+    citation:
+      url: https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+      section: "Chapter V"
+      retrieved_at: "2026-09-18"
+    confidence: LOW

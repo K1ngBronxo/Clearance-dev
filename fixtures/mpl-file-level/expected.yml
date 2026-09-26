@@ -1,0 +1,55 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity - the band the finding landed in
+# after the confidence gate - not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  The file-level copyleft case: one MPL-2.0 dependency, distributed, with
+  files declared modified. MPL is the licence that proves copyleft is not one
+  thing - the obligation is per FILE, not per work, so the four findings below
+  are what "you may ship this" looks like when it comes with work attached.
+
+  # WHY THESE FOUR
+
+  Two are conditions. mpl-2.0.source-disclosure is the MPL's actual copyleft:
+  the source of the modified MPL-covered files must be available. Because MPL
+  is file-scoped, `use.modified: true` does NOT convert the whole product - it
+  attaches the obligation to the covered files only, which is the whole point
+  of the licence. mpl-2.0.executable-notice covers the section 3.2 requirement
+  that a distributed executable carry notice of how to obtain the source.
+
+  Two are notes, and their presence is deliberate rather than noise.
+  mpl-2.0.larger-work is MPL section 3.3: combining covered files into a Larger
+  Work with proprietary files is permitted, and the note records that
+  permission rather than warning about it. mpl-2.0.patent-termination is
+  section 5.3's patent retaliation clause - NOTE, not BLOCK, because it
+  terminates a grant you were given and only bites if you are the one suing.
+
+  # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+  Flip the licence to Apache-2.0 and all four must disappear, replaced by the
+  apache-2.0.* set - the fixture then equals apache-attribution plus intent.
+  Set `use.distributed: false` and the two conditions must vanish while the two
+  notes survive, since neither has a distribution predicate. If the
+  source-disclosure finding stops firing on a modified MPL entry, file-scoped
+  copyleft has been flattened into whole-work copyleft and this fixture is the
+  only thing that would say so.
+
+findings:
+  - dependency: npm:mpl-tool@1.0.0
+    kind: mpl-2.0.executable-notice
+    severity: CONDITION
+  - dependency: npm:mpl-tool@1.0.0
+    kind: mpl-2.0.larger-work
+    severity: NOTE
+  - dependency: npm:mpl-tool@1.0.0
+    kind: mpl-2.0.patent-termination
+    severity: NOTE
+  - dependency: npm:mpl-tool@1.0.0
+    kind: mpl-2.0.source-disclosure
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

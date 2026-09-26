@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: pypi-poetry-lock
+  description: A Python project resolved by poetry.lock, which carries no licences.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

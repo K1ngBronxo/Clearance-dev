@@ -1,0 +1,146 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:7ce522e8-fd8a-5a69-a8d5-9f6e37193968",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-24T08:00:00Z",
+    "tools": [
+      {
+        "vendor": "Clearance",
+        "name": "clearance",
+        "version": "0.9.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "edge-cases",
+      "version": "0.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "data",
+      "bom-ref": "local:orphan.dat",
+      "name": "orphan.dat",
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "asset"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:undetermined",
+          "value": "unknown_error_code"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm:no-cite@1.0.0",
+      "name": "no-cite",
+      "version": "1.0.0",
+      "purl": "pkg:npm/no-cite@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "CONDITION"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "citation.absent"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "HIGH"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm:no-evidence@1.0.0",
+      "name": "no-evidence",
+      "version": "1.0.0",
+      "purl": "pkg:npm/no-evidence@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "CONDITION"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "evidence.absent"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "HIGH"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://opensource.org/license/mit"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "edge-cases",
+      "dependsOn": [
+        "npm:no-cite@1.0.0",
+        "npm:no-evidence@1.0.0"
+      ]
+    },
+    {
+      "ref": "local:orphan.dat"
+    },
+    {
+      "ref": "npm:no-cite@1.0.0"
+    },
+    {
+      "ref": "npm:no-evidence@1.0.0"
+    }
+  ],
+  "properties": [
+    {
+      "name": "clearance:verdict",
+      "value": "UNDETERMINED"
+    },
+    {
+      "name": "clearance:intent-hash",
+      "value": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    }
+  ]
+}

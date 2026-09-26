@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: go-replace-directive
+  description: A Go module whose require is redirected by a replace directive.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

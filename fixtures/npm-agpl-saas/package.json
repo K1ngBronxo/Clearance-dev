@@ -1,0 +1,9 @@
+{
+  "name": "acme-portal",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "firecrawl": "^1.2.3",
+    "lodash": "^4.17.21"
+  }
+}

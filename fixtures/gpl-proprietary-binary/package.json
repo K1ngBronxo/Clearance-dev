@@ -1,0 +1,8 @@
+{
+  "name": "gpl-proprietary-binary",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "gnu-thing": "^2.0.0"
+  }
+}

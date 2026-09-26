@@ -1,0 +1,17 @@
+schema_version: 1
+
+project:
+  name: excluded-brand-assets
+  description: A project that distributes a vendored dependency whose name and logo are reserved.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  # THE ONE FIELD THIS FIXTURE IS ABOUT. The dependency carries a brand signal
+  # either way; `distributed: true` is what makes trap.assets.brand-reserved
+  # fire. Its sibling fixture brand-assets-internal/ is byte-identical except
+  # for this line, which is what pins the conditional-obligation model.
+  distributed: true
+  saas: false

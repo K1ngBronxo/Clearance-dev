@@ -1,0 +1,13 @@
+schema_version: 1
+
+project:
+  name: npm-pnpm-fallback
+  description: A project whose only lockfile is one the npm parser refuses.
+
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  distributed: false
+  saas: false

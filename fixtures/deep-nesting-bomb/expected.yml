@@ -1,0 +1,65 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    `package.json` is nested about a thousand levels deep - the classic stack-killer
+    payload, `[[[[...]]]]` in JSON. It is refused, the lockfile supplies the graph,
+    and the verdict is the ordinary MIT pair. The trace is one E-PARSE-002.
+
+    # THE CATALOGUE EXPECTS E-PARSE-006, AND E-PARSE-006 IS COMPUTED THEN LOST
+
+    safejson does detect this. Its depth limit is 64 for manifests
+    (internal/parsers/parser.go:165) and it returns E-PARSE-006 from two places
+    (internal/safejson/safejson.go:238 and :289). The npm parser then wraps that
+    error into its own:
+
+      return Result{}, cerr.Wrap(cerr.EParse002, err, rel, describeParseError(err))
+
+    cerr.Wrap builds a NEW error with the given code and keeps the original only
+    as a cause. So the specific code the decoder took the trouble to compute is
+    discarded, and what reaches the operator is the generic "cannot parse this
+    manifest".
+
+    # WHY THAT COSTS SOMETHING REAL
+
+    The two codes carry different recovery advice, and only one of them is useful
+    here. E-PARSE-006 says "Inspect the file - this may be a bomb". E-PARSE-002
+    says, in effect, that the file is malformed. A developer whose manifest is
+    nested a thousand deep has not written a malformed manifest by accident;
+    either their generator is broken or they are being attacked, and the message
+    they receive does not say so.
+
+    The refusal itself is correct and the outcome is safe - the manifest is not
+    parsed, no stack is exhausted, and the lockfile answers instead. This is a
+    lost signal, not an unsafe result.
+
+    # WHY THIS IS NOT FIXED HERE
+
+    The repair is either to have the parsers propagate a typed cause intact or to
+    let the taxonomy classify by cause before by wrapper, and both change how
+    every parser reports every failure. That is a behaviour change across five
+    ecosystems, and the brief for this sitting is to close open items rather than
+    to add them. It is recorded so that whoever removes the wrap finds a fixture
+    already asserting the current code will flip.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Flatten the payload into ordinary JSON and this must become a clean MIT pair
+    with no warning, matching malformed-manifest once its manifest is repaired. If
+    flattening it leaves the warning behind, the depth refusal has stopped being
+    about depth.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+warnings:
+  - E-PARSE-002
+
+notices: []

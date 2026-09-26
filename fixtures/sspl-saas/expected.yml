@@ -1,0 +1,52 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    SSPL-1.0 offered as a service. Three findings, all CONDITION or NOTE.
+
+    # WHY THIS IS NOT A BLOCK
+
+    SSPL section 13 requires that anyone offering the program as a service offer
+    the Corresponding Source for the whole service stack - not merely the program.
+    That is a genuinely hard obligation, and the corpus records it as
+    `sspl-1.0.service-source` at CONDITION rather than BLOCK, alongside
+    `sspl-1.0.not-open-source` at NOTE and `trap.sspl.not-open-source` at
+    CONDITION.
+
+    The NOTE carries the most information: SSPL is not an open-source licence by
+    the OSI definition. A user who sees only "CONDITION" may read it as "a
+    copyleft I can comply with"; the NOTE tells them the licence is not what its
+    name suggests. Suppressing it would be the single most misleading thing this
+    fixture could do.
+
+    # WHY `saas` MATTERS HERE AND NOT FOR GPL
+
+    SSPL's trigger is offering the software as a service, which is exactly what
+    `use.saas` records. GPL's trigger is conveying binaries, which is
+    `use.distributed`. That the two copyleft-adjacent licences key on different
+    intent booleans is the reason the config carries both, and this fixture is the
+    evidence that at least one of them is wired up.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Set `saas: false` and `sspl-1.0.service-source` must stop firing. If it
+    survives, the service obligation is not gated on the service fact.
+
+findings:
+  - dependency: npm:sspl-tool@1.0.0
+    kind: sspl-1.0.not-open-source
+    severity: NOTE
+  - dependency: npm:sspl-tool@1.0.0
+    kind: sspl-1.0.service-source
+    severity: CONDITION
+  - dependency: npm:sspl-tool@1.0.0
+    kind: trap.sspl.not-open-source
+    severity: CONDITION
+
+undetermined: []
+
+warnings: []
+
+notices: []

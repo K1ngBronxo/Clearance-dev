@@ -1,0 +1,45 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP
+
+why: >
+  The negative case, and the one that decides whether the tool is usable. This
+  project mentions ffmpeg four times in three files and invokes it zero times,
+  and the verdict must be SHIP with no findings and no diagnostics.
+
+  THE CLAIM THIS PINS, IN THE STRONGEST FORM AVAILABLE. The comment in
+  transcode/transcode.go contains the literal text `exec.Command("ffmpeg", "-i",
+  in, "-c:v", "libx264", out)` — the exact syntax the Go detector matches on.
+  It is inside a comment, so a detector that greps loses here, and a detector
+  that strips comments before looking wins. README.md repeats the same call
+  syntax in prose, and adds two more platform names (`yt-dlp`, `npx firecrawl`)
+  in a sentence about tools the project decided not to use. All four must be
+  invisible.
+
+  WHY THIS IS THE FIXTURE THAT KEEPS THE TOOL ON. §3.2 of the detection spec
+  says it plainly: "A regex for ffmpeg matches a comment, a README, a test
+  fixture, and a string in a log message. The difference is the difference
+  between a finding and a false positive, and false positives are what kill a
+  scanner's credibility." A first run that reports a dependency on a tool the
+  project never calls is a first run that does not get a second one.
+
+  THE THREE EXCLUSIONS BEING TESTED AT ONCE.
+    1. A mention in a Go comment is not an invocation (comment stripping).
+    2. A mention in a README is not an invocation (READMEs are not source, and
+       are not scanned at all — the file extension decides).
+    3. A mention inside a string literal that is not an argument to a spawn
+       call is not an invocation. `unavailable` holds the word ffmpeg and the
+       detector must not read it as a binary name.
+
+  WHAT WOULD MAKE THIS FAIL FOR THE RIGHT REASON. Move the commented call out
+  of the comment — uncomment it — and this fixture must produce exactly what
+  fixtures/upstream-cli-tos produces. The pair is one experiment with the
+  independent variable being the two slashes.
+
+findings: []
+
+undetermined: []
+warnings: []
+notices: []

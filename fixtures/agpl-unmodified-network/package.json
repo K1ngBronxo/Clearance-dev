@@ -1,0 +1,8 @@
+{
+  "name": "agpl-unmodified-network",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "agpl-tool": "^3.0.0"
+  }
+}

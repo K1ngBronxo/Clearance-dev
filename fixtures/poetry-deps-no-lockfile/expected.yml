@@ -1,0 +1,65 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: UNDETERMINED
+
+why: >
+    A Poetry project whose dependencies are declared only in `pyproject.toml`:
+    `certifi` and `django`, with `python` also present and correctly skipped as
+    the interpreter rather than counted as a dependency. There is no
+    `poetry.lock` and no vendored licence tree, so nothing pins a version and no
+    licence text exists for either package.
+
+    Observed: UNDETERMINED. Both dependencies are found, and both are reported -
+    one finding each (`trap.licence.absent-all-rights-reserved`, CONDITION) plus
+    one unclassified entry each with reason `licence_unresolved`. The version
+    carried is the cleaned constraint (`^5.0` becomes `5.0`), which is honest:
+    it is a range, not a resolution, and nothing in this tree could resolve it.
+
+    # THIS ROW IS THE REGRESSION PIN FOR THE `tomlDoc.Has` DEFECT
+
+    Before the `internal/parsers/toml.go` fix, this same tree produced:
+
+        SHIP:        SHIP
+        SCANNED:     0 dependencies
+        EXIT=0
+
+    with one warning, `E-PARSE-002 - Cannot parse 'pyproject.toml': no dependency
+    declarations found`. The Poetry branch at `internal/parsers/pypi.go:239` was
+    gated on `doc.Has("tool.poetry.dependencies")`, and `tomlDoc.Has` read
+    `values[path]` - which a table header never writes, because `[a.b]` sets a
+    prefix and only the leaf keys under it are stored. The branch never ran, `out`
+    stayed empty, and the parser reported the file as having nothing in it. The
+    dependency list was dropped and the verdict was a clean SHIP at exit 0.
+
+    That is the INV-7 inversion: unknown resolved to ship.
+
+    `clean-python` pins the same defect more weakly, because its `poetry.lock`
+    also declares both packages and the run survived on the lockfile - only its
+    warning set went red. This row has no lockfile to fall back on, so the fix is
+    the only thing between this tree and a false clean.
+
+    # THE CONTROL THAT MAKES THE POINT
+
+    A *valid* manifest that genuinely declares zero dependencies also gives SHIP,
+    `0 dependencies`, exit 0 - and that is correct. Before the fix the verdict
+    could not tell that case apart from this one. The difference is now visible
+    in the two dependency ids above.
+
+findings:
+  - dependency: pypi:certifi@2024.2.2
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+  - dependency: pypi:django@5.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: pypi:certifi@2024.2.2
+    reason: licence_unresolved
+  - id: pypi:django@5.0
+    reason: licence_unresolved
+
+warnings: []
+
+notices: []

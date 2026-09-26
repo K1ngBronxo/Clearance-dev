@@ -1,0 +1,70 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: UNDETERMINED
+
+why: >
+  The Business Source License is source-available for a limited period and then
+  converts to a stated open-source licence on its Change Date. Until that date
+  the production-use grant is restricted, so a project that assumes it is
+  already open source may be shipping under terms it cannot meet.
+
+  # THE MOST INTERESTING FIXTURE IN THE SET, AND THE REASON IS THE NOTICE
+
+  Every other trap fixture fires its trap beside at least one obligation from a
+  corpus entry. This one fires its trap with NO corpus entry at all, and the
+  pair of outputs it produces — a cited finding and an UNDETERMINED record — is
+  the clearest demonstration in the repository of what the trap layer is for.
+
+  The corpus carries no BUSL-1.1 entry. The scanner nonetheless identifies the
+  licence, because it fingerprints the vendored LICENSE file and the phrase
+  "business source license 1.1" is in the recogniser table. So the dependency
+  arrives at the policy engine with a resolved SPDX identifier and nowhere to
+  look it up. Before the trap layer existed, that produced exactly one line:
+  "the corpus carries no entry for licence 'BUSL-1.1'", and nothing else. True,
+  and useless — the user learns that the tool has a gap, not that they have a
+  problem.
+
+  trap.busl.conversion supplies the problem. Its predicate reads
+  `dep.licence.spdx`, which comes off the dependency graph rather than out of
+  the corpus, so it fires whether or not an entry exists. That is why the trap
+  pass runs in the `no corpus entry` branch as well as the ordinary one, and
+  this fixture is the regression test for it.
+
+  # WHY THE VERDICT IS UNDETERMINED RATHER THAN SHIP CONDITIONAL
+
+  Because the corpus cannot describe the licence's obligations, and a condition
+  is a statement about what the licence requires. The trap is rated CONDITION at
+  MEDIUM confidence, so it lands as a CONDITION — but the UNDETERMINED record
+  outranks a condition in the algebra, and it should: the tool has told the user
+  what kind of licence this is and has explicitly not told them what it requires.
+
+  # WHY THIS IS NOT AN ARGUMENT FOR ADDING A BUSL ENTRY
+
+  It might look like the fixture is documenting a gap that a corpus entry would
+  close. It is not, and the distinction is the point. A corpus entry would make
+  the obligations precise; it would not change the trap, because the trap is
+  about the licence's *shape* — a grant that expires into a different licence on
+  a date you have to look up — and that shape is legible without the corpus.
+  The two layers are answering different questions, and this fixture is the one
+  where that is impossible to miss.
+
+  # THE LICENSE FILE
+
+  The real BUSL-1.1 header and parameter block, including the Terms paragraph
+  the trap quotes verbatim, then a note that the body is omitted. The scanner
+  fingerprints on the header phrase, so the stub is enough.
+
+findings:
+  - dependency: npm:hashi-thing@1.1.0
+    kind: trap.busl.conversion
+    severity: CONDITION
+
+undetermined:
+  - id: npm:hashi-thing@1.1.0
+    reason: no_corpus_entry
+
+warnings: []
+notices:
+  - E-POLICY-001

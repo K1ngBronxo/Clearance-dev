@@ -1,0 +1,54 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A project whose only lockfile is a pnpm lockfile. The npm parser recognises
+  pnpm-lock.yaml and yarn.lock and deliberately does not parse them — their
+  formats differ enough between versions that a heuristic parse would produce a
+  graph that is quietly wrong. So the scan falls back to package.json, and the
+  assertion is the warning: E-PARSE-001 must be raised, because falling back
+  silently would make a weaker scan look like a normal one.
+
+  WHY THE WARNING IS THE POINT, AND WHY IT IS A WARNING AND NOT A FINDING. The
+  sentence "I could not read your lockfile, so these versions are ranges, not
+  resolutions" is a statement about the scan. INV-1 leaves a finding with
+  nothing to cite — there is no clause about pnpm — so the honest output is a
+  diagnostic, and the harness asserts warnings precisely so a silent fallback is
+  a test failure. A tool that quietly used package.json and reported SHIP would
+  look identical to one that had read a lockfile.
+
+  WHY THE VERSION IS A RANGE. With no readable lockfile the dependency comes
+  from the manifest, where `^4.0.0` is a requirement. It is reported as
+  `npm:lodash@4.0.0` — the cleaned first clause — and an npm manifest carries no
+  per-dependency licence, so there is nothing to resolve. INV-7 forbids guessing:
+  `licence_unresolved`, plus the corpus's absent-licence trap as a CONDITION.
+
+  WHY ONLY ONE WARNING IS EXPECTED. The fallback path has two places it could
+  warn — the unsupported-lockfile announcement, and the "using the manifest
+  instead" message that fires when a *recognised* lockfile failed to parse.
+  pnpm-lock.yaml is never in the parser's LockfileNames, so only the first
+  fires. Pinning one warning rather than "at least one" is what makes this
+  fixture sensitive to a change that starts double-reporting.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Rename pnpm-lock.yaml to
+  package-lock.json and the warning must change: a malformed package-lock
+  produces E-PARSE-001 from the parse failure and a second one from the
+  fallback. Delete pnpm-lock.yaml and the warning must vanish, because there is
+  no longer a lockfile to refuse.
+
+findings:
+  - dependency: npm:lodash@4.0.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: npm:lodash@4.0.0
+    reason: licence_unresolved
+
+warnings:
+  - E-PARSE-001
+
+notices: []

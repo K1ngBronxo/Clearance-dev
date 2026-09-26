@@ -1,0 +1,48 @@
+platform: cosign
+display_name: cosign
+kind: binary
+summary: >
+  cosign is the Sigstore CLI for signing and verifying container images, blobs
+  and attestations. It is a program rather than a service: invoking a binary a
+  machine already has does not vendor its code, so its licence does not reach
+  your own program — but shipping the binary does, and the code is Apache-2.0.
+  Its keyless signing mode uses Sigstore's public good instance by default, and
+  no separate acceptable-use terms for that instance were found, so this entry
+  records the licence obligation and states plainly that it found no further
+  platform terms rather than inventing some.
+detect:
+  bins: [cosign]
+restrictive_clauses:
+  - id: cosign.tos.binary-licence
+    text_summary: >
+      Invoking a system cosign binary does not vendor its code, so its licence
+      does not reach your own program. If you redistribute the binary — in a
+      container image, an installer, or a bundled release — the Apache-2.0 terms
+      of that build apply to the binary you ship, including the requirement to
+      pass on the licence and to mark modified files.
+    severity: CONDITION
+    citation:
+      url: https://github.com/sigstore/cosign/blob/main/LICENSE
+      section: "Apache License 2.0"
+      excerpt: "You must give any other recipients of the Work or Derivative Works a copy of this License"
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-23"
+    confidence: MEDIUM
+  - id: cosign.tos.keyless-public-instance
+    text_summary: >
+      Keyless signing — the mode used when no private key is supplied — sends the
+      signing event to Sigstore's public good instance, which runs the Fulcio
+      certificate authority and the Rekor transparency log. No acceptable-use or
+      rate-limit terms for that instance were found in the Sigstore
+      documentation, so no obligation is asserted here; this clause records only
+      that the operation contacts a third-party service.
+    severity: NOTE
+    citation:
+      url: https://github.com/sigstore/architecture-docs/blob/main/sigstore-public-deployment-spec.md
+      section: "§5 Public Good Instance"
+      excerpt: "The public good instance is maintained and monitored by volunteer engineers from several vendors"
+      excerpt_kind: verbatim
+      retrieved_at: "2026-09-23"
+    confidence: LOW
+last_verified: "2026-09-23"
+staleness_days: 365

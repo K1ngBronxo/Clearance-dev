@@ -1,0 +1,20 @@
+schema_version: 1
+
+project:
+  name: brand-assets-internal
+  description: The same reserved-brand dependency as excluded-brand-assets, used internally and never distributed.
+
+# Identical to excluded-brand-assets/clearance.config.yml except for
+# `use.distributed`. The vendored dependency and its brand signals are the same
+# bytes, so the only thing that can explain the different verdict is the one
+# intent field the trap reads.
+use:
+  commercial: true
+  licence_model: closed-source
+  modified: false
+  network_exposed: false
+  # THE ONE FIELD THAT DIFFERS. `distributed: false` makes
+  # trap.assets.brand-reserved evaluate FALSE, so the asset node is still
+  # emitted and no finding is produced.
+  distributed: false
+  saas: false

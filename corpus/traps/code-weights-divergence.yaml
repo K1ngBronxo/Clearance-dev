@@ -1,0 +1,67 @@
+id: trap.code-weights-divergence
+title: "The code is permissive but the weights are not"
+summary: >
+  A repository whose code carries a permissive licence can still load model
+  weights under a restrictive one. The code licence does not govern the
+  weights, so the permissive grant gives no permission to use them. This is the
+  graph-level check: the severity below is the base, and a non-commercial or
+  source-available weight licence combined with declared commercial use is
+  escalated to BLOCK by the engine.
+when:
+  op: and
+  l:
+    op: "=="
+    field: dep.kind
+    value: weights
+  r:
+    op: "!="
+    field: dep.licence.family
+    value: permissive
+
+# GRAPH-SCOPED, AND THE PREDICATE ABOVE DOES NOT SAY SO.
+#
+# Read the `when`: it is satisfied by any non-permissive weights dependency,
+# which is a perfectly ordinary one-dependency test. It is not one. The finding
+# this trap exists for is a *comparison* — this repository's code is permissive
+# while its weights are not — and no single dependency's facts contain that
+# comparison. The predicate is the precondition; internal/policy/crosscheck.go
+# does the comparing and supplies the reason line.
+#
+# This is why scope is a declared field rather than something the engine infers.
+# Nothing in the expression distinguishes it from the nine ordinary traps beside
+# it, and a trap that is declared, cited, rendered in the corpus browser and
+# never evaluated is precisely the state this catalogue was in before scope
+# existed. The guard TestEveryGraphScopedTrapHasAnEngineCheck holds both ends of
+# the claim: a graph trap with no check fails, and a check naming a trap that is
+# not declared graph-scoped fails too.
+scope: graph
+severity: CONDITION
+citation:
+  # SOURCE REPLACED, AND THE EXCERPT DOWNGRADED TO A PARAPHRASE.
+  #
+  # The previous version cited https://huggingface.co/docs/hub/model-cards and
+  # presented "The license of a model is recorded separately from the license of
+  # the code in the repository. A permissive repository license does not apply
+  # to the model weights." as a quotation. No sentence on that page says this —
+  # the page documents the `license` metadata field and nothing more. The
+  # sentence was written by the corpus author and printed in quotation marks,
+  # which is a fabricated quotation, and this trap is the product's signature
+  # finding, so a fabricated citation on it is the worst possible placement.
+  #
+  # The OSI Open Source AI Definition is the authoritative statement of the
+  # underlying fact: it lists Code and Parameters as distinct elements of a
+  # system, each with its own requirement. That is the fact. The inference —
+  # that a grant over one therefore does not reach the other — is Clearance's,
+  # so the excerpt is labelled a paraphrase and renders without quotation
+  # marks. If a source is later found that states the inference outright, this
+  # entry should be upgraded to verbatim.
+  url: https://opensource.org/ai/open-source-ai-definition
+  section: "Preferred form to make modifications to machine-learning systems"
+  excerpt: "The definition lists a system's Code and its Parameters (the model weights or other configuration settings) as separate elements, and requires each to be made available under OSI-approved licences or terms. It grants no permission over one by licensing the other."
+  excerpt_kind: paraphrase
+  retrieved_at: "2026-09-23"
+confidence: HIGH
+fix:
+  action: replace
+  suggestion: "Load weights whose licence permits your declared use, or change the declared use."
+  confidence: MEDIUM

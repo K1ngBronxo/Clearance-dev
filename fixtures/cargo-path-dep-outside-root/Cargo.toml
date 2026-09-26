@@ -1,0 +1,10 @@
+[package]
+name = "cargo-path-dep-outside-root"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+# A path dependency that points above the scanned root. INV-4 forbids reading
+# it, so its licence is genuinely unknown rather than silently dropped.
+internal-helper = { path = "../internal-helper" }

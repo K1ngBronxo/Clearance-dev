@@ -1,0 +1,174 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:15179c36-f3b5-57a6-b381-1a8b04c9a36b",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-24T08:00:00Z",
+    "tools": [
+      {
+        "vendor": "Clearance",
+        "name": "clearance",
+        "version": "0.9.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "acme-web",
+      "version": "0.0.0"
+    },
+    "properties": [
+      {
+        "name": "clearance:corpus-version",
+        "value": "2026.09.24"
+      },
+      {
+        "name": "clearance:corpus-signed",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "npm:@mendable/firecrawl-js@1.2.3",
+      "name": "@mendable/firecrawl-js",
+      "version": "1.2.3",
+      "purl": "pkg:npm/@mendable/firecrawl-js@1.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "CONDITION"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "attribution.required"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "HIGH"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://opensource.org/license/mit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "cargo:leftpad@1.0.0",
+      "name": "leftpad",
+      "version": "1.0.0",
+      "purl": "pkg:cargo/leftpad@1.0.0",
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "NOTE"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "licence.ambiguous"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "LOW"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://example.invalid/leftpad/LICENSE"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi:torch@2.4.0",
+      "name": "torch",
+      "version": "2.4.0",
+      "purl": "pkg:pypi/torch@2.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:severity",
+          "value": "CONDITION"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:finding-id",
+          "value": "network.disclosure"
+        },
+        {
+          "name": "clearance:finding-confidence",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "clearance:finding-citation",
+          "value": "https://www.gnu.org/licenses/agpl-3.0.html"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "acme-web",
+      "dependsOn": [
+        "npm:@mendable/firecrawl-js@1.2.3",
+        "pypi:torch@2.4.0"
+      ]
+    },
+    {
+      "ref": "npm:@mendable/firecrawl-js@1.2.3"
+    },
+    {
+      "ref": "cargo:leftpad@1.0.0"
+    },
+    {
+      "ref": "pypi:torch@2.4.0"
+    }
+  ],
+  "properties": [
+    {
+      "name": "clearance:verdict",
+      "value": "SHIP_CONDITIONAL"
+    },
+    {
+      "name": "clearance:intent-hash",
+      "value": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    }
+  ]
+}

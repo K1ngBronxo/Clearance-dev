@@ -1,0 +1,34 @@
+# A fixture-local corpus.
+#
+# This fixture is about a rule the corpus applies to itself — the staleness
+# downgrade — so the fixture supplies the corpus whose dates make the rule bite.
+# See guardFixtureCorpus in internal/guard_helpers_test.go for why this is the
+# honest way to test a date-dependent rule: writing the staleness into the
+# shipped corpus would either age every other fixture's expectations at the same
+# time, or make this test change meaning as the calendar moves.
+#
+# `last_verified` is 2025-01-01 and the guard suite injects Today = 2026-09-23,
+# so the entry is 630 days old against a 180-day window.
+platform: staletool
+display_name: StaleTool
+kind: hosted-service
+summary: >
+  A placeholder platform whose only purpose is to be old. The clause below is
+  declared BLOCK at HIGH confidence, which is the strongest thing the corpus can
+  say, so that the downgrade has the largest possible effect to demonstrate.
+detect:
+  bins: [staletool]
+restrictive_clauses:
+  - id: staletool.tos.prohibited-use
+    text_summary: >
+      A clause that is declared as an outright prohibition. In a fresh entry this
+      would block; in this one it must not, because the summary describing it is
+      more than a year old and terms of service change without notice.
+    severity: BLOCK
+    citation:
+      url: https://example.invalid/staletool/terms
+      section: "Prohibited Use"
+      retrieved_at: "2025-01-01"
+    confidence: HIGH
+last_verified: "2025-01-01"
+staleness_days: 180

@@ -1,0 +1,41 @@
+platform: openai
+display_name: OpenAI
+kind: hosted-service
+summary: >
+  The OpenAI API is governed by the Terms of Use and, separately, the Usage
+  Policies. The Usage Policies are the operative document for what a product may
+  do with the service and its output, and they apply in addition to the terms —
+  a paid account is not a permission.
+detect:
+  # Deliberately narrow. `openai` is matched as a package name and as a host
+  # only under api.openai.com; the bare string "openai" appears in blog posts,
+  # comparison tables and error messages, and none of those is an invocation.
+  hosts: [api.openai.com]
+  env: [OPENAI_API_KEY]
+  imports: [openai, openai-python, openai-node]
+restrictive_clauses:
+  - id: openai.tos.usage-policies
+    text_summary: >
+      Use of the services is subject to the Usage Policies, which set out what
+      you may and may not do with the services and with their output. They apply
+      in addition to the Terms of Use and can be updated independently of them,
+      so an integration that was acceptable at build time may not remain so.
+    severity: CONDITION
+    citation:
+      url: https://openai.com/policies/usage-policies
+      section: "Usage Policies"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: openai.tos.competing-models
+    text_summary: >
+      The Usage Policies restrict using the service or its output to build a
+      model that competes with OpenAI. A product that trains or distils a
+      competitor from API output is the case this clause addresses.
+    severity: CONDITION
+    citation:
+      url: https://openai.com/policies/usage-policies
+      section: "Disallowed usage"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+last_verified: "2026-09-18"
+staleness_days: 180

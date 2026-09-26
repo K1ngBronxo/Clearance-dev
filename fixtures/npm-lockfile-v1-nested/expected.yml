@@ -1,0 +1,50 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A lockfileVersion 1 npm lockfile, whose shape is a nested `dependencies` tree
+  rather than the flat `packages` map of v2 and v3. The parser walks that tree
+  breadth-first, and the assertion is that it reaches the nested entry: the only
+  thing that can make this verdict UNDETERMINED is `leftpad`, which exists
+  nowhere but one level down inside `express`.
+
+  WHY THE NESTED ENTRY IS THE POINT. This is the shape a transitive dependency
+  takes in a v1 lockfile, and a transitive dependency is exactly the one a
+  reader does not know about. A walk that visited only the top level would
+  report express (MIT, silent at `distributed: false`) and produce a clean SHIP
+  — a false pass manufactured by not looking. The undetermined record below is
+  the evidence that the deeper entry was read, and the version in its id
+  (`1.0.0`) is the evidence that it was read from the nested object rather than
+  invented.
+
+  WHY WTFPL AND NOT A BLOCKING LICENCE. WTFPL is a real identifier this build
+  knows (it is in the curated SPDX list) but the corpus carries no entry for it,
+  so INV-7 applies: the dependency is UNDETERMINED with `no_corpus_entry` and a
+  notice naming the licence. That keeps the fixture about the parser's reach and
+  not about the corpus's judgement — a copyleft entry here would add findings
+  that have nothing to do with the nested walk.
+
+  WHY `distributed` IS FALSE. MIT's obligations are gated on distribution, so
+  express contributes nothing. The finding list is deliberately empty: the only
+  assertion is the one undetermined record, and a fixture with extra findings
+  would make a failure harder to attribute.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete the nested `leftpad`
+  object and the verdict must fall to SHIP with no undetermined records — which
+  is precisely the false pass this fixture exists to prevent.
+
+findings: []
+
+undetermined:
+  - id: npm:leftpad@1.0.0
+    reason: no_corpus_entry
+
+# The human-readable half of the same fact. See mixed/expected.yml for why the
+# notice is pinned alongside the undetermined record: the record says "something
+# could not be classified", the notice says which licence.
+warnings: []
+notices:
+  - E-POLICY-001

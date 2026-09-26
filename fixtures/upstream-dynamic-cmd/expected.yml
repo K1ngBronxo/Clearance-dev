@@ -1,0 +1,39 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP
+
+why: >
+  This is the negative half of the platform layer, and the harder half to get
+  right. The project does spawn processes, and Clearance cannot say which ones.
+
+  THE TEMPTING BUG. `exec.Command(tool, args...)` has the same call shape as
+  `exec.Command("ffmpeg", ...)`, so a detector that matched on the call rather
+  than on the argument would read `tool` as a binary name. The corpus would
+  then be searched for a platform called "tool", find nothing, and either stay
+  silent or - worse - a future version that fuzzy-matched names would attribute
+  this to some real platform and inherit its terms. Both are inventions.
+
+  WHAT ACTUALLY HAPPENS, AND WHY IT IS THE HONEST ANSWER. The spawn is
+  recorded as a fact with no platform attached, and the scan raises E-SCAN-021
+  saying so. There is no finding, because a finding must cite a clause (INV-1)
+  and there is no clause to cite. The verdict stays SHIP, and that is not a
+  false pass: SHIP claims "no known obligation contradicts the declared
+  intent", and here nothing is known. The warning is what stops the silence
+  from being a lie - delete it and this fixture goes red, which is the whole
+  reason the harness asserts warning codes.
+
+  WHY NOT A LOW-CONFIDENCE FINDING. The spec's §3.1 says a dynamic name is
+  "flagged at LOW confidence with a note". A LOW finding would have to cite
+  something, and the only honest citation is the spawn itself, which is not a
+  licence term. A warning carrying the same sentence gives the reader exactly
+  the same information without inventing a clause. The distinction the spec is
+  actually drawing is "reported, not silent", and that is preserved.
+
+findings: []
+
+undetermined: []
+warnings:
+  - E-SCAN-021
+notices: []

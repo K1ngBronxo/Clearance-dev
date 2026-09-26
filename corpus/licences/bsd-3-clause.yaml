@@ -1,0 +1,87 @@
+id: licence.bsd-3-clause
+spdx_id: BSD-3-Clause
+name: BSD 3-Clause "New" or "Revised" License
+family: permissive
+osi_approved: true
+fsf_libre: true
+permissiveness: 5
+
+obligations:
+  - id: bsd-3-clause.source-retention
+    kind: ATTRIBUTION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      BSD-3-Clause clause 1 requires that redistributions of source code retain
+      the copyright notice, the list of conditions and the disclaimer. Source
+      you ship must carry them unchanged.
+    citation:
+      url: https://opensource.org/license/bsd-3-clause
+      section: "Clause 1"
+      excerpt: "Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Retain the dependency's LICENSE text verbatim in your source distribution."
+      confidence: HIGH
+
+  - id: bsd-3-clause.binary-reproduction
+    kind: LICENCE_INCLUSION
+    severity: CONDITION
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      BSD-3-Clause clause 2 requires that binary-form redistributions reproduce
+      the copyright notice, conditions and disclaimer in the documentation or
+      other materials shipped with the binary. A binary-only release still owes
+      this.
+    citation:
+      url: https://opensource.org/license/bsd-3-clause
+      section: "Clause 2"
+      excerpt: "Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: attribute
+      suggestion: "Add the dependency's licence text to your binary's credits or about screen."
+      confidence: HIGH
+
+  - id: bsd-3-clause.no-endorsement
+    kind: BRAND_EXCLUSION
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      BSD-3-Clause clause 3 forbids using the copyright holder's or contributors'
+      names to endorse or promote products derived from the software without
+      prior written permission. Marketing that implies endorsement breaches it.
+    citation:
+      url: https://opensource.org/license/bsd-3-clause
+      section: "Clause 3"
+      excerpt: "Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: rebrand
+      suggestion: "Remove any implication that the upstream authors endorse your product."
+      confidence: HIGH
+
+traps: []
+
+citation:
+  url: https://opensource.org/license/bsd-3-clause
+  section: "BSD 3-Clause License"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

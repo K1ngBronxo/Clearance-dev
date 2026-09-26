@@ -1,0 +1,97 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:c153ca9f-780f-53ca-b67c-e99ce36f2925",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-24T08:00:00Z",
+    "tools": [
+      {
+        "vendor": "Clearance",
+        "name": "clearance",
+        "version": "0.9.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "acme-web",
+      "version": "0.0.0"
+    },
+    "properties": [
+      {
+        "name": "clearance:corpus-version",
+        "value": "2026.09.24"
+      },
+      {
+        "name": "clearance:corpus-signed",
+        "value": "false"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "npm:leftpad@1.0.0",
+      "name": "leftpad",
+      "version": "1.0.0",
+      "purl": "pkg:npm/leftpad@1.0.0",
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "package"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:undetermined",
+          "value": "licence_file_unreadable"
+        }
+      ]
+    },
+    {
+      "type": "machine-learning-model",
+      "bom-ref": "weights:models/x.bin",
+      "name": "models/x.bin",
+      "properties": [
+        {
+          "name": "clearance:kind",
+          "value": "weights"
+        },
+        {
+          "name": "clearance:licence-source",
+          "value": "lockfile"
+        },
+        {
+          "name": "clearance:undetermined",
+          "value": "no_licence_found"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "acme-web",
+      "dependsOn": [
+        "npm:leftpad@1.0.0"
+      ]
+    },
+    {
+      "ref": "npm:leftpad@1.0.0"
+    },
+    {
+      "ref": "weights:models/x.bin"
+    }
+  ],
+  "properties": [
+    {
+      "name": "clearance:verdict",
+      "value": "UNDETERMINED"
+    },
+    {
+      "name": "clearance:intent-hash",
+      "value": "9f2c1b7a4e8d0f3a5c6b1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    }
+  ]
+}

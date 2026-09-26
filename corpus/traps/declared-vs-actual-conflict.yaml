@@ -1,0 +1,41 @@
+id: trap.declared-vs-actual-conflict
+title: "The declared licence and the actual licence disagree"
+summary: >
+  A manifest declares one licence while the vendored LICENSE file states
+  another. The disagreement is itself the finding: the more restrictive licence
+  governs, and the package's own metadata has been shown to be unreliable, so
+  every other declaration it makes is now suspect.
+when:
+  op: "=="
+  field: dep.kind
+  value: vendored
+
+# GRAPH-SCOPED. The predicate says "this dependency is a vendored file", which
+# is one dependency's fact — but the finding is not. It needs the vendored
+# LICENSE, the *manifest's* declared licence, and a permissiveness comparison
+# between the two. The predicate is the precondition that keeps the check cheap;
+# internal/policy/crosscheck.go decides it.
+#
+# See the long note in code-weights-divergence.yaml for why this is declared
+# rather than inferred.
+scope: graph
+severity: CONDITION
+citation:
+  # WRONG SOURCE CORRECTED. The previous version cited the SPDX spec root with
+  # the section label "Package License Concluded and Package License Declared"
+  # and an excerpt that does not appear anywhere in the specification. The two
+  # fields are real, but they are specified in Clause 7, and the sentence that
+  # actually addresses a disagreement between them is in 7.13.
+  #
+  # The excerpt below is 7.13.1, quoted whole. A reader who follows the URL and
+  # searches "Concluded License is not the same" lands on it.
+  url: https://spdx.github.io/spdx-spec/v2.3/package-information/
+  section: "7.13 Concluded license field"
+  excerpt: "If the Concluded License is not the same as the Declared License (7.15), a written explanation should be provided in the Comments on License field (7.16)."
+  excerpt_kind: verbatim
+  retrieved_at: "2026-09-23"
+confidence: HIGH
+fix:
+  action: replace
+  suggestion: "Treat the vendored LICENSE text as authoritative and re-check the package's other metadata."
+  confidence: MEDIUM

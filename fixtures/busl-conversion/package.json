@@ -1,0 +1,8 @@
+{
+  "name": "busl-conversion",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "hashi-thing": "^1.1.0"
+  }
+}

@@ -1,0 +1,57 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  LGPL-3.0 is the licence teams reach for when they want copyleft without the
+  GPL's reach into their own code. It grants that — conditionally. The condition
+  is that the user can replace the library with a modified version, and static
+  linking is what removes that ability.
+
+  # WHY THIS TRAP NAMES THE LICENCE AND NOT THE FAMILY
+
+  `weak-copyleft` is the family, and it contains two licences that behave very
+  differently here: LGPL-3.0-only and MPL-2.0. MPL-2.0 is *file-level*
+  copyleft — you satisfy it by publishing the files you modified, and it has no
+  relinking requirement at all.
+
+  Keyed on the family, this trap fired on MPL-2.0 dependencies and told their
+  users to ship relinkable object files and build scripts. That is advice for a
+  licence they do not have, attached to a citation — LGPL-3.0 section 4 — that
+  does not govern the dependency it was printed against. So the predicate is
+  `dep.licence.spdx == LGPL-3.0-only`.
+
+  The general rule this fixture pins: a family is a class, and a trap is
+  usually about a licence. Reach for the identifier unless the clause really is
+  about the class.
+
+  # WHY IT IS A CONDITION, NOT A BLOCKER
+
+  Because it is satisfiable without changing what you ship. Link the library
+  dynamically and the replaceability the clause requires is preserved by the
+  ordinary mechanism of dynamic linking; or ship the object files and the build
+  scripts and the user can relink. The corpus rates it CONDITION at HIGH
+  confidence, and nothing gates it down.
+
+  # THE NOTE BESIDE IT
+
+  lgpl-3.0.dynamic-linking-note is MEDIUM confidence and renders as a NOTE with
+  the clause text shown. It is the corpus stating the *other* half of the rule —
+  that dynamic linking against an unmodified LGPL library does not reach your
+  own code — and it is MEDIUM because that reading is Clearance's, drawn from
+  the GPL FAQ rather than from a sentence in the licence. The renderer shows the
+  excerpt so a reader can judge it rather than take it.
+
+findings:
+  - dependency: npm:libcodec@1.4.0
+    kind: trap.lgpl.static-linking
+    severity: CONDITION
+  - dependency: npm:libcodec@1.4.0
+    kind: lgpl-3.0.dynamic-linking-note
+    severity: NOTE
+
+undetermined: []
+warnings: []
+notices: []

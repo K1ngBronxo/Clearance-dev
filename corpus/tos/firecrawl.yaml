@@ -1,0 +1,45 @@
+platform: firecrawl
+display_name: Firecrawl
+kind: hosted-service
+summary: >
+  The hosted Firecrawl API is a commercial service with its own terms. The
+  self-hosted code is AGPL-3.0 (see the code-licence layer) — these terms
+  govern the hosted service, not the code. A project that calls the hosted API
+  inherits them whether or not it depends on the npm package.
+detect:
+  # The CLI and the SDK are two ways into the same service, so both are listed.
+  # The slug `firecrawl` is matched with no configuration; these are the
+  # spellings that do not look like the slug.
+  bins: [firecrawl]
+  hosts: [firecrawl.dev]
+  env: [FIRECRAWL_API_KEY]
+  imports:
+    - firecrawl
+    - firecrawl-js
+    - firecrawl-py
+    - "@mendable/firecrawl-js"
+restrictive_clauses:
+  - id: firecrawl.tos.automation
+    text_summary: >
+      Automated or bulk access outside the documented API endpoints is
+      prohibited without a written agreement. Scraping the service rather than
+      calling it is the case this clause is aimed at.
+    severity: CONDITION
+    citation:
+      url: https://www.firecrawl.dev/terms-of-service
+      section: "Acceptable Use"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+  - id: firecrawl.tos.resale
+    text_summary: >
+      Reselling API access as a standalone product is prohibited. Wrapping the
+      API inside your own product is a different act from selling the API
+      itself, and this clause draws that line.
+    severity: BLOCK
+    citation:
+      url: https://www.firecrawl.dev/terms-of-service
+      section: "Restrictions"
+      retrieved_at: "2026-09-18"
+    confidence: MEDIUM
+last_verified: "2026-09-18"
+staleness_days: 180

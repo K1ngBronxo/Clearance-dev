@@ -1,0 +1,58 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: SHIP_CONDITIONAL
+
+why: >
+  This fixture is the positive half of the territorial layer: a licence whose
+  permission is conditional on WHERE you operate, and an intent that declares a
+  territory inside the gate.
+
+  PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part B §5 gives
+  the pattern: an obligation of kind TERRITORIAL_GATE whose `when` reads
+  `use.commercial` AND `territories contains "RU"`. The declared intent is
+  commercial, the declared territory is RU, so the gate fires at its declared
+  severity of CONDITION and the verdict is SHIP CONDITIONAL.
+
+  # WHY THIS FIXTURE EXISTS AT ALL, AND WHAT IT REFUTES
+
+  A review of this repository reported that the whole territorial layer was
+  inert, and specifically that "the plan's catalogue fixtures for
+  territorial-gate / territorial-undeclared / territorial-clean cannot be
+  written as specified". That claim is half true and half false, and the
+  difference matters:
+
+    - The JURISDICTION-OVERLAY half — the `gates:` lists in
+      corpus/territories/*.yaml — is indeed inert. No code in internal/policy
+      reads Corpus.Territory() or a TerritoryEntry's Gates, so declaring a
+      territory produces no overlay finding.
+    - The TERRITORIAL-CLAUSE half — a licence obligation gated on the
+      `territories` intent field — is LIVE, and this fixture proves it. It was
+      live before this fixture existed; what was missing was corpus data (no
+      shipped licence carries a TERRITORIAL_GATE obligation) and a test.
+
+  So the three catalogue fixtures are writable, and the two that name a
+  territorial CLAUSE are written here. This one is the one that must produce a
+  CONDITION.
+
+  # WHAT WOULD MAKE THIS FIXTURE FAIL FOR THE RIGHT REASON
+
+  Delete the `territories:` block and the same tree becomes
+  fixtures/territorial-undeclared: the predicate goes UNKNOWN, the finding
+  becomes a NOTE, and the verdict becomes UNDETERMINED. Change RU to US and it
+  becomes fixtures/territorial-clean: the predicate is FALSE, there is no
+  finding, and the verdict is SHIP. The three fixtures are one project under
+  three intents, which is what makes the pair worth having.
+
+findings:
+  - dependency: npm:demo-lib@1.0.0
+    kind: territorial-demo.territorial-commercial-gate
+    severity: CONDITION
+
+undetermined: []
+warnings: []
+notices: []

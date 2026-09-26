@@ -1,0 +1,98 @@
+id: licence.lgpl-3.0-only
+spdx_id: LGPL-3.0-only
+name: GNU Lesser General Public License v3.0 only
+family: weak-copyleft
+osi_approved: true
+fsf_libre: true
+permissiveness: 2
+
+obligations:
+  - id: lgpl-3.0.modified-library-source
+    kind: SOURCE_DISCLOSURE
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      LGPL-3.0 §2 requires that if you convey a modified version of the library
+      you license the modified library under the LGPL and make its source
+      available. Your own application that merely links the library is unaffected.
+    citation:
+      url: https://www.gnu.org/licenses/lgpl-3.0.html
+      section: "§2"
+      excerpt: "You may convey a work based on the Library ... provided that you also meet the following conditions: ... the work must be licensed as a whole under the terms of this License."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: configure
+      suggestion: "Keep modifications to the LGPL library in their own files and publish their source."
+      confidence: HIGH
+
+  - id: lgpl-3.0.combined-work-relink
+    kind: SOURCE_DISCLOSURE
+    severity: CONDITION
+    when:
+      op: and
+      l:
+        op: "=="
+        field: use.modified
+        value: true
+      r:
+        op: "=="
+        field: use.distributed
+        value: true
+    message: >
+      LGPL-3.0 §4(d)(0) requires that a Combined Work give recipients the
+      Corresponding Application Code needed to relink the application with a
+      modified version of the library. Static linking makes this a real duty.
+    citation:
+      url: https://www.gnu.org/licenses/lgpl-3.0.html
+      section: "§4(d)(0)"
+      excerpt: "Convey the Minimal Corresponding Source ... and the Corresponding Application Code in a form suitable for, and under terms that permit, the user to recombine or relink the Application with a modified version of the Linked Version."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: HIGH
+    fix:
+      action: configure
+      suggestion: "Link dynamically, or ship the object files and build scripts needed to relink."
+      confidence: HIGH
+
+  - id: lgpl-3.0.dynamic-linking-note
+    kind: SOURCE_DISCLOSURE
+    severity: NOTE
+    when:
+      op: "=="
+      field: use.distributed
+      value: true
+    message: >
+      Dynamic linking against an unmodified LGPL library does not by itself
+      place your application under the LGPL, provided the user can replace the
+      library. Static linking removes that replaceability and triggers §4.
+    citation:
+      url: https://www.gnu.org/licenses/gpl-faq.html
+      section: "LGPL and dynamic linking"
+      excerpt: "if you link the library dynamically, and the library is not modified, then you can distribute your program under terms of your choice."
+      excerpt_kind: unverified
+      retrieved_at: "2026-09-20"
+    confidence: MEDIUM
+    fix:
+      action: configure
+      suggestion: "Prefer dynamic linking so that the user can substitute the library."
+      confidence: MEDIUM
+
+traps: []
+
+citation:
+  url: https://www.gnu.org/licenses/lgpl-3.0.html
+  section: "GNU LGPL v3"
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+last_verified: "2026-09-20"

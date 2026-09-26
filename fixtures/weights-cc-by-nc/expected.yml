@@ -1,0 +1,113 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go. See expected.yml in
+# npm-agpl-saas/ for why these are claims rather than recorded snapshots.
+verdict: DO_NOT_SHIP
+
+why: >
+  This is the launch story. The repository's code is MIT — permissive,
+  commercial-friendly, the licence nobody has to think about. Its model weights
+  are CC-BY-NC-4.0, which permits non-commercial use only. The two licences are
+  attached to two different artefacts in the same tree, and a code-licence
+  scanner reads only the first one and reports SHIP.
+
+  Three independent things go wrong here, and all three are asserted:
+
+  1. The weights themselves breach their own licence. The use facts declare
+     commercial: true, so cc-by-nc-4.0.non-commercial fires at BLOCK. This is
+     the obligation layer doing ordinary work on a dependency it has never seen
+     before, because weights are first-class dependencies (Principle 4).
+
+  2. The permissive code licence is being read as permission for the weights.
+     trap.code-weights-divergence fires at BLOCK because the code (MIT,
+     permissiveness 5) is strictly more permissive than the weights
+     (CC-BY-NC-4.0, permissiveness 1) in the same repository scope. This is the
+     finding no code-licence scanner produces, and it is the reason the weights
+     detector exists at all.
+
+  3. trap.weights.cc-by-nc-commercial fires at BLOCK. This trap is the reason
+     the entry is worth reading: it used to be *dead data*.
+
+  # THE TRAP THAT NOW FIRES, AND WHY IT USED TO NOT
+
+  The previous version of this file recorded that this trap "is not in the
+  findings below and it cannot be, because no code path evaluates a global
+  trap's `when` expression". That was accurate, and it was the product's largest
+  single hole: every trap in corpus/traps/ was declared, cited, rendered in the
+  corpus browser and never evaluated. Only the two ids hardcoded in
+  policy/crosscheck.go could ever produce a finding.
+
+  The engine now evaluates the `when` of every trap whose scope is `dependency`,
+  once per dependency, against the same context an obligation uses. This fixture
+  is the first of eleven that pins the result.
+
+  # THE OVERLAP WITH FINDING 1, WHICH IS DELIBERATE AND IS WORTH KNOWING ABOUT
+
+  Findings 1 and 3 are two claims about the same fact, and both are BLOCK, so a
+  reader sees the same prohibition twice. They are not the same claim:
+
+    - cc-by-nc-4.0.non-commercial is the OBLIGATION layer. It answers "what does
+      this licence require of you?", and it lives on the licence's corpus entry.
+    - trap.weights.cc-by-nc-commercial is the CATALOGUE layer. It answers "which
+      named, cited failure mode is this project in?", and it lives in
+      corpus/traps/. Its citation is the licence text itself.
+
+  The layers are kept separate because the catalogue has to be able to express
+  failure modes an obligation cannot — a graph-level divergence, or a dependency
+  with no licence at all. De-duplicating the two would mean the tool decided
+  which of two true statements to withhold, and it would have to decide it from
+  the citations, which is a heuristic and not a rule.
+
+  This is recorded rather than hidden: if the duplicate becomes noise in
+  practice, the fix is for the corpus to stop declaring the same fact in both
+  layers, not for the engine to start guessing.
+
+  # WHERE THE LICENCE CAME FROM
+
+  models/model.safetensors is a real SafeTensors file — an 8-byte
+  little-endian header length followed by a JSON header — but it carries no
+  licence of its own, and it is far below the 64 KiB sniff floor. So the
+  detector falls through to the metadata sources beside it and reads
+  models/config.json, which declares "license": "cc-by-nc-4.0" in the
+  lowercase spelling Hugging Face actually writes.
+
+  That lowercase spelling is load-bearing. SPDX says identifiers are matched
+  case-insensitively; an earlier build compared them case-sensitively, so this
+  exact fixture produced a false SHIP. The fixture is the regression test for
+  that bug, which is why the expected licence below is the canonical
+  CC-BY-NC-4.0 and not the string in the file.
+
+  # WHAT THE CONDITIONS AND THE NOTE ARE
+
+  Two conditions and a note ride along, and they are not noise — they are what
+  a real verdict looks like. Attribution applies to both artefacts because
+  `distributed: true`, and MIT's patent-grant note is MEDIUM confidence, so it
+  renders as a NOTE even though the obligation itself is not conditional. The
+  fixture pins all three so that a change in the obligation layer shows up here
+  rather than only in the mixed fixtures.
+
+findings:
+  - dependency: weights:models/model.safetensors
+    kind: cc-by-nc-4.0.non-commercial
+    severity: BLOCK
+  - dependency: weights:models/model.safetensors
+    kind: trap.code-weights-divergence
+    severity: BLOCK
+  - dependency: weights:models/model.safetensors
+    kind: trap.weights.cc-by-nc-commercial
+    severity: BLOCK
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: cc-by-nc-4.0.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+# Empty, and that is the assertion. Every dependency in this tree resolved to a
+# corpus entry, so the verdict is DO NOT SHIP rather than UNDETERMINED. A
+# fixture that had both a blocker and an unresolved dependency would pass while
+# proving nothing about which rule the fold applied.
+undetermined: []

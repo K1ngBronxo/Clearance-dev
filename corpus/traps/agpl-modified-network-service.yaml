@@ -1,0 +1,45 @@
+id: trap.agpl.modified-network-service
+title: "A modified AGPL service must offer its source"
+summary: >
+  Running a modified AGPL-3.0 work as a network service is the case §13 was
+  written for. Users interacting with it remotely must be offered the
+  Corresponding Source, so an AGPL dependency inside a SaaS is a disclosure
+  event even though no binary is ever shipped to anyone.
+when:
+  # MODIFICATION IS TESTED, AND IT WAS NOT BEFORE.
+  #
+  # The title and the summary above both say "modified", but the predicate only
+  # tested network exposure. Firing on the unmodified case would have made this
+  # trap escalate to BLOCK exactly the deployment that the AGPL entry's own
+  # `agpl-3.0.network-unmodified` obligation rates CONDITION, with the reason
+  # "serving an unmodified AGPL work is not itself a section 13 trigger". Two
+  # parts of the corpus would then have contradicted each other, and the louder
+  # one would have won by accident.
+  op: and
+  l:
+    op: and
+    l:
+      op: "=="
+      field: use.network_exposed
+      value: true
+    r:
+      op: "=="
+      field: use.modified
+      value: true
+  r:
+    op: "=="
+    field: dep.licence.family
+    value: network-copyleft
+scope: dependency
+severity: BLOCK
+citation:
+  url: https://www.gnu.org/licenses/agpl-3.0.html
+  section: "§13 (network service)"
+  excerpt: "if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network ... an opportunity to receive the Corresponding Source."
+  excerpt_kind: unverified
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+fix:
+  action: replace
+  suggestion: "Replace the AGPL dependency, or publish and offer the Corresponding Source to network users."
+  confidence: HIGH

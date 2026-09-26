@@ -1,0 +1,53 @@
+# The verdict this fixture must produce.
+#
+# `severity` below is the EFFECTIVE severity — the band the finding landed in
+# after the confidence gate — not the severity the corpus declared.
+verdict: UNDETERMINED
+
+why: >
+  A PEP 508 requirements file containing a directive the parser deliberately
+  refuses to follow: `-e .`, an editable install. The assertion is the warning,
+  not the verdict: E-PARSE-002 must be raised, because a line the parser skipped
+  is a dependency the user may believe was reviewed and was not.
+
+  WHY A WARNING IS THE RIGHT SHAPE HERE. INV-1 says no finding exists without a
+  resolvable citation, and there is no clause to cite for "this line was
+  skipped" — it is a statement about the scan, not about a licence. So the
+  honest output is a diagnostic, and the fixture harness asserts warnings
+  precisely so that a silent skip is a test failure. A tool that quietly dropped
+  the line and reported only requests would look identical to one that had read
+  the whole file.
+
+  WHY THE VERDICT IS STILL UNDETERMINED. requests resolves from the file, but
+  requirements.txt records no licence, and PyPI metadata is not fetched (INV-3).
+  So the dependency cannot be classified and INV-7 forbids guessing:
+  `licence_unresolved`. The corpus's absent-licence trap fires with it —
+  `dep.licence.resolved == false` — and lands as a CONDITION after the
+  confidence gate, because it is declared BLOCK at MEDIUM.
+
+  A KNOWN DIVERGENCE, STATED SO A FUTURE READER IS NOT MISLED.
+  PLAN/02-SPECIFICATIONS/04-detection-spec-code-licence.md §7.2 says an editable
+  entry should be "treat[ed] as local, resolve from the local path". The
+  implementation warns and skips instead. This fixture pins the behaviour that
+  exists. When §7.2 is implemented, this fixture SHOULD fail — on the warning
+  list — and the fix is to update the expectation, not to restore the skip. The
+  warning is the part that must survive either way.
+
+  WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON. Delete the `-e .` line and the
+  E-PARSE-002 warning must vanish, because there is nothing left to skip. Change
+  it to `-r other.txt` and the same warning must appear from a different branch
+  of the same rule.
+
+findings:
+  - dependency: pypi:requests@2.31.0
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+
+undetermined:
+  - id: pypi:requests@2.31.0
+    reason: licence_unresolved
+
+warnings:
+  - E-PARSE-002
+
+notices: []

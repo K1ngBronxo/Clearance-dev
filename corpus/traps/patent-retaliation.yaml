@@ -1,0 +1,37 @@
+id: trap.patent.retaliation
+title: "A patent-retaliation clause withdraws the grant if you sue"
+summary: >
+  Several otherwise permissive licences, Apache-2.0 §3 among them, grant a
+  patent licence that terminates the moment the licensee initiates patent
+  litigation over the work. A company with a patent portfolio must know that
+  asserting a patent against a dependency can cost it the licence.
+when:
+  op: and
+  l:
+    op: "=="
+    # NARROWED FROM family == permissive. The summary above says "several
+    # otherwise permissive licences, Apache-2.0 section 3 among them", but the
+    # citation is Apache-2.0 section 3 and MIT has no patent clause at all.
+    # Keyed on the family, this trap told the user of an MIT dependency that
+    # filing a patent suit would terminate a patent grant the MIT licence never
+    # made — a finding whose citation does not support it, which is the one
+    # thing INV-1 exists to prevent.
+    field: dep.licence.spdx
+    value: Apache-2.0
+  r:
+    op: "=="
+    field: use.distributed
+    value: true
+scope: dependency
+severity: NOTE
+citation:
+  url: https://www.apache.org/licenses/LICENSE-2.0
+  section: "§3 (patent termination)"
+  excerpt: "If You institute patent litigation against any entity ... alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate."
+  excerpt_kind: unverified
+  retrieved_at: "2026-09-20"
+confidence: HIGH
+fix:
+  action: configure
+  suggestion: "Review any patent assertion against a dependency before filing; it may terminate your patent grant."
+  confidence: MEDIUM

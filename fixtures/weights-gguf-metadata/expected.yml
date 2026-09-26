@@ -1,0 +1,65 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+verdict: SHIP_CONDITIONAL
+
+why: >
+    The only format that carries its own licence. A GGUF file holds a metadata
+    block inside the file, and `general.license` is written into it by the
+    exporter at publish time. This fixture has no config.json, no README and no
+    sibling LICENSE - the licence exists in exactly one place, and that place is
+    inside the binary.
+
+    # WHY THIS SOURCE IS RANKED HIGHEST
+
+    The scanner reads four sources in confidence order and stops at the first hit:
+    GGUF in-file metadata (HIGH), sibling config.json (HIGH), README.md
+    frontmatter (HIGH), then prose (MEDIUM, then LOW). The in-file block is first
+    because it is the only one that survives being separated from the repository.
+    Copy model.gguf off a disk and it still declares its licence; copy a
+    SafeTensors file and you have a licence-shaped hole where the config.json used
+    to be.
+
+    The fixture is built to prove the ordering rather than assume it. Everything
+    below GGUF is absent, so a regression that made the in-file reader return
+    "not found" cannot be masked by a sibling quietly answering instead - it
+    shows up as UNDETERMINED, which is what weights-no-licence looks like.
+
+    # THE BYTES ARE THE TEST
+
+    models/model.gguf is a hand-built metadata block and nothing else: the magic,
+    a version, zero tensors, and four key/value pairs. `general.license` is the
+    only one that matters; `general.architecture` and `general.name` exist so the
+    block has to SKIP values it does not care about, and `general.license.link`
+    exists because GGUF writes the URL separately from the identifier.
+
+    # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+    Truncate the block mid-string and this must become UNDETERMINED with
+    E-SCAN-012, not "no licence" - a header that ran out is a different fact from
+    a header that answered. Set the licence to a string that is not an SPDX
+    identifier, such as `see the LICENSE file`, and the same UNDETERMINED must
+    follow, because a pointer to a licence is not a licence.
+
+findings:
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.gguf
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: weights:models/model.gguf
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: weights:models/model.gguf
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.gguf
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: weights:models/model.gguf
+    kind: trap.patent.retaliation
+    severity: NOTE
