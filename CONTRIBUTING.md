@@ -16,7 +16,7 @@ If a change weakens either, it will not be merged — however useful it looks.
 
 ## 1. Prerequisites
 
-- **Go 1.23+**
+- **Go 1.25.13+** — what `go.mod` declares
 - **Git**
 - On Windows: **Git Bash** (the founder's environment; there is no Docker, no
   WSL, no container anywhere in the workflow)

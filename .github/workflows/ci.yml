@@ -125,10 +125,16 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          # Pinned to the v1.x line the .golangci.yml schema targets.
-          version: v1.62.2
+          # Pinned to the exact release `make lint` was verified against rather
+          # than a floating major, so CI and the maintainer's machine run the
+          # same binary. Action v8 requires golangci-lint v2.1.0 or newer and
+          # .golangci.yml is schema v2. The v6 action this replaced supports the
+          # v1 line only, and a v1 binary cannot lint this module at all now
+          # that go.mod requires go1.25.13: its loader is built on go1.23 and
+          # refuses a module declaring a newer `go` directive.
+          version: v2.14.0
           args: --timeout=5m
 
   # ---------------------------------------------------------------------------

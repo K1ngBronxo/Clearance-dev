@@ -15,8 +15,30 @@ described.
 
 ## [Unreleased]
 
-Nothing yet. The next entry will be a binary release; the corpus is versioned
-separately.
+### Changed
+
+- **The minimum Go version is now 1.25.13**, up from `go 1.23`. This is a
+  build-time change only; the binary behaves identically. It is recorded
+  because it is the one change here a downstream builder feels: `go 1.23`
+  through `go 1.25.12` will now refuse this module, or fetch the declared
+  toolchain automatically when `GOTOOLCHAIN` is at its default `auto`.
+
+  The reason is `make vulncheck`, which runs govulncheck against the
+  toolchain's own standard library. At `go 1.23.4` it reported 31 reachable
+  standard-library advisories and still 24 at `go 1.23.12`; the fixing
+  releases are `go 1.25.13` and `go 1.24.11`. Declaring the patched minimum in
+  `go.mod` is what turns that from a check that has to be run into a build
+  that cannot quietly succeed on a toolchain carrying the defect.
+
+- **`.golangci.yml` is now schema v2**, for golangci-lint v2, because a v1
+  binary cannot lint a module declaring `go 1.25` at all — its loader is built
+  on `go1.23` and refuses the newer directive. The lint rules themselves are
+  unchanged: all four `depguard` banned-import rules survive the migration and
+  each was verified to still fire. CI moves with it, from
+  `golangci/golangci-lint-action@v6` on `v1.62.2` to `@v8` on `v2.14.0`.
+
+Nothing else yet. The next entry will be a binary release; the corpus is
+versioned separately.
 
 ---
 

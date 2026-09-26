@@ -17,10 +17,12 @@ GO ?= go
 GOFLAGS ?= -mod=readonly
 export GOFLAGS
 
-# CI pins this in .github/workflows/ci.yml (golangci/golangci-lint-action@v6,
-# version: v1.62.2) and .golangci.yml is written for that v1.x schema. Installing
-# @latest here will eventually give you a v2 line whose schema this file does not
-# match, and `make lint` will fail on the config rather than on the code.
+# CI pins the exact release in .github/workflows/ci.yml
+# (golangci/golangci-lint-action@v8, version: v2.14.0) and .golangci.yml is
+# written for that v2 schema. Install that release rather than whatever
+# `@latest` resolves to: a future schema would fail on this file's config, and
+# a config failure reads like a code failure while telling you nothing about
+# the code.
 GOLANGCI_LINT ?= golangci-lint
 GORELEASER    ?= goreleaser
 
@@ -28,8 +30,9 @@ GORELEASER    ?= goreleaser
 # (v1.8.0) requires go >= 1.26.0, so `make vulncheck` failed on the tool rather
 # than on the code, silently reporting nothing at all. That is the defect this
 # repository keeps re-finding — a gate that cannot run is a gate that passes.
-# v1.1.4 is the newest release that runs on the go 1.23 toolchain this module
-# targets (go.mod). Bump it together with GOTOOLCHAIN, not separately.
+# v1.1.4 is verified to run on the toolchain this module targets (go.mod,
+# go1.25.13). Moving the pin means re-running `make vulncheck`: the failure mode
+# above is silent, so the pin is worth only what the last run proved.
 GOVULNCHECK   ?= golang.org/x/vuln/cmd/govulncheck@v1.1.4
 
 BINARY        := clearance

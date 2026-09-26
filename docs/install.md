@@ -89,7 +89,7 @@ build provenance (commit and SLSA level).
 
 ## Option C — build from source
 
-You need **Go 1.23 or later**. Nothing else.
+You need **Go 1.25.13 or later** — the version `go.mod` declares. Nothing else.
 
 ```bash
 git clone https://github.com/clearance-dev/clearance

@@ -167,7 +167,8 @@ answer. See [ADR-001](docs/adr/ADR-001-go-static-zero-deps.md).
 
 ## Building and contributing
 
-Requires **Go 1.23+**; nothing else. On Windows, use **Git Bash**.
+Requires **Go 1.25.13 or later** — the version `go.mod` declares, and an older
+Go will fetch it automatically. Nothing else. On Windows, use **Git Bash**.
 
 ```bash
 make test     # guard tests first, then go test ./... -race
