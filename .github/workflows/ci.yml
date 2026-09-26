@@ -66,6 +66,14 @@ jobs:
         run: make guard
       - name: Architectural import-graph test
         run: make arch
+      # The corpus YAML tree is the source of truth every guard above reads, and
+      # nothing validated it on a pull request. `make corpus-verify` runs the
+      # compiler's own schema/citation/no-silent-upgrade rules, which read
+      # corpus/**/*.yaml and need no key and no signed bundle — so it is safe
+      # here, unlike `make dogfood` (see the note at the bottom of this file).
+      # A malformed or uncited corpus entry used to reach main unchallenged.
+      - name: Corpus validation (schema, citations, no silent upgrade)
+        run: make corpus-verify
 
   # ---------------------------------------------------------------------------
   # 2. TEST — build, then the full suite with the race detector and coverage,
@@ -89,8 +97,13 @@ jobs:
           cache-dependency-path: go.sum
       - name: Build
         run: go build ./...
-      - name: Test (race + coverage)
-        run: go test ./... -race -coverprofile=cover.out
+      # -count=1, for the same reason `make test` carries it: this job restores
+      # the Go build cache (`cache: true`), and without -count=1 Go replays a
+      # cached PASS — so the headline test step could report green without
+      # executing a single test. The suite is the product's main evidence; it
+      # should cost what it costs.
+      - name: Test (race + coverage, uncached)
+        run: go test ./... -race -count=1 -coverprofile=cover.out
       - name: Upload coverage profile
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
@@ -209,3 +222,29 @@ jobs:
           cache-dependency-path: go.sum
       - name: govulncheck
         run: make vulncheck
+
+  # ---------------------------------------------------------------------------
+  # WHAT CI DOES NOT RUN, AND WHY — recorded so the omission is a decision
+  # rather than an oversight. The rule this file follows: a gate that cannot run
+  # here must say so in writing, because a silent gap is the failure mode this
+  # whole repository exists to prevent.
+  # ---------------------------------------------------------------------------
+  #
+  # `make dogfood` — NOT run here, and it cannot be. It builds the binary and
+  # runs `clearance check .` on this repository, which requires a SIGNED corpus
+  # bundle beside the executable (INV-9 refuses an unsigned one). The signing key
+  # is offline and never reaches a runner, so corpus-dist/ is absent and the
+  # check would fail for want of a corpus rather than for want of correctness.
+  # Dogfooding is therefore a pre-release step on the maintainer's machine, and
+  # the doctrine it enforces (PLAN/08-BUSINESS/03-legal-posture.md §5: Clearance
+  # must pass its own check honestly) is verified there, not here.
+  #
+  # `make corpus-dist-check` — NOT run here, for the same reason: it verifies a
+  # signed bundle that only exists on the maintainer's machine. Its CI-side twin
+  # is the corpus pre-flight in release.yml, which runs on the release runner
+  # where the bundle has been uploaded as an artefact.
+  #
+  # `make bench` — the benchmark itself is not run; TestBenchmarkSuiteIsNotEmpty
+  # (in `make guard`) asserts the suite is non-empty, which is the part that can
+  # silently rot. A wall-clock threshold in CI would be flaky, and a flaky gate
+  # teaches people to ignore gates.

@@ -123,7 +123,7 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 	if !*showKeys {
 		fmt.Fprintf(stdout, "\n  (no key material is printed, by design. `doctor` reports only whether a key resolves.)\n")
 	}
-	fmt.Fprintf(stdout, "  keychain lookup is not implemented in this build; see PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md §4.\n")
+	fmt.Fprintf(stdout, "  keychain lookup is not implemented in this build; a key comes from --api-key-stdin, the environment, or keys.yml.\n")
 
 	if *jsonOut {
 		// A machine-readable form, so that a support script does not have to

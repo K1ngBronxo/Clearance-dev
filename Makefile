@@ -21,8 +21,20 @@ GO ?= go
 GOFLAGS ?= -mod=readonly
 export GOFLAGS
 
+# CI pins this in .github/workflows/ci.yml (golangci/golangci-lint-action@v6,
+# version: v1.62.2) and .golangci.yml is written for that v1.x schema. Installing
+# @latest here will eventually give you a v2 line whose schema this file does not
+# match, and `make lint` will fail on the config rather than on the code.
 GOLANGCI_LINT ?= golangci-lint
 GORELEASER    ?= goreleaser
+
+# Pinned, on purpose. This was `@latest` and it stopped working: x/vuln@latest
+# (v1.8.0) requires go >= 1.26.0, so `make vulncheck` failed on the tool rather
+# than on the code, silently reporting nothing at all. That is the defect this
+# repository keeps re-finding — a gate that cannot run is a gate that passes.
+# v1.1.4 is the newest release that runs on the go 1.23 toolchain this module
+# targets (go.mod). Bump it together with GOTOOLCHAIN, not separately.
+GOVULNCHECK   ?= golang.org/x/vuln/cmd/govulncheck@v1.1.4
 
 BINARY        := clearance
 CORPUS_BINARY := corpus-build
@@ -104,7 +116,7 @@ GUARD_SECURITY   := TestNoUnexpectedEgress|TestNoEnvContentsInOutput|TestNoAbsol
 # TestNoGuardIsLeftOutOfTheGate catches the reverse, a real guard no name points
 # at. Both directions are needed: two guards had been written, reviewed and
 # documented while `make guard` never ran them.
-GUARD_BUILD      := TestEveryGuardTestNamedInTheMakefileExists|TestEveryRunNameExists|TestNoGuardIsLeftOutOfTheGate|TestBenchmarkSuiteIsNotEmpty|TestEveryStampedSymbolExists|TestCorpusPublicKeyIsStampable
+GUARD_BUILD      := TestEveryGuardTestNamedInTheMakefileExists|TestEveryRunNameExists|TestNoGuardIsLeftOutOfTheGate|TestBenchmarkSuiteIsNotEmpty|TestEveryStampedSymbolExists|TestCorpusPublicKeyIsStampable|TestOurOwnScriptsNameNoThirdPartyProgram|TestQuotedCommandSubstitutionIsSplit|TestShellFunctionNamesAreNotPrograms|TestEveryGoTestInvocationIsUncached
 
 # The corpus-integrity guards: is the data the engine reads sound? Separate from
 # the two groups above because a failure here is an edit to a YAML file, not a
@@ -112,8 +124,10 @@ GUARD_BUILD      := TestEveryGuardTestNamedInTheMakefileExists|TestEveryRunNameE
 GUARD_CORPUS     := TestFixtures|TestEveryTrapIsEitherFiredByAFixtureOrListed|TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed|TestEveryTerritoryGateIsEitherEvaluatedOrAcknowledged|TestEveryGraphKindIsEitherProducedByAFixtureOrAcknowledged|TestCorpusPredicatesTypecheck|TestObligationVocabularyMatchesTheSpec|TestEveryObligationKindInTheCorpusIsKnown|TestObligationValidatorRefusesATypo|TestFixActionValidatorRefusesATypo|TestEveryGraphScopedTrapHasAnEngineCheck|TestTrapScopeValidatorRefusesATypo|TestCorpusNoticeCodesMatchTheirDeclaredMeaning|TestShippedBundleIsACurrentCompileOfTheSource
 
 .DEFAULT_GOAL := help
-.PHONY: help guard test lint arch fixtures corpus corpus-verify corpus-sign \
-        corpus-dist corpus-dist-check build release vulncheck dogfood bench
+.PHONY: help guard test lint arch fixtures corpus corpus-verify \
+        corpus-verify-bundle corpus-sign \
+        corpus-dist corpus-dist-check build release vulncheck dogfood bench \
+        ship-check
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -133,10 +147,15 @@ guard: ## Run the invariant + security + build-integrity + corpus guards (the ga
 	$(GO) test ./internal/... -run '$(GUARD_CORPUS)' -count=1
 
 arch: ## Run the import-graph layering test alone
-	$(GO) test ./internal -run TestArchitectureLayering
+	$(GO) test ./internal -run TestArchitectureLayering -count=1
 
+# -count=1, and it is not optional here either. Without it Go replays a cached
+# PASS, so `make test` could report green without executing a single test — the
+# same defect `make fixtures` had, in the target whose whole job is to run the
+# suite. It also fails the project's own acceptance rule, which asks for the
+# suite green "with -count=1 (and -race)". Both are now true.
 test: guard arch ## go test ./... with -race + coverage, after guard and arch
-	$(GO) test ./... -race -coverprofile=cover.out
+	$(GO) test ./... -race -count=1 -coverprofile=cover.out
 
 # golangci-lint enforces the import-level bans via depguard (.golangci.yml).
 # The grep below catches what depguard cannot: direct yaml/json *decoder calls*
@@ -187,9 +206,13 @@ lint: ## golangci-lint (incl. depguard) + the custom banned-import lint
 	fi; \
 	exit $$fail
 
+# -count=1 on both, for the same reason `guard` carries it: without it Go replays
+# a cached result, and this target's green was observed to be a cache hit rather
+# than a run. A target that can pass without executing the tests it names is the
+# failure shape this repository exists to prevent.
 fixtures: ## Verify every fixture produces the verdict it declares
-	$(GO) test ./internal/... -run 'TestFixtures'
-	$(GO) test ./internal/... -run 'TestEveryTrapIsEitherFiredByAFixtureOrListed'
+	$(GO) test ./internal/... -run 'TestFixtures' -count=1
+	$(GO) test ./internal/... -run 'TestEveryTrapIsEitherFiredByAFixtureOrListed' -count=1
 
 # Compiles corpus/*.yml -> corpus.json. The compiled corpus is a signed JSON
 # bundle, not an embedded database: an embedded DB would need CGO or a
@@ -201,7 +224,29 @@ corpus: ## Compile corpus/*.yml -> corpus.json (unsigned)
 
 corpus-verify: ## Run every corpus validation rule (schema, citations, no-silent-upgrade)
 	$(GO) run ./corpus-build --validate
-	$(GO) test ./internal/... -run 'TestCorpusPredicatesTypecheck|TestConfidenceUpgradeRequiresCorrection'
+	$(GO) test ./internal/... -run 'TestCorpusPredicatesTypecheck|TestConfidenceUpgradeRequiresCorrection' -count=1
+
+# Verify the STAGED bundle with the shipped binary. This is WP3's acceptance step
+# (07-OPERATIONS/03-runbooks.md RUNBOOK 2), and it depends on `build` on purpose.
+#
+# The dependency is the whole point. `go build ./cmd/clearance` writes clearance.exe
+# into this directory and carries NO -X public-key stamp, so building the main
+# package after `make build` leaves behind a binary that refuses every bundle with
+# E-INT-005, "no corpus public key embedded" — whose recovery text says
+# "Reinstall" and sends the reader somewhere useless. Observed this session, and
+# then measured: stamped 7,076,352 bytes / verify EXIT 0 against unstamped
+# 10,160,640 bytes / verify EXIT 4.
+#
+# `go build ./...` is NOT the trigger, and an earlier version of this comment said
+# it was. With more than one package Go discards the outputs, so the stamped
+# binary survives; only a single-main-package build overwrites it.
+#
+# This is the sixth appearance of the stamp trap in this repository's history —
+# four silent `-X` typos, then `TestEveryStampedSymbolExists`. The first five
+# were fixed by making the stamp checkable. This one is fixed by making the
+# order a dependency rather than a sentence in a runbook.
+corpus-verify-bundle: build ## Verify corpus-dist/ with a freshly-built stamped binary (WP3 acceptance)
+	CLEARANCE_CORPUS=corpus-dist ./$(BINARY)$(EXE) corpus verify
 
 # The corpus release version, stamped into every verdict as `meta.corpus_version`.
 #
@@ -292,14 +337,28 @@ corpus-dist: ## Compile + sign the corpus into ./corpus-dist (needs CORPUS_KEY a
 corpus-dist-check: ## Verify corpus-dist/ is current, complete and signed
 	@GO=$(GO) bash tools/check-corpus-dist.sh
 
+# NOTE: this is the only build that stamps the corpus public key. Building the
+# main package directly — `go build ./cmd/clearance`, which is what a developer
+# naturally types — writes the same filename into this directory WITHOUT the
+# stamp, and a binary without it refuses every bundle with E-INT-005.
+#
+# Measured, so the next reader does not have to guess:
+#   make build                -> 7,076,352 bytes, stripped, verify EXIT 0
+#   go build ./cmd/clearance  -> 10,160,640 bytes, unstripped, verify EXIT 4
+#   go build ./...            -> harmless: with multiple packages Go discards
+#                                the outputs, and the stamped binary survives
+#
+# So the trigger is a single-main-package build, not `./...`. If you have built
+# the main package since the last `make build`, re-run it before verifying a
+# corpus — or just use `make corpus-verify-bundle`, which enforces the order.
 build: ## Build the static host binary (CGO_ENABLED=0, -trimpath)
 	CGO_ENABLED=0 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY)$(EXE) ./cmd/clearance
 
 release: ## Cross-compile the 6 release targets via goreleaser
 	$(GORELEASER) release --clean
 
-vulncheck: ## Run govulncheck on the module
-	$(GO) run golang.org/x/vuln/cmd/govulncheck@latest ./...
+vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
+	$(GO) run $(GOVULNCHECK) ./...
 
 # There is deliberately NO `conformance` target here.
 #
@@ -319,5 +378,25 @@ vulncheck: ## Run govulncheck on the module
 dogfood: build ## Run clearance check . on Clearance itself (must pass)
 	./$(BINARY)$(EXE) check . --fail-on BLOCK
 
+# Refuse to ship content that leaks the plan. Reads the CONTENTS of every
+# shipped file, not just its path, because the first push passed a path check
+# and was wrong: the staged README.md opened with "Everything is in PLAN/",
+# followed by the vision, the build-hours and the pricing posture. A path check
+# sees a file named README.md; it does not read it.
+#
+# Run with no argument it scans the working tree, so a scrub can be verified
+# before it is committed rather than discovered after it is pushed.
+#
+# KNOWN FALSE POSITIVE, so nobody wastes an hour on it: its fourth rule flags a
+# root-level README.md, which is right for the maintainer checkout (there it is
+# the planning overview) and wrong here, where README.md is the product README
+# and ships on purpose. Run from the module directory the rule fires; run from
+# the repo root as `SHIP_PATHSPEC=clearance bash clearance/tools/check-ship-content.sh`
+# it reports `ok repo-root/planning paths` and the two content rules are the ones
+# that speak. The content rules are the ones that matter, and they are correct in
+# both invocations.
+ship-check: ## Refuse to ship content that leaks the plan (contents, not paths)
+	bash tools/check-ship-content.sh
+
 bench: ## Run the benchmark suite
-	$(GO) test ./... -run '^$$' -bench . -benchmem
+	$(GO) test ./... -run '^$$' -bench . -benchmem -count=1

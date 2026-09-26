@@ -1,0 +1,67 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: UNDETERMINED
+
+why: >
+        A GGUF whose metadata block declares a 30 MiB string and then runs out of
+        file. The header is present and starts to parse; the value it promises is not
+        there. Observed: UNDETERMINED, one warning, `E-SCAN-012`.
+
+        # WHY THIS IS A DIFFERENT FACT FROM "NO LICENCE"
+
+        The scanner reads the first 1 MiB of a weight file and tries to parse. If the
+        block was fully read and held no licence, that is an answer: no statement was
+        made. If the block was CUT OFF, nothing was answered at all, and those two
+        must not render the same way. `internal/scanner/weights.go:601-640` escalates
+        once to the 16 MiB ceiling and then warns `E-SCAN-012` ("Cannot read the
+        metadata header of '%s'") rather than defaulting to "no licence". This fixture
+        is the truncation branch, and it is the flip case the `weights-gguf-metadata`
+        row names in its own `why` - that fixture's last paragraph says truncating the
+        block "must become UNDETERMINED with E-SCAN-012", and this is that file.
+
+        # WHY THE FILE IS 2 MiB
+
+        Not arbitrary. The escalation only happens when the file is larger than the
+        first read budget (`e.Size <= int64(len(data))` returns early with no
+        warning), so a *small* truncated file reports nothing at all - a real edge in
+        the logic, and one this fixture's size deliberately sits outside. The declared
+        30 MiB string also exceeds the 16 MiB ceiling, so the escalated read is
+        truncated too and the warning is reached rather than the quiet path.
+
+        # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+        Write a valid `general.license` into the block and the warning must disappear
+        and the licence must resolve. Cut the file to under 1 MiB and the warning must
+        disappear too - silence is the current, and questionable, behaviour for a
+        small truncated header; if someone changes that to warn as well, this row goes
+        red on its warning set, which is the intended prompt.
+
+        # THE TWO UNRESOLVED REASONS ARE PINNED, NOT SMOOTHED
+
+        Same duplication as `weights-no-licence`: `licence_not_found` from the weights
+        detector, `licence_unresolved` from the policy engine. Both honest, recorded
+        rather than de-duplicated.
+
+findings:
+  - dependency: weights:models/model.gguf
+    kind: trap.licence.absent-all-rights-reserved
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined:
+  - id: weights:models/model.gguf
+    reason: licence_not_found
+  - id: weights:models/model.gguf
+    reason: licence_unresolved
+
+warnings:
+  - E-SCAN-012
+
+notices: []

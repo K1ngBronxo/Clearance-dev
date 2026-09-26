@@ -138,6 +138,12 @@ var ubiquitousTools = map[string]bool{
 	"du": true, "ps": true, "kill": true, "pkill": true, "top": true, "find": true,
 	"xargs": true, "grep": true, "egrep": true, "fgrep": true, "rg": true,
 	"sed": true, "awk": true, "gawk": true, "sort": true, "uniq": true,
+	// `comm` was absent, so `tools/check-corpus-dist.sh` was told Clearance had
+	// found a third-party program it holds no terms for, for comparing two
+	// sorted lists — a POSIX coreutil, present on every host, and not a licence
+	// question any more than `sort` and `uniq` beside it are. Same shape as the
+	// `cmp`/`sha256sum` omission recorded above.
+	"comm": true,
 	"head": true, "tail": true, "wc": true, "tr": true, "cut": true, "paste": true,
 	"diff": true, "patch": true, "tee": true, "stat": true, "readlink": true,
 	// Checksums and byte comparison. `sha256sum` and `cmp` were absent, so a
@@ -945,7 +951,21 @@ func shellCommands(src string) []upstreamSignal { return shellCommandsAt(src, 0)
 func shellCommandsAt(src string, baseLine int) []upstreamSignal {
 	var sigs []upstreamSignal
 
+	// Names this script defines as functions. Calling one is not a spawn, and a
+	// script's own helpers are the most common non-program command word there
+	// is — tools/check-corpus-dist.sh alone defines one and calls it five times.
+	defined := shellFunctionNames(src)
+
 	for _, sl := range joinContinuations(src) {
+		// A line whose first non-blank character is `#` is a comment, and a
+		// comment is not a command. Without this, a `;` inside prose split the
+		// sentence and promoted the next English word to a program name:
+		// `# … ; this script is the` yielded a third-party program called
+		// `this`, and a sibling script yielded `the`. Both were reported by
+		// `make dogfood` on Clearance's own build scripts.
+		if strings.HasPrefix(strings.TrimSpace(sl.text), "#") {
+			continue
+		}
 		for _, cmd := range splitCommands(sl.text) {
 			words := strings.Fields(cmd)
 			if len(words) == 0 {
@@ -965,6 +985,10 @@ func shellCommandsAt(src string, baseLine int) []upstreamSignal {
 			}
 			head := strings.TrimSpace(words[0])
 			if shellControlWords[head] {
+				continue
+			}
+			if defined[head] {
+				// A function this file defines. Not a program, and not a spawn.
 				continue
 			}
 			if !plausibleProgramName(head) {
@@ -1037,8 +1061,41 @@ func splitCommands(line string) []string {
 	}
 	out := []string{}
 	var b strings.Builder
+
+	// inDouble records that the scan is inside a double-quoted string, because
+	// the quote is not what is being skipped — the *separators* are. Inside
+	// `"…"` a `|` is literal, but a `$(…)` still runs a command, so the two
+	// must be treated differently and a single skip-the-quoted-region loop
+	// cannot do it.
+	//
+	// This is not a nicety. `roots="$(git ls-tree -r --name-only "$ref" | …)"`
+	// is an ordinary line, and skipping the whole quoted region meant the
+	// substitution was never split on: the assignment-stripper then consumed
+	// `roots="$(git` as one word and promoted the subcommand, so Clearance
+	// reported a third-party program called `ls-tree` — while missing `git`,
+	// the actual program on the line. One false positive and one false negative
+	// from the same character. Single quotes are left alone: they never
+	// substitute.
+	inDouble := false
+
 	for i := 0; i < len(line); i++ {
 		ch := line[i]
+
+		if inDouble {
+			if ch == '$' && i+1 < len(line) && line[i+1] == '(' {
+				out = append(out, b.String())
+				b.Reset()
+				i++ // step over '('
+				inDouble = false
+				continue
+			}
+			if ch == '"' {
+				inDouble = false
+			}
+			b.WriteByte(ch)
+			continue
+		}
+
 		switch ch {
 		case '\'', '"':
 			// Skip the quoted region so a separator inside a string does not
@@ -1046,7 +1103,23 @@ func splitCommands(line string) []string {
 			q := ch
 			b.WriteByte(ch)
 			i++
-			for i < len(line) && line[i] != q {
+			for i < len(line) {
+				if q == '"' && line[i] == '$' && i+1 < len(line) && line[i+1] == '(' {
+					// A command substitution inside double quotes: split here,
+					// so the fragment after it begins with the command rather
+					// than with `$(`. `i++` steps over the '$' and the loop's
+					// own `i++` steps over the '(', leaving the head intact.
+					// inDouble remembers that the closing quote is still to come,
+					// so it is not mistaken for an opening one.
+					out = append(out, b.String())
+					b.Reset()
+					i++
+					inDouble = true
+					break
+				}
+				if line[i] == q {
+					break
+				}
 				if line[i] == '\\' && i+1 < len(line) {
 					b.WriteByte(line[i])
 					i++
@@ -1054,7 +1127,7 @@ func splitCommands(line string) []string {
 				b.WriteByte(line[i])
 				i++
 			}
-			if i < len(line) {
+			if i < len(line) && !inDouble {
 				b.WriteByte(line[i])
 			}
 			continue
@@ -1181,7 +1254,85 @@ func plausibleProgramName(tok string) bool {
 	if strings.HasSuffix(tok, ":") {
 		return false
 	}
+	// A flag is never a program. When `VAR="$(cmd -f arg)"` is split, the
+	// fragment that survives assignment-stripping can begin with the flag, and
+	// `-rhoE` then reads as a program named `rhoE`. Observed on this
+	// repository's own tools/check-corpus-dist.sh: eleven Notices, every one of
+	// them a flag, a number, a quote or a `#`. Spec 06 §3.2 is explicit that
+	// false positives are what kill a scanner's credibility, so each of these
+	// is refused by shape rather than by name.
+	if strings.HasPrefix(tok, "-") {
+		return false
+	}
+	// A bare number is never a program: it is the `2` of `>&2` after the `&`
+	// split, or an argument that lost its flag.
+	if strings.Trim(tok, "0123456789") == "" {
+		return false
+	}
+	// Quote characters, `%` and `#` are the debris of a printf format string, a
+	// split literal, or a comment marker. No program name contains them.
+	if strings.ContainsAny(tok, "\"'%#") {
+		return false
+	}
 	return strings.Trim(tok, "./\\-+@:,;=") != ""
+}
+
+// shellFunctionNames returns the names a script defines as shell functions.
+//
+// `fail() { ... }` introduces a command word that is not a program, and calling
+// it is not a spawn of anything third-party. Reading one as a program produced a
+// Notice claiming Clearance had seen a tool it holds no terms for — on its own
+// build scripts, about a function they define twenty lines earlier.
+//
+// Only whole-file callers see definitions; a caller that hands over a fragment
+// (one Make recipe line, one workflow `run:` line) gets an empty set and behaves
+// exactly as before. That is the right trade: a definition on the same line as
+// its call is not a shape worth guessing at.
+func shellFunctionNames(src string) map[string]bool {
+	out := map[string]bool{}
+	for _, line := range strings.Split(src, "\n") {
+		t := strings.TrimSpace(line)
+		if t == "" || strings.HasPrefix(t, "#") {
+			continue
+		}
+		if rest, ok := strings.CutPrefix(t, "function "); ok {
+			name := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(rest), "{"))
+			if n, _, found := strings.Cut(name, "()"); found {
+				name = n
+			}
+			if isShellFunctionName(strings.TrimSpace(name)) {
+				out[strings.TrimSpace(name)] = true
+			}
+			continue
+		}
+		if i := strings.Index(t, "()"); i > 0 {
+			if name := strings.TrimSpace(t[:i]); isShellFunctionName(name) {
+				out[name] = true
+			}
+		}
+	}
+	return out
+}
+
+// isShellFunctionName reports whether s could be the name in `s() {`.
+//
+// Deliberately narrow. `$(` and `(` appear in ordinary command lines, so a
+// loose test here would start excluding real programs; a name that is not
+// plainly an identifier is simply not treated as a definition.
+func isShellFunctionName(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch {
+		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c == '_', c == '-':
+		case c >= '0' && c <= '9' && i > 0:
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // scriptLine is one logical line of a script: a physical line, plus any

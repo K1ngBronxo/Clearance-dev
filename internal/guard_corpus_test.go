@@ -514,13 +514,15 @@ var degradeCodesNoFixtureCanFire = []string{
 // fires one of these, the test fails until the line is deleted.
 //
 //	E-SCAN-008  a directory tree deeper than --max-depth
-//	E-SCAN-010  a weight file with no licence statement anywhere
-//	            ⚠️ fixtures/weights-no-licence/ already exists and does NOT fire
-//	            this. Either the fixture does not in fact present a weight file
-//	            with no licence, or the code path is dead. That is a defect to
-//	            resolve, not a fixture to add — reported to WP5/WP6.
-//	E-SCAN-012  a truncated .gguf (header present, body cut)
 //	E-SCAN-013  a LICENSE whose terms are a PDF reference
+//
+// (E-SCAN-010 was on this list with a note claiming fixtures/weights-no-licence
+// did not fire it. That note was wrong, and it was wrong because the guard was
+// looking in the wrong place: E-SCAN-010 is carried as the ErrorCode of an
+// UNDETERMINED entry, not as a warning or a notice. The fixture was firing it
+// the whole time. A guard that looks in the wrong list reports a false gap,
+// which is worse than reporting none — see the fired-set construction below.)
+//
 //	E-SCAN-014  a source file that fails to AST-parse
 //	E-SCAN-017  a vendored dependency containing a .env
 //	E-SCAN-020  a clearance ignore rule that excludes a dependency directory
@@ -530,7 +532,7 @@ var degradeCodesNoFixtureCanFire = []string{
 //	E-POLICY-009 a dependency whose licence cannot be determined, with no
 //	            declaration in clearance.config.yml
 var degradeCodesAwaitingAFixture = []string{
-	"E-SCAN-008", "E-SCAN-010", "E-SCAN-012", "E-SCAN-013",
+	"E-SCAN-008", "E-SCAN-013",
 	"E-SCAN-014", "E-SCAN-017", "E-SCAN-020",
 	"E-PARSE-005", "E-PARSE-007", "E-PARSE-010",
 	"E-POLICY-009",
@@ -560,7 +562,7 @@ func TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed(t *testing.T) {
 
 	fired := map[string]bool{}
 	for _, dir := range guardFixtureDirs(t) {
-		_, diag, err := guardRunDetailed(t, dir, c, policy.Options{})
+		v, diag, err := guardRunDetailed(t, dir, c, policy.Options{})
 		if err != nil {
 			// A fixture whose *expected* outcome is a refused pipeline is
 			// legitimate — fixtures/no-manifest is exactly that, and it ends in
@@ -580,6 +582,18 @@ func TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed(t *testing.T) {
 		}
 		for _, w := range diag.Warnings {
 			fired[w.Code] = true
+		}
+		// A DEGRADE also lives on an UNDETERMINED entry, as its ErrorCode. That
+		// is where the weights detector puts E-SCAN-010: the file was read, no
+		// licence was found, and the code names the gap rather than warning about
+		// it. This guard originally read only the diagnostics and therefore
+		// reported E-SCAN-010 as unfired while fixtures/weights-no-licence was
+		// firing it on every run. A guard that looks in the wrong list reports a
+		// false gap, which is worse than reporting none.
+		for _, u := range v.Undetermined {
+			if u.ErrorCode != "" {
+				fired[u.ErrorCode] = true
+			}
 		}
 	}
 

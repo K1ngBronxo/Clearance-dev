@@ -1353,6 +1353,33 @@ func TestEveryGuardTestNamedInTheMakefileExists(t *testing.T) {
 // one of them is a guard, and every guard must be reachable from a `GUARD_*`
 // variable. A test that is not a guard does not belong in one of these files,
 // and moving it is cheaper than being unable to tell which guards run.
+//
+// # AND THE BLIND SPOT IN THAT CONVENTION, WHICH IS NOW NAMED
+//
+// "A guard is a Test function in a guard_*_test.go file" is only enforceable by
+// walking for files with that name, and that is exactly what the loop below did.
+// So a guard that *cannot* live in such a file was invisible to it.
+//
+// On 26 September 2026 one did. `TestOurOwnMakefileNamesNoThirdPartyProgram`
+// asserted that Clearance's own build scripts name no third-party program, and
+// it lived in internal/scanner/upstream_test.go because it drives unexported
+// scanner functions. It was a guard. It was in no GUARD_* variable, so `make
+// guard` never ran it. In the same period `make dogfood` reported eleven false
+// third-party programs from a script that guard was written to police, and the
+// guard was green throughout — not because it was wrong, but because nothing
+// executed it. That is the defect this whole file exists to prevent, committed
+// by the file itself.
+//
+// The blind spot is structural, so it gets a list rather than a cleverer
+// heuristic: guessing which tests "look like guards" would manufacture exactly
+// the false confidence this file is for. Every name below must be in a GUARD_*
+// variable, and must still exist.
+var guardsOutsideGuardFiles = map[string]string{
+	"TestOurOwnScriptsNameNoThirdPartyProgram": "internal/scanner/upstream_test.go — drives unexported scanner functions",
+	"TestQuotedCommandSubstitutionIsSplit":     "internal/scanner/upstream_test.go — drives the unexported splitter",
+	"TestShellFunctionNamesAreNotPrograms":     "internal/scanner/upstream_test.go — drives the unexported splitter",
+}
+
 func TestNoGuardIsLeftOutOfTheGate(t *testing.T) {
 	root := moduleRoot(t)
 
@@ -1381,14 +1408,18 @@ func TestNoGuardIsLeftOutOfTheGate(t *testing.T) {
 			"would otherwise pass by comparing against an empty set")
 	}
 
+	// allTests maps every Test function name under internal/ to the file it
+	// lives in. Collected for every _test.go, not only guard_ ones, so the
+	// out-of-file list below can be checked for staleness as well as for
+	// coverage.
+	allTests := map[string]string{}
 	var found int
 	walkErr := filepath.WalkDir(filepath.Join(root, "internal"),
 		func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
-			if d.IsDir() || !strings.HasPrefix(d.Name(), "guard_") ||
-				!strings.HasSuffix(d.Name(), "_test.go") {
+			if d.IsDir() || !strings.HasSuffix(d.Name(), "_test.go") {
 				return nil
 			}
 			f, parseErr := parser.ParseFile(token.NewFileSet(), path, nil, 0)
@@ -1396,10 +1427,15 @@ func TestNoGuardIsLeftOutOfTheGate(t *testing.T) {
 				return parseErr
 			}
 			rel, _ := filepath.Rel(root, path)
+			inGuardFile := strings.HasPrefix(d.Name(), "guard_")
 			for _, decl := range f.Decls {
 				fn, ok := decl.(*ast.FuncDecl)
 				if !ok || fn.Recv != nil || fn.Name == nil ||
 					!strings.HasPrefix(fn.Name.Name, "Test") {
+					continue
+				}
+				allTests[fn.Name.Name] = filepath.ToSlash(rel)
+				if !inGuardFile {
 					continue
 				}
 				found++
@@ -1422,7 +1458,30 @@ func TestNoGuardIsLeftOutOfTheGate(t *testing.T) {
 		t.Fatal("no Test functions were found in any guard_*_test.go file; the " +
 			"walk is broken and this test is checking nothing")
 	}
-	t.Logf("%d guards in the suite, all reachable from the gate", found)
+
+	// The guards the filename convention cannot see. Both directions matter: a
+	// listed guard that is not gated is the original defect, and a listed guard
+	// that no longer exists is a stale entry pretending the check still runs.
+	for name, why := range guardsOutsideGuardFiles {
+		where, exists := allTests[name]
+		if !exists {
+			t.Errorf("%s is in guardsOutsideGuardFiles but no test of that name "+
+				"exists anywhere under internal/. Delete the line — a list that "+
+				"can only grow stops describing anything.", name)
+			continue
+		}
+		if !gated[name] {
+			t.Errorf("%s is a guard in %s (%s) but no GUARD_* variable names it.\n"+
+				"`make guard` will never run it, so it cannot fail the gate no "+
+				"matter what it asserts. This is the blind spot described above "+
+				"the list: the walk only sees guard_*_test.go files, and this "+
+				"guard cannot live in one.", name, where, why)
+		}
+	}
+
+	t.Logf("%d guards in guard_*_test.go, %d tests module-wide, %d guards "+
+		"declared outside those files", found, len(allTests),
+		len(guardsOutsideGuardFiles))
 }
 
 // TestEveryRunNameExists generalises the guard above from the GUARD_* variables
@@ -2455,4 +2514,86 @@ use:
 		"acme-sign",
 		"ghcr.io/acme/base",
 	})
+}
+
+// TestEveryGoTestInvocationIsUncached asserts that every `go test` a build script
+// runs carries -count=1.
+//
+// # WHY THIS IS A GUARD AND NOT A STYLE RULE
+//
+// `go test` replays a cached PASS when the test binary and the cacheable flags
+// are unchanged, so a build script can report a green suite without executing a
+// test — and nothing in the output distinguishes that green from a real one.
+//
+// This repository had two. `make fixtures` was one; the other was `make test`,
+// the target whose entire job is to run the suite, and the same target the
+// project's own acceptance rule asks to be green "with -count=1 (and -race)".
+// Neither carried it. CI's test job had the same exposure, and worse: it
+// restores the Go build cache, so the cached PASS is the *expected* case there.
+//
+// They were fixed by hand, one at a time, which is how a class of defect
+// survives: two instances found and corrected, the rest never looked at. The
+// sweep that followed found two more (`arch`, `corpus-verify`). This test closes
+// the class, and it is the same shape as every other ratchet in this suite.
+//
+// Comments are skipped, so a build script may still *discuss* `go test` — the
+// Makefile and both workflows do, in the notes explaining why a hand-written
+// name list was removed — without tripping this.
+func TestEveryGoTestInvocationIsUncached(t *testing.T) {
+	root := moduleRoot(t)
+
+	scripts := []string{filepath.Join(root, "Makefile")}
+	workflows, err := filepath.Glob(filepath.Join(root, ".github", "workflows", "*.yml"))
+	if err != nil {
+		t.Fatalf("globbing workflows: %v", err)
+	}
+	if len(workflows) == 0 {
+		t.Fatal("no workflow files matched. The workflows are half of what this " +
+			"guard polices; passing over an empty set would be a silent gap.")
+	}
+	scripts = append(scripts, workflows...)
+
+	var checked int
+	for _, path := range scripts {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		rel, _ := filepath.Rel(root, path)
+		for i, line := range strings.Split(string(raw), "\n") {
+			trimmed := strings.TrimSpace(line)
+			// Strip a trailing comment before looking. In a Makefile and in a
+			// YAML file alike, `#` starts one — and the target header
+			//   test: guard arch ## go test ./... with -race + coverage
+			// is documentation, not a command. The first version of this guard
+			// reported that help string as an uncached-less invocation. A guard
+			// that cries wolf on a help string is one people learn to ignore.
+			if h := strings.Index(trimmed, "#"); h >= 0 {
+				trimmed = strings.TrimSpace(trimmed[:h])
+			}
+			// The Makefile says `$(GO) test`; the workflows say `go test`.
+			// Matching only the second found 2 invocations out of 10 — the same
+			// too-narrow-tree defect this repository keeps re-finding, this time
+			// inside the guard written to close it.
+			if !strings.Contains(trimmed, "go test") &&
+				!strings.Contains(trimmed, "$(GO) test") {
+				continue
+			}
+			checked++
+			if !strings.Contains(trimmed, "-count=1") {
+				t.Errorf("%s:%d runs `go test` without -count=1:\n    %s\n"+
+					"Go replays a cached PASS when the test binary and the "+
+					"cacheable flags are unchanged, so this invocation can report "+
+					"green without executing a test, and nothing distinguishes "+
+					"that green from a real one. Add -count=1.",
+					filepath.ToSlash(rel), i+1, trimmed)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no `go test` invocations were found in any build script; the " +
+			"scan is broken and this guard is checking nothing")
+	}
+	t.Logf("%d go test invocation(s) across %d build script(s), all uncached",
+		checked, len(scripts))
 }

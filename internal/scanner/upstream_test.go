@@ -433,22 +433,78 @@ func TestDockerfileCommandsKeepsTheRegistryInAnImageName(t *testing.T) {
 // is correct, because that would be a real dependency of this project, and the
 // dogfooding doctrine in PLAN/08-BUSINESS/03-legal-posture.md §5 is that
 // Clearance must pass its own check honestly.
-func TestOurOwnMakefileNamesNoThirdPartyProgram(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "Makefile"))
+func TestOurOwnScriptsNameNoThirdPartyProgram(t *testing.T) {
+	// # WHY THIS WALKS MORE THAN THE MAKEFILE
+	//
+	// It read the Makefile alone, and that was the gap. When
+	// tools/check-corpus-dist.sh was added, `make dogfood` reported eleven
+	// third-party programs — every one of them a flag, a number, a quote or a
+	// `#` — and this test was green the whole time, because nothing pointed it
+	// at tools/. The defect class was known; the tree it walked was too narrow.
+	// That is LOGS.md §5.19's pattern in a third place, and the lesson is the
+	// same one every time: a guard is only as wide as the list it iterates.
+	//
+	// It was also registered in no GUARD_* variable, so it did not run in the
+	// gate at all — only in `make test`. It is in GUARD_BUILD now.
+	scripts := []struct {
+		path   string
+		reader func(string) []upstreamSignal
+	}{
+		{filepath.Join("..", "..", "Makefile"), makeCommands},
+	}
+	shells, err := filepath.Glob(filepath.Join("..", "..", "tools", "*.sh"))
 	if err != nil {
-		t.Fatalf("reading the Makefile: %v", err)
+		t.Fatalf("globbing tools/*.sh: %v", err)
 	}
-	sigs := makeCommands(string(raw))
-	if len(sigs) == 0 {
-		t.Fatal("the Makefile yielded no commands at all. Recipes are not being " +
-			"read, so this test would pass for the wrong reason.")
+	for _, p := range shells {
+		scripts = append(scripts, struct {
+			path   string
+			reader func(string) []upstreamSignal
+		}{p, shellCommands})
 	}
-	for _, s := range sigs {
-		if !ubiquitousTools[strings.ToLower(s.Token)] {
-			t.Errorf("Clearance's own Makefile is reported as invoking %q at line %d. "+
-				"If that is a real third-party tool it belongs in the corpus; if it is "+
-				"not, the Makefile reader is producing debris again. Full list: %v",
-				s.Token, s.Line, tokens(sigs))
+	if len(shells) == 0 {
+		t.Error("tools/*.sh matched nothing. This guard's whole point is that " +
+			"the shell scripts are read too; if the directory moved, say so here " +
+			"rather than passing over an empty set.")
+	}
+
+	for _, sc := range scripts {
+		raw, err := os.ReadFile(sc.path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", sc.path, err)
+		}
+		sigs := sc.reader(string(raw))
+		for _, s := range sigs {
+			if !ubiquitousTools[strings.ToLower(s.Token)] {
+				t.Errorf("Clearance's own %s is reported as invoking %q at line %d. "+
+					"If that is a real third-party tool it belongs in the corpus; if it "+
+					"is not, the reader is producing debris again. Full list: %v",
+					filepath.Base(sc.path), s.Token, s.Line, tokens(sigs))
+			}
 		}
 	}
+}
+
+// TestQuotedCommandSubstitutionIsSplit pins the splitter rule that produced the
+// false positive above, because it is subtle enough to be undone by accident.
+//
+// Inside `"…"` a `|` is literal but a `$(…)` still runs a command, so the two
+// must be treated differently. Treating the whole quoted region as opaque — the
+// original behaviour — meant `roots="$(git ls-tree … )"` was never split on: the
+// assignment-stripper consumed `roots="$(git` as one word and promoted the
+// subcommand, so Clearance reported a program called `ls-tree` and missed `git`,
+// the program actually on the line. One false positive and one false negative
+// out of the same two characters.
+func TestQuotedCommandSubstitutionIsSplit(t *testing.T) {
+	src := `roots="$(git ls-tree -r --name-only "$ref" | grep -E 'x' || true)"` + "\n"
+	// Exact, not "contains": the bug here was an extra token (`ls-tree`) beside
+	// the real one, and a contains-check passes on that.
+	assertTokens(t, "a quoted command substitution", shellCommands(src), "git")
+}
+
+// TestShellFunctionNamesAreNotPrograms pins the other half: a script's own
+// helper is a command word that is not a program.
+func TestShellFunctionNamesAreNotPrograms(t *testing.T) {
+	src := "fail() {\n\tprintf '%s\\n' \"$1\" >&2\n\texit 1\n}\n\nfail \"boom\"\n"
+	assertTokens(t, "a script's own function", shellCommands(src), "printf")
 }

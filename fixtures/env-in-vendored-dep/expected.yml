@@ -28,6 +28,25 @@ why: >
             - so the file is neither read nor recorded, and no counter, notice or
             finding mentions it.
 
+        # AND THE CODE THAT WAS DECLARED FOR IT HAS NO PRODUCER
+
+        The taxonomy declares `E-SCAN-017` for exactly this case
+        (`internal/cerr/code.go:82,307`), DEGRADE class, with the message "A
+        vendored dependency contains a .env file. Clearance records its existence
+        only; contents are never read." and the remediation "Check it does not
+        contain real secrets". Nothing in the tree emits it. Auditing that led to
+        a full pass over the taxonomy: 21 of 102 declared codes are produced
+        nowhere, and `E-SCAN-017` is one of three that sit on the guard's
+        `degradeCodesAwaitingAFixture` list, which asserts every entry is
+        provokable by a directory of files. None of the three can be provoked,
+        because no code emits them. See `COORDINATION/JOE-LOGS-ENTRY.md`,
+        2026-09-26.
+
+        So this row pins three separate facts at once: the file is not read, it
+        is not reported, and the code named for reporting it is dead. The second
+        half of the catalogue's claim is not merely unimplemented - it was
+        specified, documented and never wired.
+
         The safety property is intact and is the one that matters: the tool cannot
         leak what it never reads. What is weaker than the catalogue claims is
         observability - a user is not told that their tree contains a secrets file at

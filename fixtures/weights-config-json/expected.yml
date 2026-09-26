@@ -1,0 +1,65 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: SHIP_CONDITIONAL
+
+why: >
+        A SafeTensors model with no licence inside it, and a sibling `config.json`
+        that carries `"license": "apache-2.0"`. The catalogue's row: resolved, HIGH.
+
+        # THE POINT OF THE ROW IS WHICH SOURCE ANSWERED
+
+        SafeTensors has no in-file licence field - the format is a length prefix and
+        a JSON header of tensor names, shapes and offsets, and nothing else. So the
+        first rung of the ladder (GGUF's `general.license`) cannot answer here, and
+        the sibling `config.json` is the highest source that can. This fixture exists
+        to prove rung two is reached and that it resolves at HIGH confidence rather
+        than falling through to the prose reader.
+
+        Observed: SHIP_CONDITIONAL, seven findings, none unclassified, no warnings.
+        The Apache-2.0 obligations are the reason the verdict is not plain SHIP -
+        with `distributed: true`, licence inclusion and NOTICE retention are
+        conditions on shipping, and they attach to the weights exactly as they would
+        to code. `trap.patent.retaliation` is the NOTE Apache-2.0's patent clause
+        earns on a weights dependency.
+
+        # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
+
+        Delete `config.json` and this must become UNDETERMINED with the
+        absent-all-rights-reserved trap, the same shape as `weights-no-licence`.
+        Change the value to an unrecognised string and it must NOT be treated as
+        "no licence" - the resolver records a low-confidence raw value instead, which
+        is a different fact, and is why `licenceFromString` returns a raw value when
+        it cannot resolve one.
+
+findings:
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.licence-inclusion
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.notice-retention
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.patent-grant
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: apache-2.0.trademark-exclusion
+    severity: NOTE
+  - dependency: weights:models/model.safetensors
+    kind: trap.patent.retaliation
+    severity: NOTE
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined:
+  []
+
+warnings:
+  []
+
+notices: []

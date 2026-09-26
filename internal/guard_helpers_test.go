@@ -114,19 +114,40 @@ func guardCorpusToday(t *testing.T, dir string) string {
 // places that were tried — the same discipline resolveCorpusDir applies to the
 // corpus, for the same reason: "not found" without saying where you looked is a
 // failure nobody can act on.
+//
+// The one exception is a distribution that ships without the plan at all —
+// which is what the public repository is, because the plan is deliberately not
+// published. There is no evidence to check against, so the test skips rather
+// than passes: a guard that went green with nothing behind it would be worse
+// than one that did not run, and a skip is visible in the output while a
+// silently passing guard is not. Where PLAN/ IS present — every maintainer
+// checkout — a missing file stays fatal, so a typo in a citation path can never
+// turn into a skip.
 func guardPlanFile(t *testing.T, rel string) string {
 	t.Helper()
 	root := moduleRoot(t)
-	candidates := []string{
-		filepath.Join(root, "PLAN", filepath.FromSlash(rel)),
-		filepath.Join(root, "..", "PLAN", filepath.FromSlash(rel)),
+	dirs := []string{
+		filepath.Join(root, "PLAN"),
+		filepath.Join(root, "..", "PLAN"),
 	}
-	for _, c := range candidates {
+	tried := make([]string, 0, len(dirs))
+	planPresent := false
+	for _, d := range dirs {
+		if fi, err := os.Stat(d); err == nil && fi.IsDir() {
+			planPresent = true
+		}
+		c := filepath.Join(d, filepath.FromSlash(rel))
+		tried = append(tried, c)
 		if _, err := os.Stat(c); err == nil {
 			return c
 		}
 	}
-	t.Fatalf("PLAN/%s not found. Tried:\n  %s", rel, strings.Join(candidates, "\n  "))
+	if !planPresent {
+		t.Skipf("PLAN/ is not part of this distribution, so %s cannot be checked here. "+
+			"The plan-anchored guards run in a maintainer checkout. Tried:\n  %s",
+			rel, strings.Join(tried, "\n  "))
+	}
+	t.Fatalf("PLAN/%s not found. Tried:\n  %s", rel, strings.Join(tried, "\n  "))
 	return ""
 }
 

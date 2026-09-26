@@ -1,0 +1,70 @@
+# The verdict this fixture must produce.
+#
+# Asserted by TestFixtures in internal/guard_corpus_test.go.
+
+verdict: DO_NOT_SHIP
+
+why: >
+        The product's signature finding, and the reason the graph layer exists: MIT
+        code beside CC BY-NC 4.0 weights. Observed: DO_NOT_SHIP, six findings.
+
+        # WHY THE CODE LICENCE DOES NOT HELP
+
+        `npm:lodash@4.17.21` is MIT and its two obligations are ordinary. The weights
+        are CC BY-NC 4.0 - `family: non-commercial`, `permissiveness: 1` - and the
+        config declares `commercial: true`. The grant over the code says nothing about
+        the weights, so the permissive half of this repository buys no permission for
+        the restrictive half.
+
+        # THREE FINDINGS FOR ONE WEIGHTS FILE, AND WHY THAT IS CORRECT
+
+        - `cc-by-nc-4.0.non-commercial` BLOCK - the licence's own obligation, fired by
+          `use.commercial: true`.
+        - `trap.weights.cc-by-nc-commercial` BLOCK - the catalogue's named failure
+          mode for non-commercial weights in a commercial product.
+        - `trap.code-weights-divergence` BLOCK - the graph check.
+
+        The trap's base severity in the corpus is CONDITION. It is escalated to BLOCK
+        by `internal/policy/crosscheck.go:128-137`, which compares the most permissive
+        code dependency against the weights and treats non-commercial-or-source-
+        available weights under declared commercial use as a hard contradiction. A
+        CONDITION would understate it. This fixture is the escalation's only pin: if
+        the escalation is removed, this row goes red as the finding drops to
+        CONDITION, which is the intended prompt.
+
+        # THE DIVERGENCE NEEDS BOTH HALVES TO BE PRESENT
+
+        `crosscheck.go` skips when there is no permissive code dependency in scope, so
+        a weights-only tree gets the cc-by-nc findings and NOT the divergence one.
+        That is deliberate: a user who already cannot ship because of the code learns
+        nothing new from the weights. Deleting the lodash entry should therefore drop
+        exactly the divergence finding and leave the other two - which is the check
+        that separates the comparison from the two single-dependency traps beside it.
+
+findings:
+  - dependency: weights:models/model.safetensors
+    kind: cc-by-nc-4.0.attribution
+    severity: CONDITION
+  - dependency: weights:models/model.safetensors
+    kind: cc-by-nc-4.0.non-commercial
+    severity: BLOCK
+  - dependency: weights:models/model.safetensors
+    kind: trap.code-weights-divergence
+    severity: BLOCK
+  - dependency: weights:models/model.safetensors
+    kind: trap.weights.cc-by-nc-commercial
+    severity: BLOCK
+  - dependency: npm:lodash@4.17.21
+    kind: mit.attribution
+    severity: CONDITION
+  - dependency: npm:lodash@4.17.21
+    kind: mit.no-patent-grant
+    severity: NOTE
+
+undetermined:
+  []
+
+warnings:
+  []
+
+notices: []
