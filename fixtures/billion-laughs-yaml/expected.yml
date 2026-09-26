@@ -10,7 +10,7 @@ why: >
 
     # THE CATALOGUE EXPECTS E-PARSE-008, AND E-PARSE-008 CANNOT FIRE HERE
 
-    PLAN/04-QUALITY/02-fixture-catalogue.md section 7 lists this row as "a YAML
+    This row was catalogued as "a YAML
     anchor bomb in a manifest" producing E-PARSE-008. There is no such thing as a
     YAML manifest in this tool's ecosystem set, and the reason is worth stating
     precisely because it is a property of the design rather than an oversight:
@@ -44,7 +44,7 @@ why: >
     differently from a bomb here: it aborts the run, prints E-PARSE-008, emits no
     verdict at all, and EXITS 0 - because E-PARSE-008 is declared ClassDegrade,
     ExitOK. A plain config error (E-CFG-002) exits 2 for the same absence of a
-    verdict. That inconsistency is recorded in COORDINATION/TEAM.md, not asserted
+    verdict. That inconsistency is recorded rather than asserted
     here, because the fixture harness calls config.Load directly and treats any
     config error as fatal: a fixture cannot reach that state.
 

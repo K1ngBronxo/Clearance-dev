@@ -9,16 +9,23 @@ This product includes software developed by K1NGBRONXO.
 About this file
 -------------------------------------------------------------------------------
 
-Apache-2.0 section 4(d) requires that a redistributor of this work keep a
-readable copy of this file's attribution notices. It is deliberately short: the
-project carries no third-party dependencies at runtime (see ADR-001), so there
-are no bundled components to attribute here.
+Clearance is licensed under the Functional Source License, version 1.1, ALv2
+Future License (FSL-1.1-ALv2). Read that as source-available, not open source:
+the source is public, and the licence is not OSI-approved. The FSL's
+redistribution terms require anyone who passes this work on to include a copy
+of, or a link to, the licence, and to leave its copyright notices intact. That
+is what this file is for. It is deliberately short: the project carries no
+third-party dependencies at runtime (see ADR-001), so there are no bundled
+components to attribute here.
 
 Clearance must be exemplary about licence compliance, because it is a licence
 tool. `make dogfood` runs `clearance check .` against this repository, and it
 must pass honestly.
 
+On the second anniversary of the first release of a version, that version's
+FSL grant becomes an irrevocable Apache-2.0 licence. Until then the licence is
+source-available.
+
 The compiled corpus is distributed separately from the binary and is licensed
-CC-BY-4.0, as stated in PLAN/08-BUSINESS/03-legal-posture.md section 6. It is a
-data artefact, not a code dependency, and it is not covered by the Apache-2.0
-grant above.
+CC-BY-4.0. It is a data artefact, not a code dependency, and it is not covered
+by the FSL grant above.

@@ -6,7 +6,7 @@
 // verdict does not contain. Every fact printed below is read out of the
 // verdict.Verdict it was handed, or out of the frozen error taxonomy.
 //
-// R6 in PLAN/02-SPECIFICATIONS/03-verdict-output-spec.md §6 says exactly this,
+// R6 says exactly this,
 // and internal/arch_test.go enforces it at build time.
 //
 // ─── Where this file deviates from the spec's worked examples ───────────────
@@ -27,8 +27,8 @@
 // detail-label field is 11 columns, chosen because `confidence:` is exactly 11
 // characters wide, so the common case needs no padding at all.
 //
-// This deviation is recorded in LOGS.md. It is a spec defect, not a code
-// defect, and the fix belongs in the spec.
+// This deviation is recorded rather than silently taken. It is a spec defect,
+// not a code defect, and the fix belongs in the spec.
 package report
 
 import (

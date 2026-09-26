@@ -12,9 +12,9 @@
 // Because in the world this product is for, agents discover tools, not people.
 // A licence question arrives as "is it safe to ship this?" in a coding agent's
 // context, and the cheapest way to be the thing that answers it is to be
-// reachable from where the question is asked. The interface contract
-// (PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md §5) calls it the
-// cheapest distribution channel available, and it costs days rather than weeks.
+// reachable from where the question is asked. The interface contract calls it
+// the cheapest distribution channel available, and it costs days rather than
+// weeks.
 //
 // # THE CAPABILITY BOUNDARY, WHICH IS THE WHOLE SECURITY STORY
 //

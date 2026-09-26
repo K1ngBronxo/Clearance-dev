@@ -1,8 +1,8 @@
 // The security spine — the guards that stand between the tool and the machine
 // it runs on.
 //
-// PLAN/03-SECURITY/02-security-architecture.md §12 names thirteen security
-// tests and calls them "the security spine". They are not about correctness;
+// Thirteen security
+// tests make up "the security spine". They are not about correctness;
 // they are about blast radius. A licence tool runs inside a stranger's CI, with
 // the stranger's credentials in the environment, walking a tree that includes
 // attacker-controlled vendored dependencies. If any of these fail, the tool has
@@ -142,7 +142,7 @@ func TestScannerNeverEscapesRoot(t *testing.T) {
 			t.Fatalf("writing the outside file: %v", err)
 		}
 
-		// D-011: on Windows, os.Symlink can report success and create nothing
+		// On Windows, os.Symlink can report success and create nothing
 		// when the process lacks SeCreateSymbolicLinkPrivilege. A test that
 		// trusted the returned error would pass while testing nothing, so the
 		// link is verified with Lstat before anything is asserted.
@@ -152,7 +152,7 @@ func TestScannerNeverEscapesRoot(t *testing.T) {
 				"assertions above still ran", err)
 		}
 		if _, statErr := os.Lstat(link); statErr != nil {
-			t.Skipf("os.Symlink reported success but created nothing (D-011); "+
+			t.Skipf("os.Symlink reported success but created nothing; "+
 				"verified with Lstat: %v", statErr)
 		}
 
@@ -179,7 +179,7 @@ func TestScannerNeverEscapesRoot(t *testing.T) {
 			t.Skipf("cannot create symlinks on this machine: %v", err)
 		}
 		if _, statErr := os.Lstat(link); statErr != nil {
-			t.Skipf("os.Symlink created nothing (D-011): %v", statErr)
+			t.Skipf("os.Symlink created nothing: %v", statErr)
 		}
 		if _, err := fs.Resolve("link.json"); err != nil {
 			t.Errorf("a symlink to a file inside the root was refused: %v", err)
@@ -482,8 +482,8 @@ use:
 //
 // # THE HISTORY OF THIS TEST, BECAUSE IT IS THE POINT
 //
-// The MCP server is specified (PLAN/03-SECURITY/02-security-architecture.md
-// §10, control C9). When this test was written, `internal/mcp` did not exist, so
+// The MCP server is specified as control C9.
+// When this test was written, `internal/mcp` did not exist, so
 // it could not call the thing it was named after — and it said so, loudly, in
 // this comment, rather than certifying a property it had not checked. That was
 // the right call then and it is worth preserving the record of it: the suite's
@@ -495,8 +495,8 @@ use:
 // everywhere. Group 3 drives the REAL server over the protocol, so the refusal
 // is now pinned at the surface an agent actually reaches.
 //
-// The obligation recorded in LOGS.md — "WHEN internal/mcp LANDS, this test MUST
-// be extended to call it directly" — is discharged by group 3.
+// The obligation this test recorded for itself — "WHEN internal/mcp LANDS, this
+// test MUST be extended to call it directly" — is discharged by group 3.
 func TestMCPRefusesEscapePath(t *testing.T) {
 	// The vectors from the control's own description, plus the ones a URL-ish
 	// or JSON-ish transport invites.
@@ -612,7 +612,7 @@ func TestMCPRefusesEscapePath(t *testing.T) {
 			t.Skipf("cannot create symlinks on this machine: %v", err)
 		}
 		if _, statErr := os.Lstat(link); statErr != nil {
-			t.Skipf("os.Symlink created nothing (D-011): %v", statErr)
+			t.Skipf("os.Symlink created nothing: %v", statErr)
 		}
 		if _, err := fs.Resolve("escape/secret.txt"); err == nil {
 			t.Fatal("the fs.read surface followed a symlink out of the workspace")

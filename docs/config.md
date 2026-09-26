@@ -60,7 +60,7 @@ apply" — it makes it `UNKNOWN`.
 | Field | Type | Why it matters |
 |---|---|---|
 | `commercial` | bool | Gates every non-commercial licence (CC-BY-NC, "research only"). |
-| `licence_model` | enum | `closed-source`, `open-source`, `dual`, or `internal-only`. Gates copyleft disclosure duties. |
+| `licence_model` | enum | `closed-source`, `open-source`, `source-available`, `dual`, or `internal-only`. Gates copyleft disclosure duties. `source-available` is for a licence that publishes its source without being OSI-approved — FSL, BUSL, Elastic — and it is not a synonym for `open-source`. |
 | `modified` | bool | The AGPL/GPL section 13 trigger, together with `network_exposed`. |
 | `network_exposed` | bool | The AGPL section 13 trigger, together with `modified`. |
 | `distributed` | bool | Whether binaries or source leave your control. Triggers distribution duties. |
@@ -151,8 +151,7 @@ policy:
 ## Validation errors
 
 Every configuration error is fatal with exit code `2`, because no intent means
-no answer. The full taxonomy is in
-[`PLAN/02-SPECIFICATIONS/09-error-taxonomy.md`](../../PLAN/02-SPECIFICATIONS/09-error-taxonomy.md).
+no answer. The table below is the taxonomy.
 
 | Code | Trigger |
 |---|---|

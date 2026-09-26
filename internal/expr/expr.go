@@ -3,7 +3,7 @@
 //
 // # WHY THIS PACKAGE EXISTS
 //
-// PLAN/01-ARCHITECTURE/03-data-model.md §9 places `Expr` in the policy package.
+// `Expr` was originally placed in the policy package.
 // But the corpus (L2) stores predicates and must validate them at build time
 // (schema rules 4-6: every `when` references a known field, type-checks, and
 // nests no deeper than 8), while the layer rule forbids L2 from importing L3.
@@ -122,8 +122,7 @@ type Field struct {
 	Note   string
 }
 
-// fields is the closed set of addressable paths, from
-// PLAN/01-ARCHITECTURE/06-policy-engine.md §4.2.
+// fields is the closed set of addressable paths.
 //
 // The set is closed on purpose: a predicate naming a field that does not exist
 // is a corpus bug, and it fails the build rather than evaluating to false. A
@@ -160,7 +159,7 @@ type Field struct {
 // "bespoke" is not "absent".
 var fields = []Field{
 	{"use.commercial", TypeBool, "intent", "are you charging or earning revenue?"},
-	{"use.licence_model", TypeEnum, "intent", "closed-source | open-source | dual | internal-only"},
+	{"use.licence_model", TypeEnum, "intent", "closed-source | open-source | source-available | dual | internal-only"},
 	{"use.modified", TypeBool, "intent", "do you modify vendored code?"},
 	{"use.network_exposed", TypeBool, "intent", "do you expose it over a network?"},
 	{"use.distributed", TypeBool, "intent", "do you ship binaries or source to third parties?"},

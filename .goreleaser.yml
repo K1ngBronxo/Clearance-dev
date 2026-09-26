@@ -1,9 +1,6 @@
 # GoReleaser configuration.
 # ---------------------------------------------------------------------------
 # TARGETED AT: GoReleaser v2 (config schema `version: 2`).
-#   PLAN/05-INFRASTRUCTURE/01-build-and-release.md §3–§5
-#   PLAN/05-INFRASTRUCTURE/03-ci-cd-pipeline.md §3
-#   PLAN/03-SECURITY/03-supply-chain-integrity.md §2
 #
 # Reproducibility notes:
 #   * CGO_ENABLED=0  -> a truly static, dependency-free binary (the install story).
@@ -45,8 +42,7 @@ builds:
 
   # The internal-only tool. It contains the Ed25519 corpus-signing code, so it
   # is compiled here (to prove it still builds) but is NEVER archived, checksummed
-  # or uploaded — see `archives.builds` below. It must never ship
-  # (01-ARCHITECTURE/10-repo-structure.md §6).
+  # or uploaded — see `archives.builds` below. It must never ship.
   - id: corpus-build
     main: ./corpus-build
     binary: corpus-build
@@ -101,8 +97,8 @@ archives:
       - src: corpus-dist/corpus.version.json
         dst: corpus
 
-# checksums.txt + checksums.txt.sig is the frozen release contract
-# (03-SECURITY/03-supply-chain-integrity.md §2.2). cosign signs this file in
+# checksums.txt + checksums.txt.sig is the frozen release contract.
+# cosign signs this file in
 # release.yml; the GitHub Action verifies it before running the binary.
 checksum:
   name_template: "checksums.txt"
@@ -134,12 +130,12 @@ changelog:
 
 release:
   # A human inspects the draft (and attaches the offline-signed corpus) before
-  # publishing — 05-INFRASTRUCTURE/01-build-and-release.md §5.
+  # publishing.
   draft: true
   prerelease: auto
   name_template: "Clearance {{ .Version }}"
 
 # NOTE: the corpus (corpus.json / corpus.json.sig / corpus.version.json) is NOT
 # built or signed here. It is compiled and signed OFFLINE by the maintainer with
-# an Ed25519 key that never touches a runner, and attached to the draft by hand
-# (03-SECURITY/03-supply-chain-integrity.md §3). CI must never hold that key.
+# an Ed25519 key that never touches a runner, and attached to the draft by hand.
+# CI must never hold that key.

@@ -2,12 +2,11 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-23
-- **Refines:** `PLAN/01-ARCHITECTURE/10-repo-structure.md` sections 1, 5, 6,
-  `PLAN/02-SPECIFICATIONS/02-corpus-schema-spec.md` section 10
 
 ## Context
 
-The plan describes the compiled corpus as **SQLite**. The repository layout calls
+The compiled corpus was originally specified as **SQLite**. The repository
+layout calls
 `corpus-build` a "YAML -> signed SQLite" compiler, the build target is
 `corpus.sqlite`, and the corpus schema specification section 10 gives the full
 `CREATE TABLE` schema for it, with the runtime reading a `payload` column as
@@ -99,4 +98,3 @@ disk before it was signed.
   that this decision serves.
 - `Makefile` — the `corpus` and `corpus-sign` targets.
 - [ADR-001](ADR-001-go-static-zero-deps.md) — the constraint that forced this.
-- `PLAN/03-SECURITY/03-supply-chain-integrity.md` — the corpus signing ceremony.

@@ -2,7 +2,7 @@
 //
 // # WHY THE SCHEMA IS EMBEDDED RATHER THAN GENERATED
 //
-// PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md §3 says the schema is
+// The frozen contract says the schema is
 // "published at clearance.dev/schema/v1/verdict.json and embedded in the binary
 // (`--json-schema`)". The second half is the part that matters to a CI author:
 // the schema a consumer validates against must be the schema *this binary*

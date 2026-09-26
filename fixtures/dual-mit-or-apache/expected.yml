@@ -6,9 +6,8 @@ verdict: UNDETERMINED
 why: >
   An SPDX EXPRESSION, not a licence id. The lockfile declares dual-tool as
   `MIT OR Apache-2.0` - two licences we hold corpus entries for, joined by the
-  operator that means "the consumer picks". The catalogue
-  (PLAN/04-QUALITY/02-fixture-catalogue.md section 2) says this fixture must
-  produce `SHIP`, and is right to: either branch alone is `SHIP`, so the
+  operator that means "the consumer picks". This fixture must
+  produce `SHIP`, and that is right: either branch alone is `SHIP`, so the
   disjunction is `SHIP`.
 
   It does not. It produces UNDETERMINED, one unclassified dependency
@@ -36,8 +35,8 @@ why: >
 
   # THE SPECIFICATION, AND WHERE IT STOPS
 
-  `PLAN/02-SPECIFICATIONS/04-detection-spec-code-licence.md` section 5
-  ("SPDX expression handling") specifies the intended behaviour: evaluate
+  The code-licence specification, under "SPDX expression handling",
+  specifies the intended behaviour: evaluate
   BOTH branches and let the verdict reflect the more favourable one, with a
   NOTE recording the choice. That behaviour is not implemented anywhere in
   the tree. This fixture is the only executable record of that.

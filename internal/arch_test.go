@@ -2,14 +2,12 @@
 //
 // # WHY THIS FILE EXISTS
 //
-// PLAN/01-ARCHITECTURE/01-system-architecture.md §1.1 states the dependency
-// rule — "a layer may import only from layers below it, never upward" — and
-// then says, in the same section:
-//
-//	**Why this is enforced and not merely documented:** `internal/arch_test.go`
-//	parses the import graph of every package and fails the build on any upward
-//	import. This is the single most valuable structural test in the repo — it is
-//	what stops a pipeline from becoming a mud ball.
+// The dependency rule is: a layer may import only from layers below it, never
+// upward. It was written down long before it was enforced, and the text that
+// stated it also said the enforcement was the whole point — that a parse of the
+// import graph which fails the build on any upward import is the single most
+// valuable structural test in the repository, because it is what stops a
+// pipeline from becoming a mud ball.
 //
 // The file did not exist. The rule was documented and unenforced, which is the
 // state in which architecture rots: every violation is individually reasonable,
@@ -48,8 +46,7 @@ const modulePath = "github.com/clearance-dev/clearance/"
 // would make the test fail on itself, which teaches nothing.
 const self = "internal/arch_test.go"
 
-// The layers, 0..5, as defined in PLAN/01-ARCHITECTURE/01-system-architecture.md
-// §1.1.
+// The layers, 0..5, in the order the architecture defines them.
 const (
 	layerPrimitives = 0
 	layerDiscovery  = 1
@@ -159,7 +156,7 @@ func checkEveryPackageHasALayer(t *testing.T) {
 		if _, ok := layers[pkg]; !ok {
 			t.Errorf("package %q is not assigned a layer.\n"+
 				"Add it to the `layers` map in internal/arch_test.go, choosing the\n"+
-				"layer from PLAN/01-ARCHITECTURE/01-system-architecture.md §1.1.\n"+
+				"layer the table in this file assigns to it.\n"+
 				"The layer you pick determines which packages it may import.", pkg)
 		}
 	}
@@ -221,7 +218,7 @@ func checkLayeringIsNeverViolated(t *testing.T) {
 			if to > from {
 				t.Errorf("layer violation: %s (L%d) imports %s (L%d).\n"+
 					"An import may only point down or sideways, never up.\n"+
-					"See PLAN/01-ARCHITECTURE/01-system-architecture.md §1.1.",
+					"See the `layers` map in this file.",
 					pkg, from, imported, to)
 			}
 		}
@@ -247,7 +244,7 @@ func checkDecisionAndRenderLayersArePure(t *testing.T) {
 		for _, imported := range graph[pkg] {
 			if why, bad := impureImports[imported]; bad {
 				t.Errorf("%s (L3+) imports %q — %s.\n"+
-					"The purity boundary (PLAN/01-ARCHITECTURE/01-system-architecture.md §1.2)\n"+
+					"The purity boundary\n"+
 					"confines I/O to L0, L1 and L5. Pass the value in as a parameter\n"+
 					"instead, and let the L5 caller do the I/O.", pkg, imported, why)
 			}
@@ -277,9 +274,9 @@ func checkDecisionAndRenderLayersArePure(t *testing.T) {
 //   - It passed on a *reference*. `f := time.Now` reads the clock and does not
 //     contain the string "time.Now(".
 //
-// The AST sees what the compiler sees, so it has neither problem. This is the
-// same lesson PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md §3.2 draws for
-// the scanner itself: a regex matches a comment, and the difference between a
+// The AST sees what the compiler sees, so it has neither problem. It is the
+// same lesson the scanner's own design draws for itself: a regex matches a
+// comment, and the difference between a
 // regex and a parse is the difference between a false positive and a finding.
 func checkDecisionLayerReadsNoClock(t *testing.T) {
 	root := moduleRoot(t)
@@ -562,9 +559,7 @@ func importGraphFiltered(t *testing.T, root string, includeTests bool) map[strin
 				//
 				// A guard that cannot fail is worse than no guard, because it
 				// certifies what it does not check.
-				if strings.HasPrefix(imported, modulePath) {
-					imported = strings.TrimPrefix(imported, modulePath)
-				}
+				imported = strings.TrimPrefix(imported, modulePath)
 				out[pkg] = append(out[pkg], imported)
 			}
 			return nil

@@ -4,8 +4,6 @@ import "github.com/clearance-dev/clearance/internal/cerr"
 
 // AIOptions is the `ai:` block of clearance.config.yml.
 //
-// See PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md §5.
-//
 // # WHY THIS BLOCK IS NOT PART OF THE INTENT HASH
 //
 // Intent.Hash() is the identity of a verdict: two runs with the same hash must

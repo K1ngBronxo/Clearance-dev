@@ -213,7 +213,7 @@ func TestUnknownMethodIsMethodNotFound(t *testing.T) {
 //
 // Because a tool whose name and whose schema disagree is a tool a client cannot
 // call, and because the count is part of the contract: the interface spec
-// (09-interfaces-and-contracts.md §5) names four, and a fifth added without a
+// (the interface spec §5) names four, and a fifth added without a
 // documentation change is a tool nobody knows exists.
 func TestToolsListIsTheFourTools(t *testing.T) {
 	srv := newTestServer(t, t.TempDir())

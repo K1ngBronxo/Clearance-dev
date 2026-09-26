@@ -26,18 +26,25 @@ import (
 const SchemaVersion = 1
 
 // LicenceModel is how the project's own code is licensed.
+//
+// SourceAvailable is the case the other four cannot describe: a licence that
+// publishes its source and restricts what a competitor may do with it — FSL,
+// BUSL, Elastic. It is deliberately not a synonym for OpenSource. The source is
+// readable; the licence is not OSI-approved; and a project that says "open
+// source" when it means this is making a claim its own licence contradicts.
 type LicenceModel string
 
 const (
-	ClosedSource LicenceModel = "closed-source"
-	OpenSource   LicenceModel = "open-source"
-	Dual         LicenceModel = "dual"
-	InternalOnly LicenceModel = "internal-only"
+	ClosedSource    LicenceModel = "closed-source"
+	OpenSource      LicenceModel = "open-source"
+	SourceAvailable LicenceModel = "source-available"
+	Dual            LicenceModel = "dual"
+	InternalOnly    LicenceModel = "internal-only"
 )
 
 // ValidLicenceModels is the closed set from the config spec.
 func ValidLicenceModels() []LicenceModel {
-	return []LicenceModel{ClosedSource, OpenSource, Dual, InternalOnly}
+	return []LicenceModel{ClosedSource, OpenSource, SourceAvailable, Dual, InternalOnly}
 }
 
 func (m LicenceModel) Valid() bool {
@@ -95,7 +102,7 @@ type Intent struct {
 
 	Territories []string `yaml:"territories" json:"territories"`
 
-	// AI is the bring-your-own-key block (PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md).
+	// AI is the bring-your-own-key block.
 	//
 	// It is deliberately absent from Hash(). Turning AI on adds an explanation
 	// beside a verdict; it must not change the verdict, and it must not change

@@ -32,7 +32,7 @@ why: >
 
     # WHY THAT IS THE WRONG ANSWER, FROM THIS REPOSITORY'S OWN SPEC
 
-    `PLAN/02-SPECIFICATIONS/01-config-spec.md:72` documents the field as:
+    The config contract documents the field as:
 
       | `distributed` | bool | yes | Whether binaries/source leave your
       control. Triggers GPL distribution duties. |
@@ -47,8 +47,8 @@ why: >
     # WHY THIS IS PINNED AND NOT FIXED
 
     The repair is one clause in a corpus predicate plus a re-sign of the bundle,
-    and corpus YAML is a batched, announced edit under TEAM.md section 4. It is
-    reported in COORDINATION/TEAM.md as F10 rather than applied unilaterally.
+    and corpus YAML is a batched, announced edit. It is reported rather than
+    applied unilaterally.
 
     # WHAT WOULD MAKE IT FAIL FOR THE RIGHT REASON
 

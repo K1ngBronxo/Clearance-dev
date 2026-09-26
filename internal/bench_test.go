@@ -4,9 +4,9 @@
 //
 // `make bench` ran `go test ./... -run '^$' -bench . -benchmem`, and the module
 // contained no Benchmark functions at all. So the target printed `ok` and
-// exited 0 while measuring nothing — the same silent-success shape as the
-// fixture and guard targets documented in LOGS.md §5.15-§5.17, in a target that
-// is easy to overlook because nobody expects a benchmark suite to fail.
+// exited 0 while measuring nothing — the same silent-success shape the fixture
+// and guard targets share, in a target that is easy to overlook because nobody
+// expects a benchmark suite to fail.
 //
 // # WHAT IS MEASURED, AND WHY ONLY THIS
 //

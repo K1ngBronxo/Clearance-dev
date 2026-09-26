@@ -63,7 +63,7 @@ const (
 // The consequence was not cosmetic. A release built with a real key would have
 // shipped carrying the all-zero key, refused every signed corpus with E-INT-005,
 // and reported itself as perfectly built. It is the same failure as the dead
-// `-X main.version` stamps in the Makefile (LOGS.md D-020), in the one place
+// `-X main.version` stamps in the Makefile, in the one place
 // where being wrong means the tool cannot read the data it exists to interpret.
 //
 // So the literal is written out in full, and TestCorpusPublicKeyIsStampable

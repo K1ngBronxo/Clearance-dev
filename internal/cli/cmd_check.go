@@ -767,8 +767,17 @@ func resolveCorpusDir(flagValue string) (string, []string) {
 	return "", tried
 }
 
+// isDir reports whether path names a directory.
+//
+// The gosec finding below is a taint false positive. Every candidate path in
+// resolveCorpusDir comes from either the operator's own flag, the operator's
+// own environment, or the process's own executable and home directory. Nothing
+// the scanned project controls reaches this call — which is the point of the
+// function: an earlier version fell back to a corpus inside the scanned tree
+// and that was removed as a supply-chain hole. Statting a path the operator
+// named is the feature, not a traversal.
 func isDir(path string) bool {
-	st, err := os.Stat(path)
+	st, err := os.Stat(path) // #nosec G703 -- operator-supplied candidate, not project input
 	return err == nil && st.IsDir()
 }
 

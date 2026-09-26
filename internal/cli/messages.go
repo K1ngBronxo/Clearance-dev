@@ -231,8 +231,8 @@ WHY IT EXISTS
 // still does not. The taxonomy has no code for "a documented subcommand is
 // unavailable in this build", because when it was written every subcommand was
 // assumed to be implemented. The gap is narrower than it was — one caller
-// instead of four — but it is not closed, and it is recorded in LOGS.md rather
-// than papered over by reusing E-CFG-011, whose meaning is "the org policy file
+// instead of four — but it is not closed, and it is recorded rather than
+// papered over by reusing E-CFG-011, whose meaning is "the org policy file
 // is invalid" and which a user looking up this message would find unhelpful.
 func notImplemented(stderr io.Writer, flag, detail string) int {
 	fmt.Fprintf(stderr, "clearance: %s is not implemented in this build.\n", flag)

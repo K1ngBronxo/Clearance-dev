@@ -60,8 +60,8 @@ import (
 
 // Kind is one of the eleven things a licence can require.
 //
-// The set is closed, and it is closed on purpose. PLAN/02-SPECIFICATIONS/
-// 02-corpus-schema-spec.md §4 enumerates it, corpus/SCHEMA.md repeats it, and
+// The set is closed, and it is closed on purpose. corpus/SCHEMA.md enumerates
+// it, and
 // TestObligationVocabularyMatchesTheSpec reads the spec and asserts that the
 // constants below are exactly that set — so a kind added to the spec without a
 // constant here, or a constant added here without a spec row, is a red build

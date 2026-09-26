@@ -16,8 +16,7 @@
 // makes an uncited finding unrepresentable, and inventing a citation here would
 // be the exact fabrication the whole product is built to avoid.
 //
-// PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md is the contract. §5's
-// inheritance logic is implemented verbatim, including its default: a clause
+// The inheritance logic is implemented verbatim, including its default: a clause
 // with no `when` predicate applies whenever the platform is invoked.
 package policy
 

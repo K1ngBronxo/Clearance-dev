@@ -34,9 +34,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # 1. GUARD — the spine. The invariant, security, build-integrity and corpus
   #    guards, plus the import-graph layering test. This job gates every other
-  #    job: a broken invariant makes every downstream result meaningless
-  #    (00-START-HERE/04-principles-invariants.md §2,
-  #     05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.1).
+  #    job: a broken invariant makes every downstream result meaningless.
   # ---------------------------------------------------------------------------
   guard:
     name: guard (invariants + arch)
@@ -77,8 +75,7 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # 2. TEST — build, then the full suite with the race detector and coverage,
-  #    on every platform the binary promises to run on
-  #    (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.3, §2.8).
+  #    on every platform the binary promises to run on.
   # ---------------------------------------------------------------------------
   test:
     name: test (${{ matrix.os }})
@@ -135,8 +132,7 @@ jobs:
           args: --timeout=5m
 
   # ---------------------------------------------------------------------------
-  # 4. BANNED IMPORTS — an explicit, dependency-free gate that mirrors
-  #    05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.9. It catches the cases
+  # 4. BANNED IMPORTS — an explicit, dependency-free gate. It catches the cases
   #    depguard cannot (direct decoder *calls* via an alias, net/http imported
   #    somewhere other than the single client, and file-opening calls outside
   #    safefs). No Go toolchain required.
@@ -206,8 +202,7 @@ jobs:
           exit $fail
 
   # ---------------------------------------------------------------------------
-  # 5. VULNCHECK — govulncheck over the module
-  #    (05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.10, C10).
+  # 5. VULNCHECK — govulncheck over the module (control C10).
   # ---------------------------------------------------------------------------
   vulncheck:
     name: vulncheck
@@ -236,8 +231,8 @@ jobs:
   # is offline and never reaches a runner, so corpus-dist/ is absent and the
   # check would fail for want of a corpus rather than for want of correctness.
   # Dogfooding is therefore a pre-release step on the maintainer's machine, and
-  # the doctrine it enforces (PLAN/08-BUSINESS/03-legal-posture.md §5: Clearance
-  # must pass its own check honestly) is verified there, not here.
+  # the doctrine it enforces (Clearance must pass its own check honestly) is
+  # verified there, not here.
   #
   # `make corpus-dist-check` — NOT run here, for the same reason: it verifies a
   # signed bundle that only exists on the maintainer's machine. Its CI-side twin

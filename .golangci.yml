@@ -1,131 +1,141 @@
 # golangci-lint configuration.
 # ---------------------------------------------------------------------------
-# TARGETED AT: golangci-lint v1.60+ (schema v1). CI pins the exact binary in
-# .github/workflows/ci.yml (golangci/golangci-lint-action). If the schema is
-# bumped to v2, this file must be migrated (`golangci-lint migrate`).
+# TARGETED AT: golangci-lint v2 (schema v2). CI pins the exact binary in
+# .github/workflows/ci.yml (golangci/golangci-lint-action). v1 could not lint
+# this module at all once go.mod required go1.25: its loader is built on go1.23
+# and refuses a module with a newer `go` directive. Migrated with
+# `golangci-lint migrate`, which kept every rule below and rewrote the schema.
 #
 # The depguard rules below are the import-level enforcement of the banned-import
-# rules from 05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.9 and
-# 03-SECURITY/02-security-architecture.md §2–§5. depguard can only reason about
-# *imports*; the ban on direct `yaml.Unmarshal` / `json.Unmarshal` *calls* is
-# additionally enforced by the grep check in `make lint` and the
+# rules: the scanner never executes anything (INV-3 / C1), exactly one file
+# speaks HTTP (C4), and untrusted YAML and JSON are decoded only through
+# internal/safeyaml and internal/safejson (INV-10 / C2). depguard can only reason
+# about *imports*; the ban on direct `yaml.Unmarshal` / `json.Unmarshal` *calls*
+# is additionally enforced by the grep check in `make lint` and the
 # `banned-imports` CI job, which catches aliased/local calls depguard cannot see.
 # ---------------------------------------------------------------------------
 
+version: "2"
 run:
-  timeout: 5m
-  go: "1.23"
+  # Kept in step with go.mod by hand. It is what the type checker assumes, so a
+  # version below the one the module declares would lint a language this build
+  # does not use.
+  go: "1.25"
   tests: true
-
 linters:
-  disable-all: true
+  default: none
   enable:
-    - errcheck      # unchecked errors (INV-5: no silent failures)
+    - bodyclose
+    - depguard
+    - errcheck
+    - errorlint
+    - gosec
     - govet
-    - staticcheck
     - ineffassign
+    - revive
+    - staticcheck
     - unused
-    - gosec         # security linting
-    - errorlint     # correct errors.Is/As/%w usage
-    - bodyclose     # HTTP response bodies closed (the one network client)
-    - revive        # style, with the small rule set below
-    - depguard      # the banned-import rules
+  settings:
+    depguard:
+      rules:
+        json-only-via-safejson:
+          files:
+            - '**/internal/scanner/**'
+            - '**/internal/parsers/**'
+            - '**/internal/corpus/**'
+            - '**/internal/config/**'
+          deny:
+            - pkg: encoding/json
+              desc: 'INV-10/C2: parse untrusted JSON via internal/safejson'
+        net-http-single-client:
+          files:
+            - $all
+            - '!**/internal/cli/netclient.go'
+          deny:
+            - pkg: net/http
+              desc: 'C4: net/http is allowed only in internal/cli/netclient.go'
+        scanner-never-executes:
+          files:
+            - '**/internal/scanner/**'
+          deny:
+            - pkg: os/exec
+              desc: 'INV-3/C1: the scanner must never execute anything'
+            - pkg: syscall
+              desc: 'INV-3/C1: the scanner must never call syscall.Exec'
+            - pkg: plugin
+              desc: 'INV-3/C1: the scanner must never load plugins'
+        yaml-only-in-safeyaml:
+          files:
+            - $all
+            - '!**/internal/safeyaml/**'
+          deny:
+            - pkg: gopkg.in/yaml.v2
+              desc: 'INV-10/C2: parse YAML via internal/safeyaml'
+            - pkg: gopkg.in/yaml.v3
+              desc: 'INV-10/C2: parse YAML via internal/safeyaml'
+            - pkg: sigs.k8s.io/yaml
+              desc: 'INV-10/C2: parse YAML via internal/safeyaml'
+            - pkg: github.com/goccy/go-yaml
+              desc: 'INV-10/C2: parse YAML via internal/safeyaml'
+    gosec:
+      excludes:
+        - G304
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    staticcheck:
+      # Everything staticcheck reports still fails the build except the three
+      # rules named here. Each one is an editor quick-fix suggestion rather than
+      # a correctness check, and none was in the v1 rule set this config was
+      # migrated from — they arrived with the v2 upgrade, not with a change to
+      # the code. QF1001 wants `!(c >= 'a' && c <= 'z')` rewritten by De Morgan,
+      # which states an ASCII range test less clearly than it does now; QF1002
+      # and QF1012 are equivalent-rewrite hints. Nothing here suppresses a
+      # finding about a value that could be wrong.
+      checks:
+        - all
+        - -QF1001
+        - -QF1002
+        - -QF1012
 
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      # Struct field ordering is not worth a lint failure.
-      - fieldalignment
-
-  revive:
-    # A deliberately small rule set — the goal is consistency, not opinion.
-    confidence: 0.8
+    revive:
+      confidence: 0.8
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: indent-error-flow
+        - name: increment-decrement
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: var-declaration
+        - name: var-naming
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: indent-error-flow
-      - name: increment-decrement
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: var-declaration
-      - name: var-naming
-
-  gosec:
-    excludes:
-      # G304: "file path provided as taint input". File access is centralised in
-      # internal/safefs, which resolves symlinks and enforces root containment
-      # (C3 / INV-4), so the raw taint heuristic is a false positive here.
-      - G304
-
-  depguard:
-    rules:
-      # Rule 1 — the scanner never executes anything (INV-3 / C1).
-      scanner-never-executes:
-        files:
-          - "**/internal/scanner/**"
-        deny:
-          - pkg: "os/exec"
-            desc: "INV-3/C1: the scanner must never execute anything"
-          - pkg: "syscall"
-            desc: "INV-3/C1: the scanner must never call syscall.Exec"
-          - pkg: "plugin"
-            desc: "INV-3/C1: the scanner must never load plugins"
-
-      # Rule 2 — exactly one file may speak HTTP (C4). Any other import of
-      # net/http trips the egress tripwire at review time.
-      #
-      # The excluded path must name the file that actually exists. The plan calls
-      # this package internal/interface; the code realised it as internal/cli
-      # (LOGS.md §4). When this said internal/interface, the exclusion matched
-      # nothing, so depguard denied net/http in the one file the design requires
-      # it in — the rule forbade its own exception.
-      net-http-single-client:
-        files:
-          - "$all"
-          - "!**/internal/cli/netclient.go"
-        deny:
-          - pkg: "net/http"
-            desc: "C4: net/http is allowed only in internal/cli/netclient.go"
-
-      # Rule 3a — YAML is parsed only through internal/safeyaml (INV-10 / C2).
-      yaml-only-in-safeyaml:
-        files:
-          - "$all"
-          - "!**/internal/safeyaml/**"
-        deny:
-          - pkg: "gopkg.in/yaml.v2"
-            desc: "INV-10/C2: parse YAML via internal/safeyaml"
-          - pkg: "gopkg.in/yaml.v3"
-            desc: "INV-10/C2: parse YAML via internal/safeyaml"
-          - pkg: "sigs.k8s.io/yaml"
-            desc: "INV-10/C2: parse YAML via internal/safeyaml"
-          - pkg: "github.com/goccy/go-yaml"
-            desc: "INV-10/C2: parse YAML via internal/safeyaml"
-
-      # Rule 3b — untrusted JSON is parsed only through internal/safejson
-      # (INV-10 / C2). Scoped to the packages that consume project/corpus input;
-      # renderers and the MCP transport legitimately *marshal* with encoding/json.
-      json-only-via-safejson:
-        files:
-          - "**/internal/scanner/**"
-          - "**/internal/parsers/**"
-          - "**/internal/corpus/**"
-          - "**/internal/config/**"
-        deny:
-          - pkg: "encoding/json"
-            desc: "INV-10/C2: parse untrusted JSON via internal/safejson"
-
-issues:
-  exclude-rules:
-    # Test helpers may need looser rules; production paths may not.
-    - path: _test\.go
-      linters:
-        - gosec
-        - errcheck
+      - linters:
+          - errcheck
+          - gosec
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

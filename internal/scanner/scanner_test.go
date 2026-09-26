@@ -597,8 +597,8 @@ func staleLockfileWarning(g *graph.Graph) string {
 //
 // The first three cases are the ones that were failing in practice; the fourth
 // is the finding the rule exists to make; the fifth pins the DIRECTION, which
-// the plan and the code disagreed about until the taxonomy row was corrected
-// (see LOGS.md, D-029). A lockfile written after its manifest is the healthy
+// the two disagreed about until the taxonomy row was corrected. A lockfile
+// written after its manifest is the healthy
 // state after `npm install`, and warning there would fire on almost every
 // project that had recently resolved its dependencies — which is how a warning
 // teaches its readers to stop reading warnings.

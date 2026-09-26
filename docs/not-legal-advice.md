@@ -91,8 +91,6 @@ reproduces the exact case, correct the corpus with a correction record, and
 publish the change. The fixture is permanent, so the same mistake cannot recur
 silently.
 
-See `PLAN/07-OPERATIONS/02-wrong-verdict-process.md`.
-
 ---
 
 ## What needs a professional before launch
@@ -107,5 +105,5 @@ read, not an engineering fix:
 5. the EU AI Act overlay, if regulatory obligations are ever mapped to
    dependencies as advice.
 
-The full analysis is in `PLAN/08-BUSINESS/03-legal-posture.md`. It is worth
-reading in full before relying on any verdict for a consequential decision.
+Those five are the whole reason this document says what it says. Read it in
+full before relying on any verdict for a consequential decision.

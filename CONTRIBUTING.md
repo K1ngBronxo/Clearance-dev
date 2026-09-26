@@ -49,8 +49,7 @@ values for Clearance would be this tool assuming facts about a project instead o
 which is precisely what INV-7 forbids it from doing to anyone else. Somebody who owns the product's
 posture has to state it. Until then, treat `make dogfood` as a known-failing target, not a gate.
 
-Run `make help` for the full target list. The targets mirror the frozen plan
-([`PLAN/01-ARCHITECTURE/10-repo-structure.md`](../PLAN/01-ARCHITECTURE/10-repo-structure.md) §5).
+Run `make help` for the full target list. The target list is frozen.
 
 ### The rule: every step ends with a green test suite
 
@@ -64,7 +63,7 @@ skipped test with a linked issue — never as a failing test.
 ## 3. The invariant discipline
 
 There are ten invariants, and **each is paired with the test that enforces it**
-([`PLAN/00-START-HERE/04-principles-invariants.md`](../PLAN/00-START-HERE/04-principles-invariants.md) §2).
+(`internal/guard_invariants_test.go`).
 An invariant without a test is a wish, so:
 
 - **`make guard` runs the whole gate** — 23 guards in four groups: the invariant
@@ -87,13 +86,13 @@ An invariant without a test is a wish, so:
   repository has shipped that defect **six times** in six different mechanisms
   (`-X` stamps, `-run` names, a directory with no Go files, a non-constant
   initialiser, `-bench .` with no benchmarks, and a CI step whose `-run` pattern
-  matched one test out of 108). Each one is recorded in `LOGS.md` §5.15–§5.17.
+  matched one test out of 108). Each one is recorded rather than hidden.
 
 ### Architecture layering
 
 `internal/arch_test.go` parses the import graph and enforces the layer rules
-(L0 → L5) and the banned imports
-([`PLAN/01-ARCHITECTURE/10-repo-structure.md`](../PLAN/01-ARCHITECTURE/10-repo-structure.md) §3).
+(L0 → L5) and the banned imports.
+The rules themselves are the `layers` map in that test.
 `make arch` runs it. A violation fails the build. When the pressure to "just
 import it here" arrives — and it will — this test is the thing that says no.
 
@@ -153,7 +152,7 @@ change is not "done" until:
    the no-silent-upgrade check works *within* a bundle; comparing against a
    previous corpus version needs `corpus-build --validate --previous`, which the
    CLI does not yet expose, so `--validate` announces `E-CORPUS-012` to say the
-   comparison did not happen. See `LOGS.md` §5.16.
+   comparison did not happen.
 
 To change a corpus entry by hand you do **not** need the signing key: `make
 corpus` compiles an unsigned bundle for testing. `make corpus-sign` requires the
@@ -164,8 +163,7 @@ corpus` compiles an unsigned bundle for testing. `make corpus-sign` requires the
 ## 5. Adding a dependency
 
 The target is **fewer than 10 direct dependencies**, and every dependency is a
-licence question Clearance must answer about itself
-([`PLAN/03-SECURITY/03-supply-chain-integrity.md`](../PLAN/03-SECURITY/03-supply-chain-integrity.md) §4).
+licence question Clearance must answer about itself. That is control C10.
 
 A new **direct** dependency requires a written justification in the PR: what it
 does, why the standard library cannot, its licence, and its maintenance status.
@@ -196,15 +194,14 @@ What this means for a renderer change: there is no captured baseline to diff
 against, so **the review of a renderer change is the diff of the source, not the
 diff of an output file**. The determinism property is enforced; the *stability
 of the rendered text across releases* is not captured anywhere. That is a real
-gap — see `LOGS.md` §6 — and it is recorded here rather than papered over with a
+gap, and it is recorded here rather than papered over with a
 command that does not run.
 
 ---
 
 ## 7. The "one job that would have caught it" rule
 
-**Every production incident produces a new CI job or test**
-([`PLAN/05-INFRASTRUCTURE/03-ci-cd-pipeline.md`](../PLAN/05-INFRASTRUCTURE/03-ci-cd-pipeline.md) §7).
+**Every production incident produces a new CI job or test.**
 
 When a wrong verdict reaches a user: re-read the clause, add a fixture that
 reproduces the exact case, correct the corpus with a `Correction` block, and
@@ -235,7 +232,8 @@ never recur silently.
 | JSON output | Additive within `schema_version: 1` |
 | Corpus schema | Major-version bump; the binary refuses one it cannot read |
 
-See [`PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md`](../PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md).
+The exit-code contract is in [`docs/ci.md`](docs/ci.md); the other three are
+frozen as stated above.
 
 ---
 

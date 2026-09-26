@@ -39,8 +39,7 @@ why: >
         nowhere, and `E-SCAN-017` is one of three that sit on the guard's
         `degradeCodesAwaitingAFixture` list, which asserts every entry is
         provokable by a directory of files. None of the three can be provoked,
-        because no code emits them. See `COORDINATION/JOE-LOGS-ENTRY.md`,
-        2026-09-26.
+        because no code emits them. Noted here rather than asserted, 2026-09-26.
 
         So this row pins three separate facts at once: the file is not read, it
         is not reported, and the code named for reporting it is dead. The second

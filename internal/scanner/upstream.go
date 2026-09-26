@@ -8,8 +8,6 @@
 // out of the environment has taken on obligations that no code-licence scanner
 // can see. This file finds those invocations.
 //
-// PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md is the contract.
-//
 // # WHAT THIS FILE DELIBERATELY DOES NOT DO
 //
 // **It does not know any platform names.** The scanner reports facts — "this
@@ -913,9 +911,8 @@ var shellControlWords = map[string]bool{
 // repository's own tree it emitted 84 notices, and every one was false: the
 // corpus was told that Clearance invokes a third-party program called
 // `.PHONY:`, and `GUARD_CORPUS`, and `GO)`, and `-X`, and
-// `build release vulncheck dogfood bench`. The spec is blunt about why that
-// matters — PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md §3.2, "false
-// positives are what kill a scanner's credibility".
+// `build release vulncheck dogfood bench`. The reason it matters is blunt:
+// "false positives are what kill a scanner's credibility".
 //
 // Four facts of the grammar were missing, and each one had the same shape: text
 // that is not a command was being read by a rule that assumes it is.

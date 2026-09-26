@@ -2,8 +2,7 @@
 
 A composite action that downloads a **checksum-verified** Clearance release
 binary and runs `clearance check`. It contains no judgement of its own: all
-decisions live in the binary, so the Action can never drift from the CLI
-(`PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md` section 4).
+decisions live in the binary, so the Action can never drift from the CLI.
 
 ## Usage
 

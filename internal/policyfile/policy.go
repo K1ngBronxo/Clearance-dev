@@ -3,7 +3,7 @@
 //
 // # THE RULE, AND WHY IT IS ONE-DIRECTIONAL
 //
-// PLAN/01-ARCHITECTURE/06-policy-engine.md §6 states it:
+// The rule is stated absolutely:
 //
 //	> Escalation only — a policy may **never** downgrade a corpus severity.
 //	> That would let a user silently turn off a blocker, which is the one thing
@@ -300,7 +300,7 @@ func (p *Policy) checkEscalation(target, sev string) error {
 		// make a finding quieter is to except it by name, which leaves a record.
 		//
 		// E-CFG-006 rather than E-POLICY-006, and the choice is deliberate.
-		// 06-policy-engine.md §6 names E-POLICY-006 for this condition, but the
+		// The policy-engine spec §6 names E-POLICY-006 for this condition, but the
 		// taxonomy already carries E-CFG-006 for it — "Policy cannot downgrade
 		// severity for all of %s. Policy may escalate or narrowly whitelist,
 		// never globally weaken." — and the offending artefact is a

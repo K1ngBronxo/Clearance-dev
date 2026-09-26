@@ -11,8 +11,8 @@ why: >
 
     # WHY IT IS CONDITIONAL RATHER THAN PLAIN SHIP
 
-    The catalogue (PLAN/04-QUALITY/02-fixture-catalogue.md section 3) lists this
-    row as SHIP - the clean path. The engine returns SHIP CONDITIONAL, and the
+    This row was catalogued as SHIP - the clean path. The engine returns SHIP
+    CONDITIONAL, and the
     engine is right. Clean here means the LICENCE resolves with nothing
     blocking, which it does. It does not mean the licence asks nothing of you.
 

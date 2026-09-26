@@ -23,7 +23,7 @@ why: >
   second and third are not the code layer repeating itself. `firecrawl@1.2.3`
   is simultaneously (a) an AGPL-3.0 code dependency and (b) the SDK for a
   hosted service whose own terms are a separate document governing a separate
-  act. That is the case 06-detection-spec-tos.md section 1 describes as "the
+  act. That is the case the detection spec's section 1 describes as "the
   obligation that lives in the fifth place nobody reads": a code-licence
   scanner sees the first and is structurally blind to the second. Neither
   finding subsumes the other - you can satisfy AGPL section 13 in full and

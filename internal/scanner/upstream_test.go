@@ -20,8 +20,8 @@ import (
 // them named a third-party program that does not exist: `.PHONY:`,
 // `GUARD_CORPUS`, `GO)`, `X`, `o`, `output-signature`, `build release
 // vulncheck dogfood bench`, and the 22 `Test…` names in the guard lists.
-// PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md §3.2 says why that is not a
-// cosmetic problem — "false positives are what kill a scanner's credibility".
+// The reason that is not a cosmetic problem is blunt — "false positives are
+// what kill a scanner's credibility".
 //
 // The tests below are the four grammar facts that were missing, one group each.
 // Each one is written so that it fails against the old reader and passes
@@ -431,8 +431,7 @@ func TestDockerfileCommandsKeepsTheRegistryInAnImageName(t *testing.T) {
 // non-vacuity check below requires that some commands were found. And if the
 // Makefile ever invokes a genuinely third-party tool, this test fails — which
 // is correct, because that would be a real dependency of this project, and the
-// dogfooding doctrine in PLAN/08-BUSINESS/03-legal-posture.md §5 is that
-// Clearance must pass its own check honestly.
+// dogfooding doctrine is that Clearance must pass its own check honestly.
 func TestOurOwnScriptsNameNoThirdPartyProgram(t *testing.T) {
 	// # WHY THIS WALKS MORE THAN THE MAKEFILE
 	//
@@ -441,7 +440,7 @@ func TestOurOwnScriptsNameNoThirdPartyProgram(t *testing.T) {
 	// third-party programs — every one of them a flag, a number, a quote or a
 	// `#` — and this test was green the whole time, because nothing pointed it
 	// at tools/. The defect class was known; the tree it walked was too narrow.
-	// That is LOGS.md §5.19's pattern in a third place, and the lesson is the
+	// That is the same pattern in a third place, and the lesson is the
 	// same one every time: a guard is only as wide as the list it iterates.
 	//
 	// It was also registered in no GUARD_* variable, so it did not run in the

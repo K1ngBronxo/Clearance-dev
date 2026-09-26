@@ -1,9 +1,6 @@
 # Clearance — Makefile
 # ---------------------------------------------------------------------------
-# Targets are the ones named by the frozen plan:
-#   PLAN/01-ARCHITECTURE/10-repo-structure.md §5
-#   PLAN/05-INFRASTRUCTURE/01-build-and-release.md §2
-# plus `guard` and `dogfood` (03-ci-cd-pipeline.md §2.1, §2.11).
+# The target set is frozen: the ones below, plus `guard` and `dogfood`.
 #
 # Runs in Git Bash on Windows (the founder's machine) and on Linux/macOS CI.
 # Recipe lines MUST begin with a real TAB — do not expand them to spaces.
@@ -16,8 +13,7 @@ SHELL := bash
 # Prefer `go` from PATH; override with `make GO=/path/to/go`.
 GO ?= go
 
-# Reproducible builds: never mutate the module graph implicitly
-# (05-INFRASTRUCTURE/01-build-and-release.md §4).
+# Reproducible builds: never mutate the module graph implicitly.
 GOFLAGS ?= -mod=readonly
 export GOFLAGS
 
@@ -72,8 +68,7 @@ CLI_PKG := github.com/clearance-dev/clearance/internal/cli
 # and it is what lets CI stamp the same key the maintainer signed with without
 # CI ever holding the private half. The private key is offline and is never read
 # by this Makefile except by the `corpus-sign` and `corpus-dist` targets, which a
-# human runs by hand on a machine that is not a build server
-# (03-SECURITY/03-supply-chain-integrity.md §3.1).
+# human runs by hand on a machine that is not a build server.
 #
 # It lives in a file rather than inline so the key can be rotated without
 # editing build scripts, and so a reviewer can see the key change in the diff.
@@ -81,8 +76,7 @@ CORPUS_PKG         := github.com/clearance-dev/clearance/internal/corpus
 CORPUS_PUBKEY_FILE := corpus-public-key.hex
 CORPUS_PUBKEY      ?= $(shell tr -d ' \t\r\n' < $(CORPUS_PUBKEY_FILE) 2>/dev/null)
 
-# `-buildid=` is the main source of build non-determinism
-# (05-INFRASTRUCTURE/01-build-and-release.md §4).
+# `-buildid=` is the main source of build non-determinism.
 LDFLAGS := -s -w -buildid= \
            -X $(CLI_PKG).Version=$(VERSION) \
            -X $(CLI_PKG).Commit=$(COMMIT) \
@@ -101,9 +95,7 @@ LDFLAGS += -X $(CORPUS_PKG).devPublicKeyHex=$(CORPUS_PUBKEY)
 endif
 
 # The guard tests — the ten invariants plus the privacy/security spine.
-# Kept in one place so `make guard` and CI cannot drift
-# (00-START-HERE/04-principles-invariants.md §2,
-#  05-INFRASTRUCTURE/03-ci-cd-pipeline.md §2.1).
+# Kept in one place so `make guard` and CI cannot drift.
 GUARD_INVARIANTS := TestNoUncitedFinding|TestLowConfidenceNeverBlocks|TestNoExecInScanner|TestScannerNeverEscapesRoot|TestEveryErrorCodeIsDocumented|TestVerdictDeterminism|TestUnknownNeverDefaultsToShip|TestConfidenceUpgradeRequiresCorrection|TestUnsignedCorpusRejected|TestYAMLTagRCE|TestBillionLaughs|TestManifestBomb|TestEvaluateRefusesAFindingItCannotCite|TestScannerNeverNamesANonProgram
 GUARD_SECURITY   := TestNoUnexpectedEgress|TestNoEnvContentsInOutput|TestNoAbsolutePathsInOutput|TestMCPRefusesEscapePath
 
@@ -218,7 +210,7 @@ fixtures: ## Verify every fixture produces the verdict it declares
 # bundle, not an embedded database: an embedded DB would need CGO or a
 # third-party driver, either of which breaks ADR-001's single-static-binary /
 # zero-dependency promise. No key required. `--compile` is the corpus-build CLI
-# contract (05-INFRASTRUCTURE/03 §2.7).
+# contract.
 corpus: ## Compile corpus/*.yml -> corpus.json (unsigned)
 	$(GO) run ./corpus-build --compile --out corpus.json
 
@@ -226,8 +218,8 @@ corpus-verify: ## Run every corpus validation rule (schema, citations, no-silent
 	$(GO) run ./corpus-build --validate
 	$(GO) test ./internal/... -run 'TestCorpusPredicatesTypecheck|TestConfidenceUpgradeRequiresCorrection' -count=1
 
-# Verify the STAGED bundle with the shipped binary. This is WP3's acceptance step
-# (07-OPERATIONS/03-runbooks.md RUNBOOK 2), and it depends on `build` on purpose.
+# Verify the STAGED bundle with the shipped binary. This is the acceptance step
+# for the corpus bundle, and it depends on `build` on purpose.
 #
 # The dependency is the whole point. `go build ./cmd/clearance` writes clearance.exe
 # into this directory and carries NO -X public-key stamp, so building the main
@@ -245,7 +237,7 @@ corpus-verify: ## Run every corpus validation rule (schema, citations, no-silent
 # four silent `-X` typos, then `TestEveryStampedSymbolExists`. The first five
 # were fixed by making the stamp checkable. This one is fixed by making the
 # order a dependency rather than a sentence in a runbook.
-corpus-verify-bundle: build ## Verify corpus-dist/ with a freshly-built stamped binary (WP3 acceptance)
+corpus-verify-bundle: build ## Verify corpus-dist/ with a freshly-built stamped binary
 	CLEARANCE_CORPUS=corpus-dist ./$(BINARY)$(EXE) corpus verify
 
 # The corpus release version, stamped into every verdict as `meta.corpus_version`.
@@ -253,21 +245,19 @@ corpus-verify-bundle: build ## Verify corpus-dist/ with a freshly-built stamped 
 # There is deliberately NO default, for the same reason CORPUS_KEY has no default
 # path: a default is a decision nobody made. This used to be
 # `$(shell date -u +%Y.%m.%d)`, which meant `make corpus-dist` silently stamped a
-# version that no runbook step had chosen. The consequences were quiet and real:
-# RUNBOOK 2 step 4 ("Bump CORPUS_VERSION") was skippable, two bundles with
+# version that no step had chosen. The consequences were quiet and real:
+# the version bump was skippable, two bundles with
 # *different* content built on the same day got the *same* version, and one
 # unchanged bundle got a new version every day. A version that names content
 # cannot be derived from the calendar.
 #
 # Bump it deliberately — PATCH for a correction, MINOR for a new licence, trap,
-# ToS entry or obligation, MAJOR for a schema change
-# (07-OPERATIONS/03-runbooks.md RUNBOOK 2 step 4). The corpus ships independently
-# of the binary (07-OPERATIONS/04-release-process.md §1), so the version has to
+# ToS entry or obligation, MAJOR for a schema change. The corpus ships
+# independently of the binary, so the version has to
 # be readable on its own, away from any binary version beside it.
 CORPUS_VERSION ?=
 
-# Requires the OFFLINE Ed25519 key. NEVER run this in CI
-# (03-SECURITY/03-supply-chain-integrity.md §3.1).
+# Requires the OFFLINE Ed25519 key. NEVER run this in CI.
 #
 # CORPUS_KEY names a FILE, and there is deliberately no default path — a default
 # is a path somebody leaves lying around (see corpus-build's usage text).
@@ -304,8 +294,7 @@ corpus-dist: ## Compile + sign the corpus into ./corpus-dist (needs CORPUS_KEY a
 		echo "  usage: make corpus-dist CORPUS_KEY=/path/to/corpus-signing.key CORPUS_VERSION=<version>"; \
 		echo "  The version is stamped into every verdict as meta.corpus_version, so it"; \
 		echo "  names the CONTENT of this bundle and cannot be derived from today's date."; \
-		echo "  Bump it deliberately: PATCH a correction, MINOR a new entry"; \
-		echo "  (07-OPERATIONS/03-runbooks.md RUNBOOK 2 step 4)."; \
+		echo "  Bump it deliberately: PATCH a correction, MINOR a new entry."; \
 		exit 2; \
 	}
 	rm -rf corpus-dist
@@ -362,7 +351,7 @@ vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
 
 # There is deliberately NO `conformance` target here.
 #
-# PLAN/01-ARCHITECTURE/10-repo-structure.md §5 lists `make conformance`, and the
+# `make conformance` was specified, and the
 # target existed — running `go test ./... -run TestConformance`. No such test
 # was ever written, no `conformance/` directory exists, and corpus/fingerprints/
 # is empty with nothing reading it. So the target printed `ok` and exited 0
@@ -372,29 +361,20 @@ vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
 #
 # It was removed rather than left failing. A target that always fails trains
 # people to ignore `make`, which is how `make lint` stayed broken long enough
-# for nobody to notice. The gap is tracked in LOGS.md §6 instead, where gaps
-# belong. Restore the target when the vectors exist.
+# for nobody to notice. The gap is tracked rather than hidden, and the target is
+# restored when the vectors exist.
 
 dogfood: build ## Run clearance check . on Clearance itself (must pass)
 	./$(BINARY)$(EXE) check . --fail-on BLOCK
 
-# Refuse to ship content that leaks the plan. Reads the CONTENTS of every
-# shipped file, not just its path, because the first push passed a path check
-# and was wrong: the staged README.md opened with "Everything is in PLAN/",
-# followed by the vision, the build-hours and the pricing posture. A path check
-# sees a file named README.md; it does not read it.
+# Refuse to ship content that leaks internal planning. Reads the CONTENTS of
+# every shipped file, not just its path, because the first push passed a path
+# check and was wrong: the staged README.md was a planning overview — an
+# internal roadmap and a commercial posture — not a product README. A path
+# check sees a file named README.md; it does not read it.
 #
 # Run with no argument it scans the working tree, so a scrub can be verified
 # before it is committed rather than discovered after it is pushed.
-#
-# KNOWN FALSE POSITIVE, so nobody wastes an hour on it: its fourth rule flags a
-# root-level README.md, which is right for the maintainer checkout (there it is
-# the planning overview) and wrong here, where README.md is the product README
-# and ships on purpose. Run from the module directory the rule fires; run from
-# the repo root as `SHIP_PATHSPEC=clearance bash clearance/tools/check-ship-content.sh`
-# it reports `ok repo-root/planning paths` and the two content rules are the ones
-# that speak. The content rules are the ones that matter, and they are correct in
-# both invocations.
 ship-check: ## Refuse to ship content that leaks the plan (contents, not paths)
 	bash tools/check-ship-content.sh
 

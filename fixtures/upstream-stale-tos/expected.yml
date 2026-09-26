@@ -35,7 +35,7 @@ why: >
   moves.
 
   THE NOTICE. E-CORPUS-011 is emitted once for the entry, not once per clause,
-  and it is the code that closes the gap between 06-detection-spec-tos.md §7
+  and it is the code that closes the gap between §7 of the detection spec
   and the implementation — the downgrade used to happen with the code named
   nowhere. Before it existed, a user reading a MEDIUM confidence on a clause
   the YAML declared HIGH had no way to learn why.

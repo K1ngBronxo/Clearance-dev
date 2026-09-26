@@ -23,7 +23,7 @@ import (
 // # WHY THIS IS A SUBCOMMAND RATHER THAN A FLAG
 //
 // `clearance mcp serve` rather than `clearance --mcp`. The interface contract
-// (PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md §2.1) fixes the shape,
+// fixes the shape,
 // and the shape is right for a reason that is not cosmetic: a server has no
 // verdict, no exit-on-blocker and no output file, so every flag `check` accepts
 // would be a flag this command silently ignores.

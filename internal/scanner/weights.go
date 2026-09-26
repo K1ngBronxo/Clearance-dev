@@ -8,9 +8,6 @@
 // it loads are non-commercial. The code licence tells you nothing about the
 // weights, and every existing SCA tool ignores weight files entirely.
 //
-// PLAN/02-SPECIFICATIONS/05-detection-spec-weights.md is the contract this
-// implements.
-//
 // # THE THREE RULES THAT SHAPE THE CODE
 //
 //  1. **Magic bytes first, extension second.** A file named `model.bin` may be

@@ -1,7 +1,6 @@
 // The Markdown renderer: the PR-comment form.
 //
-// PLAN/02-SPECIFICATIONS/03-verdict-output-spec.md §3 is the contract, and the
-// two invariants that shape this file are R1 and R2:
+// Two invariants shape this file, R1 and R2:
 //
 //   - R1: every Markdown output contains the disclaimer.
 //   - R2: every rendered finding contains its citation.

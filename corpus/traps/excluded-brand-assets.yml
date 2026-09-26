@@ -31,8 +31,8 @@ severity: CONDITION
 citation:
   # THE LICENCE, NOT THE MARKS PAGE.
   #
-  # PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md §4 sketches
-  # this citation as https://www.apache.org/foundation/marks/ — the ASF's own
+  # This citation was originally sketched
+  # as https://www.apache.org/foundation/marks/ — the ASF's own
   # trademark policy. That page is about the ASF's marks, and it does not
   # contain the sentence quoted below. The sentence is Apache-2.0 §6, and
   # citing a URL that does not carry the excerpt is the mismatched-citation

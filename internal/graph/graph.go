@@ -1,10 +1,9 @@
 // Package graph holds the dependency-graph types.
 //
-// WHY THIS PACKAGE EXISTS (a deliberate refinement of the plan's layout)
+// WHY THIS PACKAGE EXISTS (a deliberate refinement of the original layout)
 //
-// PLAN/01-ARCHITECTURE/10-repo-structure.md places `Dependency` and
-// `DependencyGraph` inside `internal/scanner` (L1). But the layer table in
-// PLAN/01-ARCHITECTURE/01-system-architecture.md §1.1 is normative and says:
+// `Dependency` and `DependencyGraph` were originally placed inside
+// `internal/scanner` (L1). But the layer table is normative, and it says:
 //
 //	L3 Decision | may import L2 (types), L0 | may NEVER import L1
 //
@@ -18,8 +17,6 @@
 // (L3) consumes one. Neither knows about the other. This is the same trade-off
 // the plan made for `corpus` (types) vs `scanner` (reading), applied one level
 // down.
-//
-// Recorded in LOGS.md as D-002.
 package graph
 
 import (

@@ -5,8 +5,7 @@
 // stable code, a severity, a human message, and a machine-readable detail
 // payload."
 //
-// The 102 codes below are the complete taxonomy from
-// PLAN/02-SPECIFICATIONS/09-error-taxonomy.md. A code that is not in that file
+// The 102 codes below are the complete taxonomy. A code that is not documented
 // may not exist here, and TestEveryErrorCodeIsDocumented asserts both
 // directions of that statement.
 package cerr
@@ -163,7 +162,7 @@ const (
 	ENet008 Code = "E-NET-008" // corpus download exceeded the size limit
 )
 
-// The AI domain. Added by PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md §8.
+// The AI domain.
 //
 // # THE SHAPE OF THIS DOMAIN IS THE FEATURE
 //
@@ -275,7 +274,7 @@ var specs = []Spec{
 	// ── Configuration ────────────────────────────────────────────────────────
 	{ECfg001, "config", ClassFatal, ExitConfig, "No clearance.config.yml found in the project root.", "Create clearance.config.yml there. fixtures/mixed/clearance.config.yml is a minimal working example."},
 	{ECfg002, "config", ClassFatal, ExitConfig, "Config is missing required fields: %s. Intent must be declared, not inferred.", "Add the listed fields"},
-	{ECfg003, "config", ClassFatal, ExitConfig, "Invalid licence_model '%s'. Expected one of: closed-source, open-source, dual, internal-only.", "Fix the value"},
+	{ECfg003, "config", ClassFatal, ExitConfig, "Invalid licence_model '%s'. Expected one of: closed-source, open-source, source-available, dual, internal-only.", "Fix the value"},
 	{ECfg004, "config", ClassFatal, ExitConfig, "Invalid territory '%s'. Use ISO-3166 alpha-2 or one of: EU, EEA, US, GB, APAC, global.", "Fix the entry"},
 	{ECfg005, "config", ClassFatal, ExitConfig, "Policy ignore rule for '%s' has no reason. Every ignore must state why.", "Add a reason"},
 	{ECfg006, "config", ClassFatal, ExitConfig, "Policy cannot downgrade severity for all of %s. Policy may escalate or narrowly whitelist, never globally weaken.", "Narrow the rule or remove it"},

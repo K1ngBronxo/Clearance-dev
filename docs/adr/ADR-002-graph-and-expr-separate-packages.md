@@ -2,21 +2,16 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-23
-- **Refines:** `PLAN/01-ARCHITECTURE/01-system-architecture.md` section 1.1,
-  `PLAN/01-ARCHITECTURE/03-data-model.md` section 9,
-  `PLAN/01-ARCHITECTURE/10-repo-structure.md` section 1
 
 ## Context
 
-The plan's repository layout
-(`PLAN/01-ARCHITECTURE/10-repo-structure.md` section 1) places two types in
-packages that the plan's own layer table forbids them from living in:
+The repository layout originally proposed places two types in packages that
+the layer table forbids them from living in:
 
 1. `Dependency` and `DependencyGraph` are placed inside `internal/scanner` (L1).
 2. `Expr`, the predicate tree, is placed inside `internal/policy` (L3).
 
-The layer table in `PLAN/01-ARCHITECTURE/01-system-architecture.md` section 1.1
-is **normative** and states:
+The layer table is **normative**, and it states:
 
 ```
 L2 may never import L3
@@ -81,5 +76,5 @@ and no behaviour that reaches outward.
 
 - `internal/graph/graph.go` — the package comment recording this decision.
 - `internal/expr/expr.go` — the package comment recording this decision.
-- `PLAN/01-ARCHITECTURE/01-system-architecture.md` section 1.1 — the normative
-  layer table.
+- `internal/arch_test.go` — the same layer table, in code, enforced at build
+  time.

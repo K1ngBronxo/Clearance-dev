@@ -283,8 +283,8 @@ type Entry struct {
 // Clause is one restrictive clause of a platform's terms.
 //
 // When is optional, and its absence means "applies whenever the platform is
-// invoked" — because the act of invoking a platform is what inherits its terms
-// (PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md §5). A clause carries a
+// invoked" — because the act of invoking a platform is what inherits its terms.
+// A clause carries a
 // predicate only when it applies to some uses and not others: an acceptable-use
 // clause that bites only on a network-exposed service, say. The distinction is
 // the same conditional-obligation model the licence entries use, applied one

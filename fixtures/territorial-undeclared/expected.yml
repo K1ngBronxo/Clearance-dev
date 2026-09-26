@@ -11,7 +11,7 @@ why: >
   INV-7 is really about: the licence HAS a territorial clause, and the user has
   not said where they operate.
 
-  PLAN/02-SPECIFICATIONS/01-config-spec.md §2.4: "Omitted is not `global`. If
+  The config contract, on omitted fields: "Omitted is not `global`. If
   you omit `territories`, every territorial clause evaluates to `UNKNOWN`, and
   the verdict tells you to declare them. Assuming global would be the tool
   making a decision on your behalf."

@@ -442,7 +442,9 @@ func unquoteDouble(s string, line int) (string, error) {
 			if err != nil {
 				return "", syntaxf(line, "invalid \\u escape %q", inner[i:i+5])
 			}
-			b.WriteRune(rune(code))
+			// Bounded before the conversion: ParseUint read exactly the four
+			// hex digits at inner[i+1:i+5], so code <= 0xFFFF.
+			b.WriteRune(rune(code)) // #nosec G115 -- 4 hex digits, max 0xFFFF
 			i += 4
 		default:
 			return "", syntaxf(line, "unsupported escape \\%c", inner[i])

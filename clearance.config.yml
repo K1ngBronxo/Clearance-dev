@@ -1,8 +1,8 @@
 # Clearance's own declared intent.
 #
-# `make dogfood` runs `clearance check .` against this repository, and
-# PLAN/08-BUSINESS/03-legal-posture.md §5 says it "must pass, and it must pass
-# honestly". This file is what makes that possible: without it the scan stops at
+# `make dogfood` runs `clearance check .` against this repository, and the
+# doctrine behind it is that the check "must pass, and it must pass honestly".
+# This file is what makes that possible: without it the scan stops at
 # E-CFG-001, because a tool whose whole thesis is that a verdict requires a
 # declared intent cannot verdict on itself without one.
 #
@@ -14,7 +14,8 @@ project:
   name: clearance
   description: >
     A licence, model-weights and platform-terms scanner that returns a verdict.
-    Apache-2.0 (see LICENSE), with a CC-BY-4.0 corpus (see corpus/SCHEMA.md).
+    FSL-1.1-ALv2 — source-available, not open source (see LICENSE) — with a
+    CC-BY-4.0 corpus (see corpus/SCHEMA.md).
 
 use:
   # Clearance has a hosted tier in the plan, so the project is commercial. This
@@ -23,10 +24,11 @@ use:
   # sold".
   commercial: true
 
-  # Apache-2.0. Stated rather than inferred, because the engine never reads the
-  # project's own licence file to answer it — that would be the scanner deciding
-  # a fact the user is supposed to declare.
-  licence_model: open-source
+  # FSL-1.1-ALv2: source-available, not open source. Stated rather than
+  # inferred, because the engine never reads the project's own licence file to
+  # answer it — that would be the scanner deciding a fact the user is supposed
+  # to declare.
+  licence_model: source-available
 
   # The corpus is edited, but no vendored third-party code is. `modified` is
   # about the dependencies, and declaring it true would make AGPL's §13
@@ -41,9 +43,10 @@ use:
   network_exposed: false
 
   # Release binaries and source are published, so this is true. It is the flag
-  # that turns Apache-2.0's licence-inclusion and notice-retention obligations
-  # on, which is why the repository carries a LICENSE and a NOTICE rather than
-  # merely claiming Apache-2.0 in prose.
+  # that turns FSL's redistribution terms on — whoever passes this work on must
+  # include the licence and must leave the notices intact — which is why the
+  # repository carries a LICENSE and a NOTICE rather than merely naming the
+  # licence in prose.
   distributed: true
 
   saas: false

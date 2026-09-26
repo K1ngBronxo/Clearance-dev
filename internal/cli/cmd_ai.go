@@ -262,15 +262,15 @@ func runAIStep(
 	//
 	// # WHY THIS IS NOT E-NET-004
 	//
-	// PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md §4.7 names E-NET-004 for this
-	// case, and this build deliberately departs from it. E-NET-004 is documented
+	// E-NET-004 is the code named for this case, and this build deliberately
+	// departs from it. E-NET-004 is documented
 	// as DEGRADE with exit 0 and the message "Network call blocked (--offline).
 	// Expected; no action" — which is exactly right for the corpus updater,
 	// where the fallback is the local corpus and the run is still complete. Here
 	// the user has asked for two things that cannot both be true, and a run that
-	// exits 0 has *silently ignored* one of them, which is the one outcome §4.7
-	// forbids. The honest classification is a configuration error, so it is
-	// E-AI-012 and exit 2, and the departure is recorded in LOGS.md.
+	// exits 0 has *silently ignored* one of them, which is the one outcome that
+	// rule forbids. The honest classification is a configuration error, so it is
+	// E-AI-012 and exit 2, and the departure is recorded rather than silent.
 	if f.offline {
 		return fail(stderr, cerr.New(cerr.EAi012)), true
 	}

@@ -103,14 +103,11 @@ func guardCorpusToday(t *testing.T, dir string) string {
 	return newest
 }
 
-// guardPlanFile resolves a path inside PLAN/.
+// guardPlanFile resolves a path inside the internal planning tree.
 //
-// The plan is NOT inside the Go module: the repository is laid out as
-//
-//	DESIGN/  PLAN/  clearance/   <- the module is a sibling of the plan
-//
-// so a test running with its working directory inside the module has to look
-// one level up. Both locations are tried, and a miss is fatal with the list of
+// That tree is NOT inside the Go module: the maintainer repository keeps the
+// planning documents and the module as siblings, so a test running with its
+// working directory inside the module has to look one level up. Both locations are tried, and a miss is fatal with the list of
 // places that were tried — the same discipline resolveCorpusDir applies to the
 // corpus, for the same reason: "not found" without saying where you looked is a
 // failure nobody can act on.
@@ -120,7 +117,7 @@ func guardCorpusToday(t *testing.T, dir string) string {
 // published. There is no evidence to check against, so the test skips rather
 // than passes: a guard that went green with nothing behind it would be worse
 // than one that did not run, and a skip is visible in the output while a
-// silently passing guard is not. Where PLAN/ IS present — every maintainer
+// silently passing guard is not. Where the tree IS present — every maintainer
 // checkout — a missing file stays fatal, so a typo in a citation path can never
 // turn into a skip.
 func guardPlanFile(t *testing.T, rel string) string {
@@ -143,11 +140,12 @@ func guardPlanFile(t *testing.T, rel string) string {
 		}
 	}
 	if !planPresent {
-		t.Skipf("PLAN/ is not part of this distribution, so %s cannot be checked here. "+
+		t.Skipf("The internal planning tree is not part of this distribution, "+
+			"so %s cannot be checked here. "+
 			"The plan-anchored guards run in a maintainer checkout. Tried:\n  %s",
 			rel, strings.Join(tried, "\n  "))
 	}
-	t.Fatalf("PLAN/%s not found. Tried:\n  %s", rel, strings.Join(tried, "\n  "))
+	t.Fatalf("plan document %q not found. Tried:\n  %s", rel, strings.Join(tried, "\n  "))
 	return ""
 }
 

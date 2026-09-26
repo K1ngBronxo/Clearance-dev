@@ -12,7 +12,7 @@ why: >
   permission is conditional on WHERE you operate, and an intent that declares a
   territory inside the gate.
 
-  PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part B §5 gives
+  The specification gives
   the pattern: an obligation of kind TERRITORIAL_GATE whose `when` reads
   `use.commercial` AND `territories contains "RU"`. The declared intent is
   commercial, the declared territory is RU, so the gate fires at its declared

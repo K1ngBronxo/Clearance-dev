@@ -8,9 +8,8 @@
 > editing YAML, not by shipping a new binary. That makes every entry a
 > verdict-affecting artefact — vague data is a vague answer for every user.
 
-This guide is the short form of
-[`PLAN/02-SPECIFICATIONS/02-corpus-schema-spec.md`](../../PLAN/02-SPECIFICATIONS/02-corpus-schema-spec.md).
-Where the two disagree, **the Go types in `internal/corpus/corpus.go` and the
+This guide is the contract for everything below. Where this guide and the code
+disagree, **the Go types in `internal/corpus/corpus.go` and the
 validator in `internal/corpus/load.go` win** — they are what actually decodes
 your file. See "Known spec/code discrepancies" at the end.
 
@@ -259,7 +258,7 @@ bool field to the string `"true"` fails the build (`E-POLICY-004`).
 | Field | Type | Source |
 |---|---|---|
 | `use.commercial` | bool | intent |
-| `use.licence_model` | enum: `closed-source` \| `open-source` \| `dual` \| `internal-only` | intent |
+| `use.licence_model` | enum: `closed-source` \| `open-source` \| `source-available` \| `dual` \| `internal-only` | intent |
 | `use.modified` | bool | intent |
 | `use.network_exposed` | bool | intent |
 | `use.distributed` | bool | intent |
@@ -393,14 +392,13 @@ confidence: HIGH
 
 ## 13. Known spec/code discrepancies
 
-The prose specification
-(`PLAN/02-SPECIFICATIONS/02-corpus-schema-spec.md`) is aspirational in two
-places; the Go types are authoritative and this corpus follows them.
+The prose above is aspirational in two places; the Go types are authoritative
+and this corpus follows them.
 
 1. The spec's `tos` example (§6) includes a `kind: hosted-service` field. There
    is **no `kind` field on `ToSEntry`**, so including it fails the load with
    `E-CORPUS-004` (unknown key). This corpus omits it.
-2. The spec's ToS detection text (§5 of `06-detection-spec-tos.md`) refers to a
+2. The spec's ToS detection text (§5) refers to a
    per-clause `when` predicate. There is **no `when` field on `Clause`**; a ToS
    clause applies whenever its platform is invoked. This corpus omits it.
 

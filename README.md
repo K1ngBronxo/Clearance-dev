@@ -48,8 +48,8 @@ is a false pass. The exit codes are a frozen contract: `0` ok, `1` `DO NOT SHIP`
 `2` config error, `3` corpus error, `4` internal error, `5` `UNDETERMINED` with
 `--strict`.
 
-The full statement is in
-[`PLAN/01-ARCHITECTURE/07-verdict-algebra.md`](PLAN/01-ARCHITECTURE/07-verdict-algebra.md).
+The full statement is in [docs/verdicts.md](docs/verdicts.md) — the four rules, why an
+unknown outranks a condition, and the exit-code table.
 
 ---
 
@@ -145,9 +145,8 @@ scoped to a single `fs.read` capability rooted at the directory the server was
 started in. No binary release has been cut yet. See
 [CHANGELOG.md](CHANGELOG.md).
 
-The plan the code is built from is in [`PLAN/`](PLAN/). Where the code and the
-plan's repository layout differ, the reason is recorded in
-[docs/adr/](docs/adr/).
+The repository layout is the architecture. Where a choice deviates from the obvious
+one, the reason is recorded in [docs/adr/](docs/adr/).
 
 ---
 

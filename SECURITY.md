@@ -5,10 +5,9 @@ and tells you whether it is safe to ship them. It follows that **Clearance's own
 security is part of the product**. This document says what we consider a
 vulnerability, how to report one, and what we will do about it.
 
-The threat model and the controls referenced below live in
-[`PLAN/03-SECURITY/`](../PLAN/03-SECURITY/): `01-threat-model.md`,
-`02-security-architecture.md` (controls C1–C10) and
-`03-supply-chain-integrity.md`.
+The controls referenced below are C1–C10, the security controls this project
+is built against. Each one is named in the package comment of the code that
+enforces it, and asserted by a test in `internal/guard_security_test.go`.
 
 ---
 
@@ -129,9 +128,9 @@ third party make Clearance do something it did not declare it would do.**
 
 - **The legal correctness of a corpus entry** — a wrong or debatable reading of a
   licence is an *accuracy* issue, not a security vulnerability. It goes through
-  the public wrong-verdict process in
-  [`PLAN/07-OPERATIONS/02-wrong-verdict-process.md`](../PLAN/07-OPERATIONS/02-wrong-verdict-process.md),
-  which is faster and produces a permanent fixture. Report it as a normal issue.
+  the public wrong-verdict process described in
+  [`docs/not-legal-advice.md`](docs/not-legal-advice.md), which is faster and
+  produces a permanent fixture. Report it as a normal issue.
 - **A dependency of *your* project having a licence you dislike.** Clearance
   reports it; that is the product working.
 - **An ambiguous licence clause being flagged as ambiguous.** That is correct
@@ -200,6 +199,5 @@ who installs via the Action gets verification without doing anything.
 ## Supply-chain incidents
 
 If the corpus signing key, a release artefact, or a dependency is compromised, we
-follow the response matrix in
-[`PLAN/03-SECURITY/03-supply-chain-integrity.md`](../PLAN/03-SECURITY/03-supply-chain-integrity.md) §6,
-publish a security advisory, and ship a public post-mortem.
+rotate the key, withdraw or re-sign every affected artefact, publish a
+security advisory, and ship a public post-mortem.

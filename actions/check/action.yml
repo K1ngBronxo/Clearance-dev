@@ -12,8 +12,7 @@ branding:
   color: 'green'
 
 # ---------------------------------------------------------------------------
-# The Action is deliberately thin (PLAN/01-ARCHITECTURE/09-interfaces-and-
-# contracts.md section 4: "The Action contains no logic"). It:
+# The Action is deliberately thin: it contains no logic of its own. It:
 #   1. resolves the release for the requested version,
 #   2. downloads the platform archive and verifies its SHA-256 against the
 #      release's checksums.txt BEFORE extracting or running anything,

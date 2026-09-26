@@ -1,6 +1,6 @@
 // The SARIF renderer: the GitHub code-scanning form.
 //
-// PLAN/02-SPECIFICATIONS/03-verdict-output-spec.md §4 is the contract. SARIF
+// The contract is SARIF
 // 2.1.0, uploaded by the GitHub Action so that findings appear in the Security
 // tab and annotate the diff.
 //

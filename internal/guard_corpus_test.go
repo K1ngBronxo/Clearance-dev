@@ -14,8 +14,8 @@
 // `make fixtures` and `make corpus-verify` used to name six tests that did not
 // exist. `go test -run <name>` exits 0 when the name matches nothing, so both
 // targets reported success while running almost nothing — the same defect
-// LOGS.md §5.15 documents for `make guard`. The two tests below are two of the
-// six, written. The other four are recorded in §5.17.
+// `make guard` had. The two tests below are two of the six, written. The other
+// four are recorded as still missing.
 //
 // TestNoGuardIsLeftOutOfTheGate asserts that every Test function in a
 // guard_*_test.go file is reachable from a GUARD_* variable, so the pairing
@@ -423,8 +423,8 @@ func TestEveryTrapIsEitherFiredByAFixtureOrListed(t *testing.T) {
 // by no fixture at all while every gate stays green.
 //
 // The trap property has had a ratchet since trapsWithNoFixture was emptied. The
-// degrade property had none: PLAN/04-QUALITY/02-fixture-catalogue.md §10 named a
-// test for it, `TestEveryDegradeCodeHasFixture`, and that test did not exist. A
+// degrade property had none: a test was named for it,
+// `TestEveryDegradeCodeHasFixture`, and that test did not exist. A
 // named check that checks nothing is this repository's signature defect, so this
 // is that test — written, rather than renamed out of the catalogue.
 //
@@ -486,10 +486,10 @@ func TestEveryTrapIsEitherFiredByAFixtureOrListed(t *testing.T) {
 //   - E-PARSE-006, E-PARSE-008, E-PARSE-009 (3). Declared, cited and rendered,
 //     and reachable by no input: the YAML decoder's own depth, alias and tag
 //     failures are wrapped into E-PARSE-001/002 by the parser before the
-//     specific code can be attached. TEAM.md §8 F8/F9 records the evidence.
+//     specific code can be attached. The evidence is on record.
 //     These are not "no fixture yet" — they are a taxonomy defect, and the
 //     honest disposition is to fix or remove the codes, not to write a fixture
-//     for an input that cannot exist. Recorded for WP7.
+//     for an input that cannot exist.
 //
 //   - E-CORPUS-010 (1). Describes a malformed entry in *Clearance's own*
 //     corpus. A fixture is a project to be scanned; it cannot malform the tool's
@@ -662,8 +662,7 @@ func TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed(t *testing.T) {
 // corpus/territories/*.yaml carries jurisdiction overlays. Each territory entry
 // holds a `gates:` list, and every gate has an id, a summary, a severity, a
 // confidence and a resolved citation — the same shape as an obligation or a
-// trap. PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part B
-// §3 and §4 specify that a declared territory's gates produce findings, and the
+// trap. A declared territory's gates are supposed to produce findings, and the
 // loader registers each gate's citation in the citation index (load.go), so the
 // data is complete enough to render.
 //
@@ -671,7 +670,7 @@ func TestEveryDegradeCodeIsEitherFiredByAFixtureOrListed(t *testing.T) {
 // call site: the only readers of Territory() and Gate are corpus-build, which
 // bundles the data, and the corpus browser, which prints it. So the gates are
 // described, cited, severity-rated, shipped — and never evaluated. That is
-// LOGS.md §5.18's defect in a second place, and it is worth saying plainly:
+// same defect in a second place, and it is worth saying plainly:
 // a reader of corpus/territories/ would reasonably believe these gates are live.
 //
 // # WHY THIS IS AN ACKNOWLEDGEMENT AND NOT A FIX
@@ -772,7 +771,7 @@ func TestEveryTerritoryGateIsEitherEvaluatedOrAcknowledged(t *testing.T) {
 		t.Errorf("territory gate %s is declared in the corpus, is read by no "+
 			"code path, and is not on the acknowledged list.\n"+
 			"A gate that nothing evaluates is described, cited and inert — the "+
-			"defect LOGS.md §5.18 records for the trap catalogue.\n"+
+			"defect recorded for the trap catalogue.\n"+
 			"Either wire the jurisdiction-overlay layer up, or add %q to "+
 			"territoryGatesWithNoReader to record the gap deliberately.", id, id)
 	}
@@ -805,8 +804,7 @@ func TestEveryTerritoryGateIsEitherEvaluatedOrAcknowledged(t *testing.T) {
 //
 // # THE ASSET LAYER, WHICH IS NOW BUILT
 //
-// `asset` is the brand-asset layer. PLAN/02-SPECIFICATIONS/
-// 07-detection-spec-assets-territories.md Part A specifies it: walk vendored
+// `asset` is the brand-asset layer. Its detector walks vendored
 // dependency directories, match filenames against brand-asset patterns
 // (logo.*, icon.*, favicon.*, wordmark.*, brand.*), read TRADEMARK/NOTICE files
 // and classify them, and emit a Dependency of kind ASSET per dependency with a
@@ -1674,9 +1672,8 @@ last_verified: "2026-09-20"
 //
 // The loader announced "loaded without a previous corpus version; confidence
 // rises could not be compared" under E-CORPUS-007, whose declared meaning — in
-// the constant comment, in the table in internal/cerr/code.go, and in both
-// PLAN/02-SPECIFICATIONS/09-error-taxonomy.md and
-// PLAN/01-ARCHITECTURE/05-corpus-architecture.md — is "a citation URL is
+// the constant comment and in the table in internal/cerr/code.go — is "a
+// citation URL is
 // unreachable in the CI liveness check". Two unrelated conditions shared one
 // code, and the notice's own words contradicted the message the table says that
 // code renders. The loader wanted a code for a condition the taxonomy had none
@@ -1734,8 +1731,8 @@ func TestCorpusNoticeCodesMatchTheirDeclaredMeaning(t *testing.T) {
 	}
 	if !strings.Contains(seven.Message, "Citation URL") {
 		t.Errorf("E-CORPUS-007 no longer describes an unreachable citation URL; its "+
-			"message is %q.\nThat meaning is what PLAN/02-SPECIFICATIONS/09-error-taxonomy.md "+
-			"and PLAN/01-ARCHITECTURE/05-corpus-architecture.md both record for it.",
+			"message is %q.\nThat meaning is what internal/cerr/code.go records "+
+			"for it, and what the message must keep saying.",
 			seven.Message)
 	}
 
@@ -1821,7 +1818,7 @@ func TestShippedBundleIsACurrentCompileOfTheSource(t *testing.T) {
 		"  source:  %d bytes, sha256 %s\n"+
 		"The bundle is what a release ships and the YAML tree is what every other "+
 		"guard reads, so the two can disagree with the whole suite green. Rebuild "+
-		"and re-sign it (07-OPERATIONS/03-runbooks.md RUNBOOK 2):\n"+
+		"and re-sign it:\n"+
 		"  make corpus-dist CORPUS_KEY=<offline key> CORPUS_VERSION=<version>",
 		len(shipped), corpus.Digest(shipped), len(want), corpus.Digest(want))
 }

@@ -7,9 +7,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 The **corpus** versions independently of the binary and has its own changelog,
 published with the corpus bundle. A corpus change is recorded there, not here.
-The binary's compatibility promise with the corpus is stated in
-[`PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md`](../PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md)
-section 7.
+The binary's compatibility promise with the corpus is stated at the top of
+[`corpus/SCHEMA.md`](corpus/SCHEMA.md), where the version negotiation is
+described.
 
 ---
 

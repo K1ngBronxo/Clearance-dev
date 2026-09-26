@@ -10,9 +10,6 @@
 // even though the copyright licence permits the fork, and no licence scanner
 // mentions it.
 //
-// PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part A is the
-// contract.
-//
 // # WHAT THIS FILE DELIBERATELY DOES NOT DO
 //
 // **It does not read images.** §5 is explicit: "No OCR, no image analysis." The

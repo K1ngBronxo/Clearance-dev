@@ -40,9 +40,8 @@ matches wins:
 
 The order is normative. A definite block is never diluted by an unrelated
 unknown, and an unknown risk outranks a known requirement because the
-alternative is a false pass. The full statement, with the properties each rule
-must satisfy, is in
-[`PLAN/01-ARCHITECTURE/07-verdict-algebra.md`](../../PLAN/01-ARCHITECTURE/07-verdict-algebra.md).
+alternative is a false pass. The properties each rule must satisfy are asserted
+in `internal/verdict`, which is where the algebra is implemented.
 
 ---
 

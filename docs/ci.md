@@ -15,8 +15,7 @@ binary for you) and a **direct download** of the release binary.
 The Action contains **no logic of its own**. It downloads the release binary,
 **verifies its checksum against the signed `checksums.txt`**, runs
 `clearance check`, uploads SARIF, and updates a PR comment. All judgement lives in
-the binary, so the Action can never drift from the CLI
-([`PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md`](../../PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md) §4).
+the binary, so the Action can never drift from the CLI.
 
 ### 1.1 A minimal workflow
 
@@ -63,8 +62,7 @@ on unknowns, set `strict: 'true'`.
 
 ## 2. The exit-code contract
 
-These five codes are **frozen forever** and will never be repurposed
-([`PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md`](../../PLAN/01-ARCHITECTURE/09-interfaces-and-contracts.md) §2.3).
+These five codes are **frozen forever** and will never be repurposed.
 A pipeline written against them today will still work in five years.
 
 | Code | Meaning | What CI should do |

@@ -250,6 +250,13 @@ func floatText(f float64) string {
 	for i := 0; i < 12 && frac != 0; i++ {
 		frac *= 10
 		d := int(frac)
+		if d < 0 || d > 9 {
+			// Unreachable for a finite fraction in [0,1), which is the only
+			// thing that gets here. Written out rather than assumed: the
+			// number came from a parsed document, and the conversion below is
+			// the one that would silently wrap if that ever stopped holding.
+			break
+		}
 		digits = append(digits, byte('0'+d))
 		frac -= float64(d)
 	}

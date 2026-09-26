@@ -11,8 +11,7 @@ import (
 // # WHY THIS TYPE EXISTS AND WHY IT IS NAMED FOR WHAT IT IS
 //
 // AI output may appear in the human terminal output, and only there, and only in
-// a block that says plainly that it is not part of the verdict
-// (PLAN/02-SPECIFICATIONS/10-ai-provider-spec.md §6.3).
+// a block that says plainly that it is not part of the verdict.
 //
 // The renderer must not know that. `internal/report` is L4 and is a pure
 // `Verdict → bytes` function; giving it a parameter of type `ai.Suggestion`

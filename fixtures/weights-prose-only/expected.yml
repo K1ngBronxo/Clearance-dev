@@ -6,8 +6,8 @@ verdict: UNDETERMINED
 why: >
     THIS FIXTURE PINS A DEFECT. Read the `why` before "fixing" it.
 
-    The catalogue (PLAN/04-QUALITY/02-fixture-catalogue.md section 3) lists this
-    row as weights-prose-only - "Weights + a prose mention" - expecting
+    This row was catalogued as weights-prose-only - "Weights + a prose mention" -
+    expecting
     "resolved, MEDIUM". It is not resolved. The licence is named in plain English
     in README.md, and the scanner returns UNDETERMINED with licence_not_found.
 

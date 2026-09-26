@@ -3,7 +3,7 @@
 # # WHY THIS FIXTURE SUPPLIES ITS OWN CORPUS
 #
 # The rule under test is the territorial-commercial-gate pattern of
-# PLAN/02-SPECIFICATIONS/07-detection-spec-assets-territories.md Part B §5: a
+# The pattern this fixture pins: a
 # licence obligation of kind TERRITORIAL_GATE whose `when` reads the declared
 # `territories` list.
 #

@@ -1,6 +1,14 @@
 module github.com/clearance-dev/clearance
 
-go 1.23
+go 1.25.13
+
+// The patch level is deliberate, and it is not cosmetic. `make vulncheck` runs
+// govulncheck against the toolchain's own standard library, and at go1.23 the
+// standard library carries advisories reachable from code this program actually
+// calls — 31 of them at go1.23.4, still 24 at go1.23.12. The fixing releases are
+// go1.25.13 and go1.24.11. Declaring the patched minimum here is what makes that
+// checkable: an older toolchain refuses to build rather than building quietly.
+// CI reads this file (`go-version-file: go.mod`), so it moves with it.
 
 // Clearance has ZERO third-party dependencies, deliberately.
 //
@@ -14,5 +22,5 @@ go 1.23
 //  * The binary must build and run offline, on a plane, on Windows with no
 //    Docker. `go build` with no module graph is the shortest path to that.
 //
-// Adding a dependency is a decision that must be recorded in the decision log
-// with the alternative that was rejected. See PLAN/99-REFERENCE/01-decision-log.md.
+// Adding a dependency is a decision that must be recorded as an ADR in docs/adr/,
+// with the alternative that was rejected.

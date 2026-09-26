@@ -3,7 +3,7 @@
 //
 // # WHY A SUBSET PARSER AND NOT A WRAPPER AROUND A YAML LIBRARY
 //
-// PLAN/03-SECURITY/02-security-architecture.md §3 specifies `safeyaml` as a
+// `safeyaml` was originally specified as a
 // wrapper that "decodes with a strict decoder: no custom tags, alias limit,
 // depth limit, duplicate-key rejection". A wrapper can only ever *mitigate* YAML
 // deserialisation RCE, because the tag machinery still exists one layer down and
@@ -584,9 +584,7 @@ func lex(data []byte) ([]yline, error) {
 	// refused explicitly, because its first bytes look like a NUL and the
 	// resulting error would be baffling.
 	text := string(data)
-	if strings.HasPrefix(text, "\ufeff") {
-		text = strings.TrimPrefix(text, "\ufeff")
-	}
+	text = strings.TrimPrefix(text, "\ufeff")
 	if strings.HasPrefix(text, "\xff\xfe") || strings.HasPrefix(text, "\xfe\xff") {
 		return nil, cerr.New(cerr.EParse010, "input", "utf-16")
 	}

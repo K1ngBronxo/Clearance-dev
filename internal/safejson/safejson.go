@@ -390,12 +390,15 @@ func (d *decoder) string() (Value, error) {
 					return nil, d.errf("invalid \\u escape")
 				}
 				d.i += 4
-				r := rune(code)
+				// Bounded before the conversion: ParseUint read exactly the
+				// four hex digits at d.s[d.i+1:d.i+5], so code <= 0xFFFF.
+				r := rune(code) // #nosec G115 -- 4 hex digits, max 0xFFFF
 				// A surrogate pair is two escapes; join them so that an emoji
 				// in a description does not become two replacement characters.
 				if utf16.IsSurrogate(r) && d.i+6 < len(d.s) && d.s[d.i+1] == '\\' && d.s[d.i+2] == 'u' {
 					if low, err := strconv.ParseUint(d.s[d.i+3:d.i+7], 16, 32); err == nil {
-						if dec := utf16.DecodeRune(r, rune(low)); dec != utf8.RuneError {
+						// Same bound as above: low is four hex digits.
+						if dec := utf16.DecodeRune(r, rune(low)); dec != utf8.RuneError { // #nosec G115 -- 4 hex digits, max 0xFFFF
 							b.WriteRune(dec)
 							d.i += 6
 							d.i++

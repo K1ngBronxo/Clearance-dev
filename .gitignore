@@ -17,7 +17,7 @@
 # with "directory not found", and the build guard that walks the script
 # directories failed with it. The binary is covered by `/corpus-build.exe`
 # below and by `*.exe` in the repo-root .gitignore; the source directory must
-# never be ignored. See LOGS.md, D-030.
+# never be ignored.
 /corpus-build.exe
 *.test
 cover.out

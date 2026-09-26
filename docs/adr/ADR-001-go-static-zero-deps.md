@@ -2,8 +2,6 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-23
-- **Refines:** `PLAN/01-ARCHITECTURE/01-system-architecture.md`,
-  `PLAN/03-SECURITY/03-supply-chain-integrity.md`
 
 ## Context
 
@@ -68,6 +66,7 @@ The rule is enforced, not merely stated:
 ## References
 
 - `go.mod` — the zero-dependency declaration and its rationale.
-- `PLAN/03-SECURITY/03-supply-chain-integrity.md` — control C10.
+- Control C10 — the supply-chain control that forbids a third-party
+  dependency from entering the build.
 - [ADR-003](ADR-003-signed-json-corpus-bundle.md) — the corpus format decision
   that this one forces.

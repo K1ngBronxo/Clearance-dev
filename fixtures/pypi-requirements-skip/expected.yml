@@ -26,7 +26,7 @@ why: >
   confidence gate, because it is declared BLOCK at MEDIUM.
 
   A KNOWN DIVERGENCE, STATED SO A FUTURE READER IS NOT MISLED.
-  PLAN/02-SPECIFICATIONS/04-detection-spec-code-licence.md §7.2 says an editable
+  The code-licence specification says an editable
   entry should be "treat[ed] as local, resolve from the local path". The
   implementation warns and skips instead. This fixture pins the behaviour that
   exists. When §7.2 is implemented, this fixture SHOULD fail — on the warning

@@ -1,7 +1,7 @@
 // The ten invariant guards — the spine of the test suite.
 //
-// PLAN/00-START-HERE/04-principles-invariants.md §2 names each invariant and
-// pairs it with "the test that enforces it", and §3 ends with this sentence:
+// Each invariant is paired with "the test that enforces it", and the list ends
+// with this sentence:
 //
 //	These ten tests are the spine of the test suite. If they are green, the
 //	product is safe to ship even if everything else is imperfect. If any is
@@ -1716,8 +1716,8 @@ func TestEveryRunNameExists(t *testing.T) {
 //
 // So an empty benchmark suite and a working one are indistinguishable from the
 // exit status, which is the same defect as a `-run` pattern naming a test that
-// does not exist (§5.15) and a `-X` stamp naming a symbol that does not exist
-// (D-020, D-023). This repository has now found that shape four times, in four
+// does not exist and a `-X` stamp naming a symbol that does not exist. This
+// repository has now found that shape four times, in four
 // different mechanisms. The mechanism differs; the failure is identical: a
 // command succeeds without doing anything, and the success is the whole signal.
 //
@@ -2410,7 +2410,7 @@ func noticeProgramName(msg string) (string, bool) {
 //
 // A Notice that names a program is a factual claim: "your project invokes X".
 // When X is `.PHONY:`, or `GUARD_CORPUS`, or `GO)`, or `o`, the claim is false.
-// PLAN/02-SPECIFICATIONS/06-detection-spec-tos.md §3.2 says what that costs —
+// What that costs is blunt —
 // "false positives are what kill a scanner's credibility" — and run over this
 // repository's own tree the detector made 84 such claims, which is why
 // `make dogfood` printed 84 lines of programs that do not exist.

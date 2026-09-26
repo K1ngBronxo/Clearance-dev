@@ -13,7 +13,7 @@ import (
 //
 // # THIS FUNCTION IS C9
 //
-// PLAN/03-SECURITY/02-security-architecture.md lists C9 as "capability-scoped
+// C9 is "capability-scoped
 // MCP server" against "elevation of privilege", mitigated by the capability
 // boundary. This is that boundary, and it is deliberately the only way a tool
 // in this package obtains a path.

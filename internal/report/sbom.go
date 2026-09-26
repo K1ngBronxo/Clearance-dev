@@ -1,7 +1,6 @@
 // SBOM export: CycloneDX 1.5 and SPDX 2.3.
 //
-// PLAN/02-SPECIFICATIONS/08-sbom-and-interop.md is the contract, and its
-// framing is the important part:
+// The framing is the important part:
 //
 //	> An SBOM is an *input* to a verdict, not the output.
 //
@@ -570,7 +569,7 @@ type spdxPackage struct {
 	// The pair that makes SPDX worth exporting to. `declared` is what the
 	// manifest said; `concluded` is what Clearance found by reading the file.
 	// When they differ, the difference is the finding — which is exactly what
-	// 08-sbom-and-interop.md §3 says.
+	// the interop spec §3 says.
 	LicenseDeclared  string `json:"licenseDeclared"`
 	LicenseConcluded string `json:"licenseConcluded"`
 
