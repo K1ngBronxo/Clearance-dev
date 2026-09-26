@@ -1,0 +1,20 @@
+# Golden files are compared byte-for-byte, so their line endings are part of the
+# assertion rather than an accident of the machine that checked them out.
+#
+# This repository is developed on Windows, where `core.autocrlf=true` is the
+# default and rewrites every text file to CRLF at checkout. The tracked blobs
+# stay LF, so the tests read a file the assertion was never written against and
+# every golden test fails on a fresh Windows clone while passing in CI.
+#
+# Measured on 26 Sep 2026, comparing the committed blob with what a Windows
+# worktree checked out beside it: the blob hashed identically in both trees and
+# contained no CR bytes, while the checked-out copy carried one CR per line.
+# TestGolden agreed with the arithmetic — want 482 bytes, got 470, and 12 lines.
+# Each of the six golden tests was off by exactly its own line count, which is
+# what makes this line endings rather than a renderer change.
+#
+# `-text` on the goldens alone, rather than `* text=auto`, because this is the
+# only place in the module where a byte difference is a test failure. Everything
+# else — the Makefile, the shell scripts — is read by tools that accept either
+# ending, and pinning those too would rewrite files for no reason.
+*.golden -text
