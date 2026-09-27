@@ -29,7 +29,7 @@ Nothing else. The build is `go build`; everything else is files.
 ## 2. The development loop
 
 ```bash
-git clone https://github.com/clearance-dev/clearance
+git clone https://github.com/K1ngBronxo/Clearance-dev
 cd clearance
 
 make test          # guard tests + arch test + go test ./... -race

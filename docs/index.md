@@ -52,8 +52,8 @@ in `internal/verdict`, which is where the algebra is implemented.
 - It is **not** a report generator. The primary output type is a verdict;
   reports are renderings of it.
 - It **never executes** the project it scans, never runs a package manager, and
-  never makes an outbound call during a scan. The only network operation in the
-  whole product is the opt-in, signed corpus update.
+  never makes an outbound call. The one command that would need the network, the
+  signed corpus update, is not implemented in this build.
 
 ---
 

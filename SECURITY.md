@@ -183,16 +183,20 @@ honest about this than imply a reward we cannot pay.
 Before running a release binary:
 
 ```bash
-cosign verify-blob \
-  --certificate-identity-regexp 'github.com/clearance-dev/clearance' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --signature checksums.txt.sig checksums.txt
-
 sha256sum -c checksums.txt
 ```
 
-The GitHub Action does this automatically before running the binary, so a user
-who installs via the Action gets verification without doing anything.
+That confirms the archive arrived intact against the published list. It does
+**not** establish who published it, and today nothing else does either: the
+archives served from `cleardev.vercel.app/dl` and from the `v0.1.0-rc.2`
+release have no cosign signature, no build provenance and no attestation. When
+a signed release is cut, this section will carry the `cosign verify-blob`
+command for it, with
+`--certificate-identity-regexp 'github.com/K1ngBronxo/Clearance-dev'` and the
+GitHub OIDC issuer. Until then, treat the checksum as an integrity check only.
+
+The GitHub Action verifies a downloaded binary before running it. The repository
+is public, so the Action is consumable via `uses:`.
 
 ---
 

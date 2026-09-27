@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: clearance
-        uses: clearance-dev/clearance/actions/check@v1
+        uses: K1ngBronxo/Clearance-dev/actions/check@v1
         with:
           path: '.'
           strict: 'false'
@@ -31,7 +31,7 @@ jobs:
 
 | Input | Required | Default | Meaning |
 |---|---|---|---|
-| `version` | no | `latest` | The release to download (`1.0.0`, `v1.0.0`, or `latest`). |
+| `version` | no | `latest` | The release to download (`0.1.0-rc.2`, `v0.1.0-rc.2`, or `latest`). |
 | `path` | no | `.` | The project directory to scan. |
 | `strict` | no | `false` | Pass `--strict`, so `UNDETERMINED` exits 5 and fails the job. |
 | `args` | no | *(empty)* | Extra `clearance check` arguments, for example `--fail-on CONDITION`. |
@@ -63,9 +63,10 @@ upload SARIF, post a comment, or touch any GitHub API beyond that. Uploading
 SARIF to code scanning is the caller's step, and it needs
 `security-events: write` in the caller's workflow.
 
-`checksums.txt` is signed with cosign in `release.yml`. This Action verifies the
-archive against `checksums.txt`; to also verify the cosign signature over
-`checksums.txt` itself, see the command in [`SECURITY.md`](../../SECURITY.md).
+The published releases carry no cosign signature today, so this Action can only
+verify the archive against `checksums.txt` — integrity, not provenance. When a
+release is signed, [`SECURITY.md`](../../SECURITY.md) is where the
+`cosign verify-blob` command for `checksums.txt` will live.
 
 See [`docs/ci.md`](../../docs/ci.md) for the exit-code contract and worked
 examples, including the same flow without the Action.

@@ -142,5 +142,5 @@ history starts with a tagged baseline rather than an empty file.
   entry point) are present as package directories but are not yet populated.
   The libraries they will wire together are complete enough to test.
 
-[Unreleased]: https://github.com/clearance-dev/clearance/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/clearance-dev/clearance/releases/tag/v0.1.0
+[Unreleased]: https://github.com/K1ngBronxo/Clearance-dev/compare/v0.1.0-rc.2...HEAD
+[0.1.0]: https://github.com/K1ngBronxo/Clearance-dev/releases/tag/v0.1.0

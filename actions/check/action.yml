@@ -24,7 +24,7 @@ branding:
 inputs:
   version:
     description: >-
-      The Clearance release to download: a version such as 1.0.0 or v1.0.0, or
+      The Clearance release to download: a version such as 0.1.0-rc.2 or v0.1.0-rc.2, or
       "latest". The binary is checksum-verified against the release's
       checksums.txt regardless of which is chosen.
     required: false
@@ -99,7 +99,7 @@ runs:
 
         # ── resolve the release tag ─────────────────────────────────────────
         if [ "$version" = "latest" ]; then
-          tag="$(curl -fsSL https://api.github.com/repos/clearance-dev/clearance/releases/latest \
+          tag="$(curl -fsSL https://api.github.com/repos/K1ngBronxo/Clearance-dev/releases/latest \
             | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
             | head -n1 \
             | sed 's/.*"\([^"]*\)"$/\1/')"
@@ -115,7 +115,7 @@ runs:
         # The archive name embeds the version without the leading "v", matching
         # the .goreleaser.yml name_template: clearance_{version}_{os}_{arch}.
         asset="clearance_${ver}_${goos}_${goarch}"
-        base="https://github.com/clearance-dev/clearance/releases/download/${tag}"
+        base="https://github.com/K1ngBronxo/Clearance-dev/releases/download/${tag}"
 
         # ── download ────────────────────────────────────────────────────────
         dl="${RUNNER_TEMP:-/tmp}/clearance-dl"
@@ -125,10 +125,11 @@ runs:
         curl -fsSL -o "$dl/checksums.txt"   "${base}/checksums.txt"
 
         # ── verify BEFORE extracting or running ─────────────────────────────
-        # checksums.txt is signed with cosign in release.yml (checksums.txt.sig).
-        # This step verifies the archive against that signed list; verifying the
-        # cosign signature over checksums.txt itself is the caller's choice, and
-        # the command is in SECURITY.md.
+        # The archive is checked against the release's checksums.txt. That is an
+        # integrity check, not provenance: the published releases carry no
+        # cosign signature today, so there is no signed list to check against
+        # yet. When one exists, the cosign verify-blob command for it goes in
+        # SECURITY.md, and this step gains nothing to do — the caller adds it.
         cd "$dl"
         if ! grep -F "${asset}.${ext}" checksums.txt > expected.txt; then
           echo "::error::Clearance: ${asset}.${ext} is not listed in checksums.txt"

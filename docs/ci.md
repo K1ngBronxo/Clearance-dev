@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: clearance
-        uses: clearance-dev/clearance/actions/check@v1
+        uses: K1ngBronxo/Clearance-dev/actions/check@v1
         with:
           path: '.'
           strict: 'false'
@@ -43,7 +43,7 @@ jobs:
 
 | Input | Default | Meaning |
 |---|---|---|
-| `version` | `latest` | Which release to download (`1.0.0`, `v1.0.0`, or `latest`) |
+| `version` | `latest` | Which release to download (`0.1.0-rc.2`, `v0.1.0-rc.2`, or `latest`) |
 | `path` | `.` | The project to scan |
 | `strict` | `false` | Pass `--strict`, so `UNDETERMINED` exits `5` and fails the job |
 | `args` | *(empty)* | Extra `clearance check` arguments, for example `--fail-on CONDITION` |
@@ -105,13 +105,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Clearance
-        uses: clearance-dev/check-action@v1
+        uses: K1ngBronxo/Clearance-dev/actions/check@v1
         with:
           path: '.'
-          fail-on: 'BLOCK'
-          format: 'json'
-          upload-sarif: 'false'
-          comment: 'true'
+          strict: 'true'
+          args: '--fail-on BLOCK --format json'
 ```
 
 If a `HIGH`-confidence `BLOCK` finding is present, `clearance check` exits `1`
@@ -144,9 +142,9 @@ Download and verify the binary, then branch on the exit code in a shell step:
         run: |
           set -euo pipefail
           curl -fsSL -o clearance.tar.gz \
-            "https://github.com/clearance-dev/clearance/releases/latest/download/clearance_1.0.0_linux_amd64.tar.gz"
+            "https://github.com/K1ngBronxo/Clearance-dev/releases/latest/download/clearance_0.1.0-rc.2_linux_amd64.tar.gz"
           curl -fsSL -o checksums.txt \
-            "https://github.com/clearance-dev/clearance/releases/latest/download/checksums.txt"
+            "https://github.com/K1ngBronxo/Clearance-dev/releases/latest/download/checksums.txt"
           sha256sum -c --ignore-missing checksums.txt
           tar -xzf clearance.tar.gz
 
@@ -198,24 +196,29 @@ clearance check . --format json --output verdict.json
 jq '.verdict, .meta.corpus_version' verdict.json
 ```
 
-Validate it against the published schema at
-`https://clearance.dev/schema/v1/verdict.json` (or `clearance check --json-schema`)
-if you consume it programmatically.
+If you consume it programmatically, the schema is printed by the binary itself —
+there is no hosted copy:
+
+```bash
+clearance check --json-schema
+```
 
 ---
 
 ## 6. Offline and air-gapped runners
 
-Clearance makes **zero** outbound calls during `check` (INV-3). Only
-`clearance corpus update` is opt-in network. On a locked-down runner:
+Clearance makes **zero** outbound calls during `check` (INV-3). On a locked-down
+runner:
 
 ```bash
 clearance check . --offline --fail-on BLOCK
 ```
 
-`--offline` makes even the corpus update impossible. You still need a corpus
-file on disk — either bundled in the release or fetched once by your own trusted
-mirror.
+`--offline` is the default in this build, and it is already true of every
+command. `clearance corpus update`, the one command that would need the network,
+is **not implemented here** — running it is refused with a clear message rather
+than silently accepted. You need a corpus file on disk: either bundled in the
+release archive or placed yourself and pointed at with `CLEARANCE_CORPUS`.
 
 ---
 
@@ -223,11 +226,11 @@ mirror.
 
 | Symptom | Exit | Likely cause |
 |---|---|---|
-| `E-CONFIG-*` in the output | `2` | `clearance.config.yml` is missing or invalid — run `clearance config validate` |
+| `E-CFG-*` in the output | `2` | `clearance.config.yml` is missing or invalid — run `clearance doctor`, which names the field and why |
 | `E-CORPUS-002/003/009` | `3` | Corpus unsigned, tampered, or a schema version this binary cannot read — run `clearance corpus verify` |
-| An `E-INTERNAL-*` code | `4` | A Clearance bug — please report it via `SECURITY.md` or the issue tracker |
+| An `E-INT-*` code | `4` | A Clearance bug — please report it via `SECURITY.md` or the issue tracker |
 | `UNDETERMINED` and the job is red | `5` | `--strict` is set; either resolve the unknowns or drop `--strict` |
-| The scan is slow the first time | — | The corpus is being fetched once; it is cached thereafter |
+| The scan is slow the first time | — | The signed corpus bundle is read and verified once at startup |
 
 For a support request, start with:
 

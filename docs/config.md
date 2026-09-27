@@ -170,18 +170,20 @@ no answer. The table below is the taxonomy.
 
 ---
 
-## Generating a starter config
+## Writing a config
+
+There is no `clearance config` command. `clearance.config.yml` is a file you
+write by hand in the project root, and `clearance check` reads it by default.
+`--config <path>` points the check at a file somewhere else.
+
+Start from `fixtures/mixed/clearance.config.yml`, which is a minimal working
+example. Every field that changes a verdict has to be declared explicitly,
+because the tool does not guess intent: a field left out becomes a finding, not
+an assumption.
+
+To find out what a config is missing, without acting on the verdict:
 
 ```bash
-clearance config init
-```
-
-This writes a commented `clearance.config.yml`, inferring only `project.name`
-and whether the project looks network-exposed. Every field that changes a verdict
-is left as an explicit `CHANGE ME`, because the tool does not guess intent.
-
-To check a config without scanning:
-
-```bash
-clearance config validate
+clearance doctor                  # names each missing piece, and why
+clearance check . --format json   # exit 2 and an E-CFG-* code mean the config is wrong
 ```
