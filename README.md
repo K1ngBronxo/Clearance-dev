@@ -1,4 +1,21 @@
+<div align="center">
+
 # Clearance
+
+**A licence, model-weights and platform-terms scanner that returns a verdict, not a report.**
+
+*Can I ship this — and if not, exactly which clause blocks me?*
+
+[![ci](https://github.com/K1ngBronxo/Clearance-dev/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/K1ngBronxo/Clearance-dev/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/K1ngBronxo/Clearance-dev?include_prereleases&sort=semver)](https://github.com/K1ngBronxo/Clearance-dev/releases)
+[![licence](https://img.shields.io/badge/licence-FSL--1.1--ALv2-blue)](LICENSE)
+[![Go](https://img.shields.io/github/go-mod/go-version/K1ngBronxo/Clearance-dev)](go.mod)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](go.mod)
+[![platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macOS%20%7C%20windows-lightgrey)](docs/install.md)
+
+</div>
+
+---
 
 A licence, model-weights and platform-terms scanner that returns a **verdict**,
 not a report: *can I ship this, and if not, exactly which clause blocks me?*
@@ -50,6 +67,58 @@ is a false pass. The exit codes are a frozen contract: `0` ok, `1` `DO NOT SHIP`
 
 The full statement is in [docs/verdicts.md](docs/verdicts.md) — the four rules, why an
 unknown outranks a condition, and the exit-code table.
+
+---
+
+## What it prints
+
+Real output, unedited, from the released `0.1.0-rc.2` binary run against a
+one-dependency project whose dependency declares no licence:
+
+```text
+CLEARANCE VERDICT — clearance.config.yml
+========================================
+SHIP:        UNDETERMINED
+BLOCKERS:    0
+CONDITIONS:  1
+SCANNED:     1 dependency
+CORPUS:      2026.09.2 · signed ✓
+REASON:      1 item could not be classified
+
+CONDITIONS
+
+[BLOCK]         left-pad                        no licence declared
+                clause:     For users
+                source:     https://choosealicense.com/no-permission/
+                finding:    No licence means all rights reserved
+                reason:     A dependency with no licence statement is not free to use...
+                evidence:   package.json
+                trap:       trap.licence.absent-all-rights-reserved
+                gate:       severity BLOCK → CONDITION because confidence is MEDIUM
+                confidence: MEDIUM — clause text is ambiguous
+                fix:        Locate a licence for the dependency, obtain written permission,
+                            or remove the dependency.
+
+UNDETERMINED
+
+[UNDETERMINED]  left-pad                        licence unresolved
+                error:      E-SCAN-011 — no licence could be resolved for left-pad
+                evidence:   package.json
+                action:     Read the file, or contribute a corpus entry
+```
+
+Two things in that output are the product:
+
+- The trap was classified `BLOCK`, and then **downgraded to a condition because
+  the confidence was only `MEDIUM`** — the clause is genuinely ambiguous. A
+  finding that cannot be defended does not get to stop a build.
+- The verdict is `UNDETERMINED`, not `SHIP`. The dependency has no licence, so
+  the honest answer is *we do not know*, and `UNDETERMINED` never rounds toward
+  a green light.
+
+`--format json` emits the same result with the citation URL, the verbatim
+excerpt, the evidence path, the predicate that fired, and the corpus version and
+signature state, for a pipeline to consume.
 
 ---
 
@@ -122,6 +191,46 @@ from source needs Go 1.25.13 or later. See [docs/install.md](docs/install.md).
 
 ---
 
+## Optional AI explanation — off by default, and never part of the verdict
+
+`--ai` adds a plain-language explanation of the findings already produced. It
+does not change the verdict, and it is **off unless you ask for it**:
+
+```bash
+clearance check . --ai                        # explain with your configured provider
+clearance check . --ai --ai-provider ollama   # a local model: no key, no egress
+clearance check . --ai --ai-output ai.json    # also write the explanation to a file
+```
+
+**The engine decides; the model explains.** The AI step runs after the verdict
+is already fixed, reads the findings, and writes prose about them. It cannot add
+a finding, remove one, or change a severity — so an unavailable model degrades
+to no explanation, never to a different answer.
+
+You bring the key. Set the provider's environment variable, pipe one in with
+`--api-key-stdin`, or put it in `~/.config/clearance/keys.yml` at mode `0600`.
+There are **20 providers**, including four keyless local ones — `ollama`,
+`lmstudio`, `llamacpp` and `vllm` — and `openai-compatible` for anything else
+that speaks the OpenAI chat-completions shape. Run `clearance explain --providers`
+for the whole list, or `clearance explain E-CFG-001` for any error code the
+binary can raise.
+
+If Clearance's own claim is that it never makes an outbound call during a scan,
+that claim has to survive this feature, so it does, and you can check it on your
+own machine. `clearance doctor` prints the two facts separately:
+
+```text
+  network:   disabled - no outbound calls are possible in this build
+  ai egress: not armed - no AI call is possible until --ai arms it
+```
+
+Egress starts disarmed and only `--ai` arms it, for the explanation step alone.
+Without the flag there is no code path that reaches the network. And if the
+model is unreachable, the run says so and stops — the observed failure mode is a
+note like `E-AI-004 — Cannot reach '127.0.0.1:11434' … The verdict is unaffected.`
+
+---
+
 ## Not legal advice
 
 Clearance reports what licence texts say and applies stated, published rules to a
@@ -139,14 +248,21 @@ The full statement is in [docs/not-legal-advice.md](docs/not-legal-advice.md).
 
 ## Status
 
-This is the **first foundation slice**. The L0 primitives, the decision layer
-(the verdict algebra, the predicate language, the policy engine), the corpus
-loader and verifier, the CLI entry point (`cmd/clearance`) and the corpus
-compiler (`corpus-build`) are implemented and tested. The MCP server
-(`internal/mcp`) is implemented: it publishes four read-only tools over stdio,
-scoped to a single `fs.read` capability rooted at the directory the server was
-started in. No binary release has been cut yet. See
-[CHANGELOG.md](CHANGELOG.md).
+**`v0.1.0-rc.2` is cut and downloadable**, with archives for Linux, macOS and
+Windows on `amd64` and `arm64`, and a `checksums.txt` beside them. It is a
+release candidate, not a `1.0`: the corpus is still being audited, and the
+archives are checksum-verified but carry **no cosign signature and no build
+provenance** yet — that is stated plainly in [SECURITY.md](SECURITY.md) rather
+than left for you to discover.
+
+The L0 primitives, the decision layer (the verdict algebra, the predicate
+language, the policy engine), the corpus loader and verifier, the CLI entry
+point (`cmd/clearance`) and the corpus compiler (`corpus-build`) are implemented
+and tested. The MCP server (`internal/mcp`) is implemented: it publishes four
+read-only tools over stdio, scoped to a single `fs.read` capability rooted at
+the directory the server was started in. CI runs the full suite on Linux, macOS
+and Windows — including the Windows short-name and macOS `/var` symlink cases
+that a POSIX-only test run does not reach. See [CHANGELOG.md](CHANGELOG.md).
 
 The repository layout is the architecture. Where a choice deviates from the obvious
 one, the reason is recorded in [docs/adr/](docs/adr/).
