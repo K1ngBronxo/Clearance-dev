@@ -142,6 +142,46 @@ jobs:
             exit 1
           fi
 
+      # Put the corpus public key where goreleaser can stamp it.
+      #
+      # `.goreleaser.yml` builds with the corpus key taken from
+      # `{{ .Env.CORPUS_PUBKEY }}`, and goreleaser's ldflags are its own: the
+      # Makefile's LDFLAGS never reach them. `make release` exports this
+      # variable, which is why a hand-cut release worked; this workflow calls
+      # goreleaser-action directly and passed only GITHUB_TOKEN, so every CI
+      # release carried the all-zero sentinel in internal/corpus/verify.go and
+      # refused every signed corpus with E-INT-005 while reporting success.
+      # Measured on 27 Sep 2026 by unzipping the windows/amd64 archive and
+      # running it: `corpus: not loaded`, `E-INT-005`, and the only remedy it
+      # printed was "fix: Reinstall", which reproduces the same binary.
+      #
+      # corpus-public-key.hex is committed and public — it is the key that
+      # VERIFIES the bundle, not the one that signs it — so reading it here
+      # holds no secret and needs no repository secret to be configured. The
+      # offline private half still never touches a runner.
+      #
+      # GITHUB_ENV makes it visible to the goreleaser step's environment; the
+      # goreleaser `before.hooks` check then fails the release if it is empty or
+      # the wrong length, so this step and a hand-run `make release` are checked
+      # by the same code.
+      - name: Export CORPUS_PUBKEY for the build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f corpus-public-key.hex ]; then
+            echo "corpus-public-key.hex is missing. It is committed, public, and"
+            echo "required: without it the release binaries cannot verify any signed"
+            echo "corpus and fail every command with E-INT-005."
+            exit 1
+          fi
+          pubkey="$(tr -d ' \t\r\n' < corpus-public-key.hex)"
+          if [ "${#pubkey}" -ne 64 ]; then
+            echo "corpus-public-key.hex is ${#pubkey} characters after trimming,"
+            echo "expected 64 hex. Refusing to build a release with an unusable key."
+            exit 1
+          fi
+          echo "CORPUS_PUBKEY=${pubkey}" >> "$GITHUB_ENV"
+
       # Builds clearance for linux/mac/windows x amd64/arm64 and opens a DRAFT
       # release. corpus-build is compiled but never archived (.goreleaser.yml).
       - name: Run GoReleaser

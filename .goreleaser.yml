@@ -18,6 +18,34 @@ project_name: clearance
 before:
   hooks:
     - go mod verify
+    # Fail closed when the corpus public key is not in the environment.
+    #
+    # `devPublicKeyHex` must be stamped at link time (internal/corpus/verify.go
+    # declares it as an all-zero sentinel that PublicKey rejects). The Makefile
+    # has stamped it since the beginning, so `make build` produces a working
+    # binary — but GoReleaser builds from THIS file, with its own ldflags, and
+    # for the whole life of the release pipeline the stamp was simply absent.
+    #
+    # Nothing noticed. The `-X` flag for a symbol that is never set is not an
+    # error; the linker keeps the sentinel; the build succeeds and the release
+    # reports success. The artefact it produces refuses every signed corpus with
+    # E-INT-005 and prints "fix: Reinstall" as the remedy — a dead end, because
+    # reinstalling yields the same binary. Measured on 27 Sep 2026 by unzipping
+    # the windows/amd64 archive and running it:
+    #
+    #   corpus:   not loaded (...\corpus)
+    #             E-INT-005 Internal error: no corpus public key embedded.
+    #
+    # So the check is here, before any build runs, and it is not a warning. An
+    # empty CORPUS_PUBKEY is worse than a missing one: internal/corpus/verify.go
+    # rejects "" on length before it can report "no key configured", so the two
+    # failures differ in message and agree in outcome. Both refuse every corpus.
+    #
+    # Length is checked, not just presence, and not the value: the key is PUBLIC
+    # (corpus-public-key.hex is committed and ships in the tree), so pinning its
+    # content here would duplicate it and rot. 64 hex characters is the ed25519
+    # public key size that verify.go will decode.
+    - sh -c 'test -n "$CORPUS_PUBKEY" || { echo "CORPUS_PUBKEY is unset. A release built without it carries the all-zero sentinel and refuses every corpus with E-INT-005. Set it from corpus-public-key.hex (make release does this)."; exit 1; }; test ${#CORPUS_PUBKEY} -eq 64 || { echo "CORPUS_PUBKEY is ${#CORPUS_PUBKEY} characters, expected 64 hex. It must be the trimmed corpus-public-key.hex with no whitespace or newline."; exit 1; }'
 
 builds:
   # The public binary. This is the product.
@@ -29,8 +57,18 @@ builds:
     flags:
       - -trimpath
       - -buildvcs=true
+    # `-buildid=` for the same reason the Makefile carries it: the build id is
+    # the main source of nondeterminism between two builds of the same source,
+    # and the release notes invite a third party to rebuild and compare.
+    #
+    # The corpus public key is taken from the environment rather than written
+    # out here. It is not secret — corpus-public-key.hex is committed — but a
+    # second copy in this file is a second thing to keep in step with the key
+    # after a rotation, and the failure mode of drift is the silent E-INT-005
+    # above. One source, read by the Makefile and by release.yml, checked by the
+    # hook before the build.
     ldflags:
-      - -s -w -X github.com/clearance-dev/clearance/internal/cli.Version={{.Version}} -X github.com/clearance-dev/clearance/internal/cli.Commit={{.Commit}} -X github.com/clearance-dev/clearance/internal/cli.Provenance=release
+      - -s -w -buildid= -X github.com/clearance-dev/clearance/internal/cli.Version={{.Version}} -X github.com/clearance-dev/clearance/internal/cli.Commit={{.Commit}} -X github.com/clearance-dev/clearance/internal/cli.Provenance=release -X github.com/clearance-dev/clearance/internal/corpus.devPublicKeyHex={{ .Env.CORPUS_PUBKEY }}
     goos:
       - linux
       - darwin
@@ -54,8 +92,15 @@ builds:
 
 archives:
   # Only the public `clearance` build is packaged.
+  #
+  # `ids` selects which builds go into this archive. It was spelled `builds`
+  # until 27 Sep 2026, which GoReleaser still accepts and reports as deprecated
+  # — "configuration is valid, but uses deprecated properties", exit 2 — so
+  # `goreleaser check` failed on a config that worked. release.yml pins the
+  # action at "~> v2", which admits any 2.x, so the property is one minor
+  # release away from being removed outright and turning a release run red.
   - id: clearance
-    builds:
+    ids:
       - clearance
     formats:
       - tar.gz
@@ -82,12 +127,31 @@ archives:
       # loudly when they are absent rather than publishing a binary that cannot
       # read a corpus — and `clearance check` refuses an unsigned bundle
       # (INV-9), so shipping the raw YAML instead is not an option either.
+      #
+      # `dst` is a FILE path, not a directory. All three entries previously read
+      # `dst: corpus`, which is the trap: GoReleaser wrote the first as a file
+      # named `corpus` and silently discarded the other two —
+      #
+      #   file 'corpus' already exists in archive as 'corpus-dist/corpus.json'
+      #     - 'corpus-dist/corpus.json.sig' will be ignored
+      #
+      # — while still exiting 0 and reporting "release succeeded". The archive
+      # that run produced held LICENSE, README.md, the binary, and one
+      # extensionless file called `corpus`: no bundle, no manifest, no
+      # signature.
+      #
+      # That is worse than an empty archive, because resolveCorpusDir looks for
+      # a DIRECTORY named `corpus` next to the binary and rejects a file of that
+      # name (isDir), so every install would have failed its first command with
+      # E-CORPUS-001 and printed two dead-end remedies. The three files must
+      # therefore carry the directory prefix explicitly, matching
+      # internal/corpus/verify.go's BundleFile / ManifestFile / SignatureFile.
       - src: corpus-dist/corpus.json
-        dst: corpus
+        dst: corpus/corpus.json
       - src: corpus-dist/corpus.json.sig
-        dst: corpus
+        dst: corpus/corpus.json.sig
       - src: corpus-dist/corpus.version.json
-        dst: corpus
+        dst: corpus/corpus.version.json
 
 # checksums.txt + checksums.txt.sig is the frozen release contract.
 # cosign signs this file in

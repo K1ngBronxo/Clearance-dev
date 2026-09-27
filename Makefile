@@ -227,8 +227,17 @@ fixtures: ## Verify every fixture produces the verdict it declares
 build: ## Build the static host binary (CGO_ENABLED=0, -trimpath)
 	CGO_ENABLED=0 $(GO) build -trimpath -ldflags "$(LDFLAGS)" -o $(BINARY)$(EXE) ./cmd/clearance
 
+# CORPUS_PUBKEY is passed through the environment because goreleaser's ldflags
+# are its own: the LDFLAGS variable above reaches `go build`, and goreleaser
+# never runs `go build` through this Makefile. That gap was the bug — `make
+# build` stamped the corpus key and `make release` did not, so every archive the
+# release pipeline produced carried the all-zero sentinel, refused every signed
+# corpus with E-INT-005, and reported success. See .goreleaser.yml.
+#
+# The fail-closed check lives in the goreleaser `before.hooks`, not here, so a
+# release run from CI is checked by the same code as one run by hand.
 release: ## Cross-compile the 6 release targets via goreleaser
-	$(GORELEASER) release --clean
+	CORPUS_PUBKEY='$(CORPUS_PUBKEY)' $(GORELEASER) release --clean
 
 vulncheck: ## Run govulncheck on the module (pinned; see GOVULNCHECK above)
 	$(GO) run $(GOVULNCHECK) ./...

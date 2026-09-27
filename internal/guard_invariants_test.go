@@ -1876,6 +1876,27 @@ func TestEveryStampedSymbolExists(t *testing.T) {
 					rel, pkg, name, problem)
 			}
 		}
+
+		// A config that ships the binary must carry every required stamp. The
+		// loop above proves the stamps it HAS are real; this proves the ones it
+		// MUST have are present. See requiredStamps for the release defect that
+		// only the second question catches.
+		if configMustStampRequiredSymbols(rel) {
+			named := make(map[string]bool, len(found))
+			for _, m := range found {
+				named[m[1]+"."+m[2]] = true
+			}
+			for _, want := range requiredStamps {
+				if !named[want] {
+					t.Errorf("%s does not stamp %s.\n"+
+						"This config builds the binary a user runs, and this "+
+						"repository has already shipped a release with exactly "+
+						"this omission: the linker keeps the sentinel, the build "+
+						"exits 0, the release reports success, and every install "+
+						"refuses every signed corpus with E-INT-005.", rel, want)
+				}
+			}
+		}
 	}
 
 	if total == 0 {
@@ -1885,6 +1906,39 @@ func TestEveryStampedSymbolExists(t *testing.T) {
 	t.Logf("%d link-time stamps verified across %d of %d build configs "+
 		"(the rest are maintainer-only and not in this distribution)",
 		total, read, len(configs))
+}
+
+// requiredStamps are the link-time stamps a config MUST carry if it builds the
+// binary a user runs. Naming a real symbol is not the same as naming this one.
+//
+// The loop above proves every stamp a config contains points at a symbol that
+// exists. It says nothing about a config that has stopped stamping something it
+// must, and that asymmetry is the release defect of 27 Sep 2026:
+// `.goreleaser.yml` never stamped `internal/corpus.devPublicKeyHex`, so every
+// archive the release pipeline produced carried the all-zero sentinel declared
+// in internal/corpus/verify.go, refused every signed corpus with E-INT-005, and
+// printed "fix: Reinstall" — a dead end, because reinstalling yields the same
+// binary. GoReleaser exited 0 and printed "release succeeded". Every guard was
+// green, because the stamps `.goreleaser.yml` did carry were all real.
+//
+// `TestCorpusPublicKeyIsStampable` was supposed to cover this and does not: it
+// pins that the sentinel COULD be stamped, by checking the initialiser is a
+// constant expression of the right length. A config that never stamps it passes
+// that check happily. The property was named and nothing checked the property.
+var requiredStamps = []string{
+	"github.com/clearance-dev/clearance/internal/cli.Version",
+	"github.com/clearance-dev/clearance/internal/cli.Commit",
+	"github.com/clearance-dev/clearance/internal/cli.Provenance",
+	"github.com/clearance-dev/clearance/internal/corpus.devPublicKeyHex",
+}
+
+// release.yml is exempt from requiredStamps. It does compile ./cmd/clearance,
+// but only twice, to compare the two builds to each other: neither binary is
+// published, so a key requirement there would demand a stamp on an artefact
+// nobody can download. The exemption is by suffix so it holds for the shipped
+// path spelling and the filepath.Join spelling alike.
+func configMustStampRequiredSymbols(rel string) bool {
+	return !strings.HasSuffix(rel, "release.yml")
 }
 
 // stripCommentLines drops whole-line comments, so that a `-X` mentioned in a
