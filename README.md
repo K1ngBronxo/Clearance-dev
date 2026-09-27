@@ -169,11 +169,35 @@ See [docs/ci.md](docs/ci.md) and
 ## Install
 
 A single static binary, no runtime dependencies, on Linux, macOS and Windows,
-`amd64` and `arm64`. Download the archive for your platform from
-[clearancedev.vercel.app/docs#install](https://clearancedev.vercel.app/docs#install) or
-from the [v0.1.0-rc.2 release](https://github.com/K1ngBronxo/Clearance-dev/releases/tag/v0.1.0-rc.2),
-unpack it, and run it — the signed corpus bundle is inside the archive. Building
-from source needs Go 1.25.13 or later. See [docs/install.md](docs/install.md).
+`amd64` and `arm64`. The archive holds the program and the signed corpus bundle
+together — download it, check it, unpack it, and run it.
+
+**New to this?** [**docs/install.md**](docs/install.md) is a step-by-step guide
+written for people who have never installed a command-line tool: which of the six
+archives to pick, how to verify the download, how to put `clearance` on your
+PATH on Windows, macOS or Linux, and what to do when something goes wrong.
+
+The short version, if you already know your way around a terminal:
+
+```bash
+# 1. download your platform's archive — see docs/install.md for the name
+curl -fsSLO https://clearancedev.vercel.app/dl/clearance_0.1.0-rc.2_linux_amd64.tar.gz
+curl -fsSL -o checksums.txt https://clearancedev.vercel.app/dl/checksums.txt
+
+# 2. verify it, and stop if this does not print OK
+grep -F clearance_0.1.0-rc.2_linux_amd64.tar.gz checksums.txt | sha256sum -c -
+
+# 3. unpack
+tar -xzf clearance_0.1.0-rc.2_linux_amd64.tar.gz
+
+# 4. run
+./clearance version
+```
+
+The same six archives are attached to the
+[v0.1.0-rc.2 release](https://github.com/K1ngBronxo/Clearance-dev/releases/tag/v0.1.0-rc.2);
+either source works, and the checksums are identical on both. Building from source
+needs Go 1.25.13 or later — see [docs/install.md](docs/install.md#option-b--build-from-source).
 
 ---
 
@@ -182,7 +206,7 @@ from source needs Go 1.25.13 or later. See [docs/install.md](docs/install.md).
 | Page | What it covers |
 |---|---|
 | [docs/index.md](docs/index.md) | Overview and the four rules |
-| [docs/install.md](docs/install.md) | Download, verify, or build |
+| [docs/install.md](docs/install.md) | Step-by-step install: pick your archive, verify it, PATH setup, troubleshooting |
 | [docs/config.md](docs/config.md) | The declared intent |
 | [docs/verdicts.md](docs/verdicts.md) | Verdict classes, confidence gate, exit codes, JSON |
 | [docs/ci.md](docs/ci.md) | Wiring it into a pipeline |

@@ -20,7 +20,7 @@ Every finding carries a **citation** to the clause it relies on, and a
 
 | Page | What it covers |
 |---|---|
-| [Install](install.md) | Download and verify the binary, or build from source. |
+| [Install](install.md) | Step-by-step: download, verify, unpack, PATH setup, first scan, troubleshooting. |
 | [Configuration](config.md) | `clearance.config.yml` — the declared intent. |
 | [Verdicts](verdicts.md) | The four verdict classes, the confidence gate, and the exit codes. |
 | [CI](ci.md) | Wiring Clearance into a pipeline, and the GitHub Action. |
