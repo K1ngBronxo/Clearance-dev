@@ -179,3 +179,92 @@ func TestNewRefusesAFile(t *testing.T) {
 		t.Error("New accepted a regular file as a root")
 	}
 }
+
+// TestRelAcceptsADifferentlySpelledInRootPath is the regression test for the
+// host-canonicalisation bug that CI found on windows-latest and macos-latest
+// while passing on ubuntu-latest.
+//
+// Rel compares its argument to the root as strings, and New canonicalises the
+// root with EvalSymlinks. An absolute path a caller obtained from elsewhere is
+// spelled the way its host spells it, which is not always the way the root is
+// stored: macOS reports /var/folders/... for a root resolved to
+// /private/var/folders/..., and Windows reports the 8.3 short form
+// (C:\Users\RUNNER~1\...) for a root resolved to the long one. Rel then
+// reported "outside" for a file that is demonstrably inside, which refuses a
+// legitimate MCP request and makes configPathFor fall back to the raw absolute
+// path — the machine-path leak that function exists to prevent.
+//
+// The CI failure was real but unreproducible on a machine whose temp path has
+// no alternate spelling, so the case is built here out of a symlink, which
+// every host has: `link` and `real` are the same directory under two names,
+// which is exactly the relationship /var has to /private/var. Without the fix
+// this fails everywhere, not only where the bug was first seen.
+func TestRelAcceptsADifferentlySpelledInRootPath(t *testing.T) {
+	base := t.TempDir()
+	real := filepath.Join(base, "real")
+	if err := os.Mkdir(real, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(real, "license.txt"), []byte("MIT"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	root, err := New(real, Limits{})
+	if err != nil {
+		t.Fatalf("New(%q): %v", real, err)
+	}
+
+	// The negative first, so it is asserted even where the symlink cannot be
+	// made and the rest of this test is skipped.
+	if _, ok := root.Rel(filepath.Join(base, "elsewhere", "license.txt")); ok {
+		t.Error("Rel accepted a path outside the root")
+	}
+
+	link := filepath.Join(base, "link")
+	if err := os.Symlink(real, link); err != nil {
+		t.Skipf("cannot create symlinks on this machine (%v); the escape "+
+			"assertion above still ran", err)
+	}
+	if _, statErr := os.Lstat(link); statErr != nil {
+		t.Skipf("os.Symlink reported success but created nothing; "+
+			"verified with Lstat: %v", statErr)
+	}
+
+	// The same file, under the other name. It is the same directory, so this
+	// is inside the root however it is spelled.
+	spelled := filepath.Join(link, "license.txt")
+	rel, ok := root.Rel(spelled)
+	if !ok {
+		t.Errorf("Rel(%q) reported the file outside the root, but %q and %q "+
+			"are the same directory.\nAn absolute path spelled the way its host "+
+			"spells it is the ordinary case, not a hostile one.", spelled, link, real)
+	} else if rel != "license.txt" {
+		t.Errorf("Rel(%q) = %q, want \"license.txt\"", spelled, rel)
+	}
+
+	// A file that is not there yet is the other half of the same question, and
+	// the first version of this fix answered it wrongly: it canonicalised the
+	// argument with EvalSymlinks, which fails outright on a path that does not
+	// exist, so every path to a file that had not been written yet was reported
+	// as outside the root. Both callers ask about paths that may be missing.
+	if rel, ok := root.Rel(filepath.Join(link, "not-written-yet.txt")); !ok {
+		t.Error("Rel reported a path to a file that does not exist yet as " +
+			"outside the root; it is the link that has to be resolved, not the file")
+	} else if rel != "not-written-yet.txt" {
+		t.Errorf("Rel(not-written-yet.txt) = %q, want \"not-written-yet.txt\"", rel)
+	}
+
+	// Canonicalising the argument must not turn a genuine escape into an
+	// accept: reached through the same link, a path that leaves the root still
+	// leaves it after resolution.
+	outside := filepath.Join(base, "elsewhere", "secret.txt")
+	if err := os.Mkdir(filepath.Dir(outside), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(outside, []byte("outside"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if rel, ok := root.Rel(filepath.Join(link, "..", "elsewhere", "secret.txt")); ok {
+		t.Errorf("Rel reported %q for a path that leaves the root through a link", rel)
+	}
+}

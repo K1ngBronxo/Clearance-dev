@@ -178,14 +178,30 @@ func (r *Root) Resolve(rel string) (string, error) {
 // string prefix because Rel handles Windows case-insensitivity and volume
 // names correctly, whereas a prefix check does not.
 func (r *Root) checkContained(rel, resolved string) error {
-	back, err := filepath.Rel(r.abs, resolved)
-	if err != nil {
-		return cerr.New(cerr.EScan004, rel, resolved)
-	}
-	if back == ".." || strings.HasPrefix(back, ".."+string(filepath.Separator)) {
+	if _, ok := relativeTo(r.abs, resolved); !ok {
 		return cerr.New(cerr.EScan004, rel, resolved)
 	}
 	return nil
+}
+
+// relativeTo reports abs as a forward-slashed path relative to root, and
+// whether it is inside root at all.
+//
+// Both arguments must already be canonical, because the comparison is a string
+// comparison: filepath.Rel does not consult the filesystem. New canonicalises
+// the root once with EvalSymlinks, and resolveExisting canonicalises everything
+// that arrives through Resolve, so every internal caller satisfies that.
+func relativeTo(root, abs string) (string, bool) {
+	back, err := filepath.Rel(root, abs)
+	if err != nil {
+		return "", false
+	}
+	// ".." exactly, or a ".." path element. A name that merely begins with two
+	// dots is a file in the root and must not be read as an escape.
+	if back == ".." || strings.HasPrefix(back, ".."+string(filepath.Separator)) {
+		return "", false
+	}
+	return filepath.ToSlash(back), true
 }
 
 // resolveExisting resolves symlinks on the longest existing prefix of a path,
@@ -400,15 +416,37 @@ func (r *Root) Stat(rel string) (fs.FileInfo, error) {
 // Rel converts an absolute path back to a project-relative, forward-slashed
 // path for use in Evidence. It returns false if the path is outside the root,
 // which can only happen if the caller obtained it by some other means.
+//
+// checkContained's other callers compare two paths that resolveExisting has
+// already canonicalised. This one cannot assume that, and the difference is not
+// hypothetical: an absolute path handed to a caller from elsewhere is routinely
+// spelled differently from the root New stored. macOS reports /var/folders/...
+// where the resolved root is /private/var/folders/..., and Windows reports the
+// 8.3 short form (C:\Users\RUNNER~1\...) where the resolved root holds the long
+// one. Both compare as "outside", so an in-root file is refused — and in
+// configPathFor the caller then falls back to the raw absolute path, which is
+// the machine-path leak that function exists to prevent.
+//
+// So when, and only when, the string comparison reports "outside", the argument
+// is canonicalised the way New canonicalised the root and the comparison is
+// made once more. A path that is genuinely outside resolves to somewhere
+// genuinely outside and is still refused; a path that cannot be resolved at all
+// keeps the first answer. Both directions fail closed. The common case — an
+// argument already spelled like the root — returns from the first comparison
+// and pays nothing.
 func (r *Root) Rel(abs string) (string, bool) {
-	back, err := filepath.Rel(r.abs, abs)
+	if rel, ok := relativeTo(r.abs, abs); ok {
+		return rel, true
+	}
+	// resolveExisting rather than EvalSymlinks, because the argument is not
+	// required to exist: an absolute path to a file that is not there yet is
+	// still inside the root or outside it, and both callers ask about paths
+	// that may be missing.
+	resolved, err := resolveExisting(abs)
 	if err != nil {
 		return "", false
 	}
-	if back == ".." || strings.HasPrefix(back, ".."+string(filepath.Separator)) {
-		return "", false
-	}
-	return filepath.ToSlash(back), true
+	return relativeTo(r.abs, resolved)
 }
 
 // ── budget accounting ────────────────────────────────────────────────────────
