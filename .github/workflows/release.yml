@@ -1,7 +1,32 @@
 name: release
 
 # ---------------------------------------------------------------------------
-# Triggered only by a signed semver tag.
+# WHERE RELEASES ARE CUT FROM — decided 27 Sep 2026.
+#
+# The archive is published from the MAINTAINER checkout, not from a runner in
+# this repository. This is a consequence of the corpus design, not a bug:
+#
+#   * goreleaser copies corpus-dist/* into every archive, because a clearance
+#     binary with no corpus beside it cannot produce a verdict. corpus-dist/ is
+#     a release artefact and is git-ignored.
+#   * the pre-flight below byte-compares that bundle against a fresh compile,
+#     which needs corpus-build/ — the compiler, which holds the Ed25519 signing
+#     code and is therefore never published.
+#
+# Neither the bundle nor the compiler exists in this repository, so the release
+# job cannot pass here. Pushing a tag used to prove that by going red, which is
+# a signal that says "this code is broken" about code that is not.
+#
+# So the tag trigger now runs ONLY the guard gate, which is the part that has
+# something true to say about a tagged revision, and the release job waits for a
+# manual dispatch from the maintainer checkout. Cutting a release is `make
+# release` there; the tag push is what makes the gate public.
+#
+# The alternative — publishing corpus-dist/ so an automated release works here —
+# is written up in PRODUCTION-READINESS-ACTIONS.md §1.3 as option (b). It is not
+# taken: it would move the corpus signing ceremony into the release path, and
+# the whole point of the offline key is that it stays out of it.
+#
 # No `pull_request` trigger here at all, so the `pull_request_target` foot-gun
 # cannot appear by accident.
 # ---------------------------------------------------------------------------
@@ -9,6 +34,10 @@ on:
   push:
     tags:
       - "v*"
+  # Dispatch on the tag ref ("Use workflow from: Tags -> v0.1.0-rc.3") from a
+  # checkout that has corpus-dist/ and corpus-build/. GITHUB_REF_NAME is then the
+  # tag, so every step below reads the same either way.
+  workflow_dispatch:
 
 # Least privilege by default; the release job widens it deliberately below.
 permissions:
@@ -60,6 +89,10 @@ jobs:
   release:
     name: goreleaser + signing + provenance
     needs: guard
+    # Manual only — see "WHERE RELEASES ARE CUT FROM" at the top of this file.
+    # On a tag push this job reports "skipped"; that is the intended state, not a
+    # failure and not a missing release.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write      # create the draft release and upload assets

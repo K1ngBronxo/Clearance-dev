@@ -267,7 +267,46 @@ reporting, and a safe-harbour commitment.
 
 ---
 
-## 11. Licence
+## 11. Releasing
+
+**Releases are cut from the maintainer checkout, not from a GitHub Actions
+runner.** This is decided, not accidental, and it follows from how the corpus
+works.
+
+Every archive carries the compiled, signed corpus in `corpus-dist/`, because a
+`clearance` binary with no corpus beside it cannot produce a verdict. That
+bundle is signed with an Ed25519 key that is held offline and must never reach a
+runner. The release workflow's pre-flight verifies the bundle against a fresh
+compile, which needs `corpus-build/` — the compiler, which holds the signing
+code and is never published.
+
+So neither the bundle nor the compiler exists in this repository, and the
+release job cannot pass here. Rather than let every tagged push go red, the
+workflow is split:
+
+| Trigger | What runs |
+|---|---|
+| Push a `v*` tag | **The guard gate only.** Invariants and the architectural import-graph test, on the tagged revision. This is the part that has something true to say about a tag. |
+| Manual dispatch | **The guard gate, then the release job.** Dispatch on the tag ref from a checkout that has `corpus-dist/` and `corpus-build/`. |
+
+Cutting a release:
+
+```bash
+make release           # in the maintainer checkout, on the tagged revision
+```
+
+Attach the artefacts to the GitHub release, then publish. A tag push that shows
+`release: skipped` is the expected state — it does not mean a release is
+missing.
+
+The alternative — publishing `corpus-dist/` so the job can run here — is
+recorded in `PRODUCTION-READINESS-ACTIONS.md` §1.3 as option (b). It is not
+taken: it would put the signing ceremony in the release path, and keeping it out
+is the entire reason the key is offline.
+
+---
+
+## 12. Licence
 
 By contributing you agree your contributions are licensed under the same licence
 as the project: the **Functional Source License 1.1, ALv2 Future License**
