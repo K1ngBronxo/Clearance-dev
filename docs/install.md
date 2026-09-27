@@ -17,7 +17,7 @@ Supported platforms, all built from the same tag:
 ## Option A — download an archive
 
 This is the fastest path and it works today. The archives are published by the
-project site at `cleardev.vercel.app`. Each one bundles the binary together with
+project site at `clearancedev.vercel.app`. Each one bundles the binary together with
 the signed corpus bundle, so the first command after unpacking works with no
 further setup.
 
@@ -32,7 +32,7 @@ version=0.1.0-rc.2
 os=linux          # linux | darwin | windows
 arch=amd64        # amd64 | arm64
 ext=tar.gz        # tar.gz everywhere except windows, which is zip
-base="https://cleardev.vercel.app/dl"
+base="https://clearancedev.vercel.app/dl"
 
 name="clearance_${version}_${os}_${arch}.${ext}"
 curl -fsSL -o "$name" "${base}/${name}"
@@ -55,7 +55,7 @@ the lines one at a time: `&&` is a syntax error before PowerShell 7.
 ```powershell
 $version = '0.1.0-rc.2'
 $arch    = 'amd64'   # amd64 | arm64
-$base    = 'https://cleardev.vercel.app/dl'
+$base    = 'https://clearancedev.vercel.app/dl'
 $name    = "clearance_${version}_windows_${arch}.zip"
 
 curl.exe -fsSL -o $name "$base/$name"

@@ -188,7 +188,7 @@ sha256sum -c checksums.txt
 
 That confirms the archive arrived intact against the published list. It does
 **not** establish who published it, and today nothing else does either: the
-archives served from `cleardev.vercel.app/dl` and from the `v0.1.0-rc.2`
+archives served from `clearancedev.vercel.app/dl` and from the `v0.1.0-rc.2`
 release have no cosign signature, no build provenance and no attestation. When
 a signed release is cut, this section will carry the `cosign verify-blob`
 command for it, with

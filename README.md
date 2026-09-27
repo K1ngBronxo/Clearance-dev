@@ -101,7 +101,7 @@ See [docs/ci.md](docs/ci.md) and
 
 A single static binary, no runtime dependencies, on Linux, macOS and Windows,
 `amd64` and `arm64`. Download the archive for your platform from
-[cleardev.vercel.app/docs#install](https://cleardev.vercel.app/docs#install) or
+[clearancedev.vercel.app/docs#install](https://clearancedev.vercel.app/docs#install) or
 from the [v0.1.0-rc.2 release](https://github.com/K1ngBronxo/Clearance-dev/releases/tag/v0.1.0-rc.2),
 unpack it, and run it — the signed corpus bundle is inside the archive. Building
 from source needs Go 1.25.13 or later. See [docs/install.md](docs/install.md).
