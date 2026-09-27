@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -80,7 +81,11 @@ func resolveInRoot(root *safefs.Root, requested string) (string, error) {
 // the ellipsis makes it obvious that something was elided rather than implying
 // the path was relative.
 func displayable(p string) string {
-	clean := filepath.ToSlash(filepath.Clean(p))
+	// Both separators are folded to "/" and cleaned with the OS-independent
+	// path package, not filepath. filepath.ToSlash only converts the separator
+	// of the host it is compiled for, so on Linux a Windows-style path was
+	// returned untouched and the prefix this function exists to drop survived.
+	clean := path.Clean(strings.ReplaceAll(p, `\`, "/"))
 	if len(clean) <= 1 {
 		return clean
 	}

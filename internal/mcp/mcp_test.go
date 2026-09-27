@@ -615,6 +615,10 @@ func TestDisplayableDropsTheMachinePrefix(t *testing.T) {
 		{"/etc/ssl/private/key.pem", "…/private/key.pem"},
 		{`C:\Users\someone\secrets\keys.txt`, "…/secrets/keys.txt"},
 		{"../../etc/passwd", "…/etc/passwd"},
+		// The backslash form of the same traversal. On a host where "\" is not
+		// the separator this is a single filename, and a function that reached
+		// for filepath would hand the whole string back.
+		{`..\..\etc\passwd`, "…/etc/passwd"},
 		{"", "."},
 	}
 	for _, tc := range cases {
