@@ -299,6 +299,19 @@ Attach the artefacts to the GitHub release, then publish. A tag push that shows
 `release: skipped` is the expected state — it does not mean a release is
 missing.
 
+**Never push the maintainer branch to this repository.** The module sits at
+`clearance/` in the maintainer tree and at the root here, so a branch from there
+carries `clearance/tools/`, `clearance/corpus-build/` and `clearance/supabase/`
+at every commit — the offline corpus signer and the hosted gateway, neither of
+which is part of the distribution. Publish the split ship tree, where the module
+is the root and those three directories are absent from every commit rather than
+deleted at the tip. A directory deleted in a later commit is still in the pack
+and still recoverable by anyone who can clone.
+
+`make hooks` installs `tools/hooks/pre-push`, which refuses a push that would
+publish any of the three at any commit. It is maintainer-only tooling, so it is
+absent here, and the rule above is what applies if you are working from a fork.
+
 The alternative — publishing `corpus-dist/` so the job can run here — is
 recorded in `PRODUCTION-READINESS-ACTIONS.md` §1.3 as option (b). It is not
 taken: it would put the signing ceremony in the release path, and keeping it out
