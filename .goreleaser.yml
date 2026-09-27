@@ -162,7 +162,21 @@ checksum:
 
 changelog:
   sort: asc
-  use: github
+  # `git`, not `github`. The GitHub source asks the API to compare the previous
+  # tag against this one, which needs a credential and a network round trip; a
+  # release cut by hand from the maintainer tree has neither, and it failed with
+  #
+  #   GET https://api.github.com/repos/.../compare/v0.1.0-rc.1...v0.1.0-rc.2
+  #   401 Bad credentials
+  #
+  # before a single binary was built. That made the documented maintainer path —
+  # `make release`, the one §1.3 of the readiness list calls the strongest option
+  # — impossible to run, because it needs no token by design.
+  #
+  # `git` reads the local history instead. The group regexes and filters below
+  # match commit subjects either way, and the release job checks out the full
+  # history (fetch-depth: 0), so CI produces the same notes without an API call.
+  use: git
   groups:
     - title: "Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
