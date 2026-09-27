@@ -1653,7 +1653,14 @@ func TestEveryRunNameExists(t *testing.T) {
 	}
 
 	// Every `-run` argument in every build script, quoted or bare.
-	runArg := regexp.MustCompile(`-run\s+(?:'([^']*)'|(\S+))`)
+	//
+	// The leading `(?:^|[^-\w])` is what makes `-run` a flag rather than a
+	// suffix. Without it, `git push --dry-run origin ship` in a comment inside
+	// a build script read as `-run origin`, and this check demanded a test
+	// named "origin" that no script ever intended to name. A guard that fires
+	// on prose is one someone deletes; the flag is `-run`, not any `-run` that
+	// happens to end a longer word.
+	runArg := regexp.MustCompile(`(?:^|[^-\w])-run\s+(?:'([^']*)'|(\S+))`)
 	// Comment lines are skipped: a `#` comment describing a target, or quoting
 	// the old broken pattern as an example, must not be read as one.
 	var checked, skipped int
