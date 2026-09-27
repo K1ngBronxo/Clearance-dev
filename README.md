@@ -189,6 +189,11 @@ from source needs Go 1.25.13 or later. See [docs/install.md](docs/install.md).
 | [docs/not-legal-advice.md](docs/not-legal-advice.md) | What a verdict does and does not claim |
 | [docs/adr/](docs/adr/) | The decisions that shaped the code |
 
+One page is published outside this repository, because it is for reading rather than for building:
+[**which model weights you can ship**](https://clearancedev.vercel.app/weights) — the weights half of
+the corpus, every row carrying the clause it turns on, and a note on how much of its own citation
+base has been checked against the source.
+
 ---
 
 ## Optional AI explanation — off by default, and never part of the verdict
