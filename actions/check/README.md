@@ -67,11 +67,17 @@ steps:
       path: '.'
       sarif: 'true'
 
-  - uses: github/codeql-action/upload-sarif@v3
+  - id: upload
+    uses: github/codeql-action/upload-sarif@v4
     if: always()              # upload even when the job failed on a verdict
     with:
       sarif_file: ${{ steps.clearance.outputs.sarif-file }}
       category: clearance
+
+  # The upload can exit 0 having warned that it rejected results. An id means
+  # the analysis was stored; no id means the Security tab is empty.
+  - if: always()
+    run: test -n "${{ steps.upload.outputs.sarif-id }}"
 ```
 
 Two details that matter:

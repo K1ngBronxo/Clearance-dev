@@ -60,13 +60,30 @@ jobs:
       # would fail there for a reason that has nothing to do with the code under
       # review. The scan still runs on a fork PR; only the upload is skipped.
       - name: Upload SARIF to code scanning
-        uses: github/codeql-action/upload-sarif@v3
+        id: upload
+        uses: github/codeql-action/upload-sarif@v4
         if: >-
           always() && (github.event_name != 'pull_request' ||
           github.event.pull_request.head.repo.full_name == github.repository)
         with:
           sarif_file: ${{ steps.clearance.outputs.sarif-file }}
           category: clearance
+
+      # The upload step succeeding is not by itself evidence that the analysis
+      # was *stored* - it exits 0 having warned when it rejects results. The
+      # server returns an id for a stored analysis, so an empty id means the
+      # Security tab is empty even though the run is green. That is exactly the
+      # silent pass this whole workflow exists to catch, so it is asserted here
+      # rather than assumed.
+      - name: Confirm code scanning stored the analysis
+        if: always() && steps.upload.outcome == 'success'
+        run: |
+          id="${{ steps.upload.outputs.sarif-id }}"
+          if [ -z "$id" ] || [ "$id" = "null" ]; then
+            echo "::error::Code scanning returned no sarif-id, so the analysis was not stored and the Security tab is empty."
+            exit 1
+          fi
+          echo "Code scanning stored the analysis: sarif-id=${id}"
 
       # The verdict has been reported and the findings have been uploaded. Only
       # now does the job fail, so that a bad verdict produces both a red build

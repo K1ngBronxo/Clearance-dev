@@ -210,7 +210,7 @@ jobs:
           path: '.'
           sarif: 'true'
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: always()              # still upload when the job failed on a verdict
         with:
           sarif_file: ${{ steps.clearance.outputs.sarif-file }}
@@ -219,6 +219,25 @@ jobs:
 
 `if: always()` matters: the run most worth seeing is the one that failed, and a
 failed step skips every step after it by default.
+
+One more thing is worth asserting, because the upload step can exit `0` having
+*warned* that it rejected results. The server returns an id for a stored
+analysis, so an empty id means the Security tab is empty while the run is green —
+a silent pass, which is the one outcome this tool exists to prevent:
+
+```yaml
+      - name: Confirm code scanning stored the analysis
+        if: always() && steps.upload.outcome == 'success'
+        run: |
+          id="${{ steps.upload.outputs.sarif-id }}"
+          if [ -z "$id" ] || [ "$id" = "null" ]; then
+            echo "::error::Code scanning returned no sarif-id; the analysis was not stored."
+            exit 1
+          fi
+          echo "Code scanning stored the analysis: sarif-id=${id}"
+```
+
+That requires `id: upload` on the upload step.
 
 ### 4.1 Without the Action
 
@@ -241,7 +260,7 @@ The binary writes the file itself; no conversion step is involved.
             *) echo "::error::clearance: unexpected exit $code"; exit 1 ;;
           esac
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: clearance.sarif
