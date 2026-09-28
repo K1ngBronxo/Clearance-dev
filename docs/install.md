@@ -400,8 +400,13 @@ steps:
 ```
 
 The action's exit code is the verdict's exit code, so a `DO NOT SHIP` fails the
-job. See [`actions/check/README.md`](../actions/check/README.md) and
-[ci.md](ci.md).
+job. Add `sarif: 'true'` and the findings also appear in your repository's
+**Security** tab and as annotations on the pull request, each one carrying the
+licence clause it relies on — the upload itself is a step you add, and
+[ci.md](ci.md#4-code-scanning) has it.
+
+See [`actions/check/README.md`](../actions/check/README.md) and [ci.md](ci.md)
+for the rest.
 
 ---
 

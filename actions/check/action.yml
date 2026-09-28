@@ -51,6 +51,26 @@ inputs:
     required: false
     default: ''
 
+  sarif:
+    description: >-
+      When "true", also write a SARIF 2.1.0 file for GitHub code scanning, and
+      expose its path as the "sarif-file" output. The file is produced by the
+      binary itself (--format sarif), so the findings in the Security tab are
+      the binary's findings, not the Action's reading of them. Uploading it is
+      the caller's step: it needs `security-events: write`, which this Action
+      does not request. See docs/ci.md, "Code scanning".
+    required: false
+    default: 'false'
+
+  sarif-file:
+    description: >-
+      Path of the SARIF file, relative to the workspace root. Only written when
+      "sarif" is "true". A relative path is used because GitHub's upload action
+      resolves it against the workspace, and because an absolute path would put
+      a machine-specific directory into a file meant to be read centrally.
+    required: false
+    default: 'clearance.sarif'
+
 outputs:
   verdict:
     description: >-
@@ -65,6 +85,13 @@ outputs:
       2 config error, 3 corpus error, 4 internal error, 5 UNDETERMINED with
       --strict. The five codes are a frozen contract.
     value: ${{ steps.check.outputs.exit-code }}
+
+  sarif-file:
+    description: >-
+      The workspace-relative path of the SARIF file, for handing to
+      github/codeql-action/upload-sarif. Empty unless the "sarif" input is
+      "true" and the file was actually written.
+    value: ${{ steps.sarif.outputs.sarif-file }}
 
 runs:
   using: 'composite'
@@ -234,3 +261,52 @@ runs:
             exit "$code"
             ;;
         esac
+
+    # ── code scanning ───────────────────────────────────────────────────────
+    # Runs after the verdict has already been reported and the job's outcome
+    # already decided, so a problem here cannot change the verdict. It is
+    # `continue-on-error` for that reason and no other: the verdict is the
+    # contract, and the SARIF file is an artefact. A failure says so out loud
+    # rather than pretending the file exists.
+    - name: Write SARIF for code scanning
+      id: sarif
+      # `always()` is load-bearing. The step above fails the job on a DO NOT
+      # SHIP verdict, and a failed step skips every step after it - so without
+      # this, the run most worth seeing in the Security tab is the one that
+      # never writes a SARIF file.
+      if: ${{ inputs.sarif == 'true' && always() }}
+      shell: bash
+      continue-on-error: true
+      env:
+        CLEARANCE_PATH: ${{ inputs.path }}
+        CLEARANCE_STRICT: ${{ inputs.strict }}
+        CLEARANCE_ARGS: ${{ inputs.args }}
+        CLEARANCE_SARIF: ${{ inputs.sarif-file }}
+        CLEARANCE_WORKSPACE: ${{ github.workspace }}
+      run: |
+        set -uo pipefail
+
+        strict_flag=""
+        if [ "${CLEARANCE_STRICT}" = "true" ]; then
+          strict_flag="--strict"
+        fi
+
+        # A second scan of the same tree by the same binary. The findings are
+        # identical to the ones the verdict was folded from; only the envelope
+        # differs. Running the binary twice rather than converting its JSON is
+        # the whole point: the Security tab then shows what the binary said,
+        # and no bespoke mapping between the two can drift or disagree.
+        out="${CLEARANCE_WORKSPACE}/${CLEARANCE_SARIF}"
+        # shellcheck disable=SC2086
+        clearance check "${CLEARANCE_PATH}" \
+          --format sarif --output "$out" ${strict_flag} ${CLEARANCE_ARGS}
+        code=$?
+
+        if [ ! -s "$out" ]; then
+          echo "::warning::Clearance: no SARIF file was written to ${CLEARANCE_SARIF} (exit ${code}). Code scanning will have nothing to upload."
+          exit 0
+        fi
+
+        echo "sarif-file=${CLEARANCE_SARIF}" >> "$GITHUB_OUTPUT"
+        results="$(grep -c '"ruleId"' "$out" || true)"
+        echo "Wrote ${results} SARIF result(s) to ${CLEARANCE_SARIF}"

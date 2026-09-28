@@ -15,7 +15,52 @@ described.
 
 ## [Unreleased]
 
+### Added
+
+- **The GitHub Action can produce SARIF for code scanning.** Two new inputs on
+  `actions/check` — `sarif` (default `false`) and `sarif-file` (default
+  `clearance.sarif`) — and one new output, `sarif-file`. With `sarif: 'true'`
+  the findings land in a repository's Security tab and as annotations on the
+  pull request, each one carrying the clause it relies on and a link to the
+  licence text.
+
+  The file is written by the binary, not by the Action. `--format sarif` has
+  existed since `0.1.0-rc.2`; what was missing was a way to get it out of the
+  Action and into the Security tab. The Action runs the scan once more with
+  `--format sarif` rather than converting the JSON it already holds, so there is
+  no mapping layer that could put a different severity in the Security tab than
+  in the terminal.
+
+  The upload is deliberately **not** part of the Action. It needs
+  `security-events: write`, and requesting that on the caller's behalf would
+  quietly widen what the Action can do; the path is handed back as an output and
+  the upload stays a step the caller can see. `docs/ci.md` has the worked
+  example. The Action's own SARIF step is `continue-on-error` and runs under
+  `always()`: a `DO NOT SHIP` verdict must not stop the file from being written,
+  and a failure to write it warns and leaves the output empty rather than
+  fabricating one.
+
+- **`.github/workflows/clearance.yml` — Clearance scans itself with code
+  scanning on.** It runs the published Action against the released binary, on
+  every push to `main` and every pull request, and uploads the SARIF. The
+  existing `guard` job already runs the test suite and `make dogfood` already
+  runs the CLI from source; neither exercises the user-facing Action. Running it
+  against this repository is what makes that path observed rather than assumed.
+  It also demonstrates the ordering the docs recommend — upload first, fail the
+  job last, so an unacceptable verdict produces both a red build and a populated
+  Security tab.
+
 ### Changed
+
+- **`docs/ci.md` no longer claims the Action uploads SARIF or comments on a pull
+  request.** It has never done either. Stating a capability the code does not
+  have is the failure this project exists to find in other people's manifests,
+  and it was sitting in its own documentation. The page now says what the Action
+  does, and §4 shows the upload as the caller's step. The rest of the page was
+  renumbered behind it, and `--format` is now documented as the four values the
+  binary accepts — `human`, `json`, `md`, `sarif` — where only two were named.
+
+
 
 - **The minimum Go version is now 1.25.13**, up from `go 1.23`. This is a
   build-time change only; the binary behaves identically. It is recorded

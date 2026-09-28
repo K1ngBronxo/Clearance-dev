@@ -35,6 +35,8 @@ jobs:
 | `path` | no | `.` | The project directory to scan. |
 | `strict` | no | `false` | Pass `--strict`, so `UNDETERMINED` exits 5 and fails the job. |
 | `args` | no | *(empty)* | Extra `clearance check` arguments, for example `--fail-on CONDITION`. |
+| `sarif` | no | `false` | Also write a SARIF 2.1.0 file for code scanning. Uploading it is your step — see below. |
+| `sarif-file` | no | `clearance.sarif` | Where to write that file, relative to the workspace root. |
 
 ## Outputs
 
@@ -42,6 +44,48 @@ jobs:
 |---|---|
 | `verdict` | `SHIP`, `SHIP_CONDITIONAL`, `DO_NOT_SHIP`, or `UNDETERMINED`. Empty if no verdict was produced. |
 | `exit-code` | The process exit code (`0`–`5`). The five codes are a frozen contract. |
+| `sarif-file` | Workspace-relative path of the SARIF file, for handing straight to `upload-sarif`. Empty unless `sarif: 'true'` and the file was written. |
+
+## Code scanning
+
+Set `sarif: 'true'` and the Action writes a SARIF 2.1.0 file for GitHub's code
+scanning. Findings then appear in the **Security** tab and as annotations on the
+pull request, with the licence clause as the rule and its citation URL as the
+rule's help link — the same findings as the terminal, in a different envelope.
+
+```yaml
+permissions:
+  contents: read
+  security-events: write      # required by upload-sarif, not by this Action
+
+steps:
+  - uses: actions/checkout@v4
+
+  - id: clearance
+    uses: K1ngBronxo/Clearance-dev/actions/check@v1
+    with:
+      path: '.'
+      sarif: 'true'
+
+  - uses: github/codeql-action/upload-sarif@v3
+    if: always()              # upload even when the job failed on a verdict
+    with:
+      sarif_file: ${{ steps.clearance.outputs.sarif-file }}
+      category: clearance
+```
+
+Two details that matter:
+
+- **The Action does not upload.** Writing the file needs no permission; uploading
+  needs `security-events: write`, and asking for that on the caller's behalf would
+  silently widen what the Action can do. The path is handed back as an output and
+  the upload is a step you can see.
+- **The SARIF is the binary's own.** The Action runs `clearance check --format
+  sarif` — a second scan of the same tree — rather than converting the JSON it
+  already has. There is no mapping layer between the two, so what the Security
+  tab shows cannot disagree with what the terminal printed. If the binary cannot
+  write the file, the step warns and leaves `sarif-file` empty; it never
+  fabricates one, and it never changes the verdict the job already reported.
 
 ## What the Action does, in order
 
@@ -54,6 +98,8 @@ jobs:
    and any `args`.
 5. Fails the job on exit `1` (`DO NOT SHIP`), `2` (config), `3` (corpus), `4`
    (internal), and on `5` only when `strict: 'true'`.
+6. If `sarif: 'true'`, runs the scan once more with `--format sarif` and reports
+   the file path.
 
 ## Permissions and scope
 

@@ -1,0 +1,79 @@
+name: clearance
+
+# ---------------------------------------------------------------------------
+# Clearance scans Clearance.
+#
+# The `guard` job in ci.yml already runs the full test suite, and `make dogfood`
+# runs `clearance check .` from source. This workflow does neither. It runs the
+# *published Action*, against the *released binary*, with SARIF code scanning
+# turned on - so the user-facing path is exercised end to end on a real runner
+# every time main moves, rather than being asserted in a test.
+#
+# A tool of this kind is worth nothing if its own CI wiring does not work. This
+# is the workflow that would notice, and it is also the worked example: it is
+# the arrangement documented in docs/ci.md, running in public.
+# ---------------------------------------------------------------------------
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege at the top level. `security-events: write` is granted at the
+# job, not the workflow, because only the SARIF upload needs it.
+permissions:
+  contents: read
+
+concurrency:
+  group: clearance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: scan with SARIF code scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # for upload-sarif; the Action itself does not use it
+    steps:
+      - uses: actions/checkout@v4
+
+      # The local Action, not `@v1`. A tag would test the published copy; the
+      # checkout tests the one in this commit, which is the point.
+      #
+      # `continue-on-error` is deliberate: a DO NOT SHIP verdict must not stop
+      # the upload below, or the Security tab would never show the findings
+      # that caused it. The exit code is read explicitly further down.
+      - id: clearance
+        uses: ./actions/check
+        continue-on-error: true
+        with:
+          path: '.'
+          sarif: 'true'
+
+      # `always()` for the same reason as the Action's own SARIF step: a failed
+      # verdict must not hide the findings that caused it.
+      #
+      # The fork guard is not optional. A pull request from a fork is not
+      # granted `security-events: write` however it is asked for, so the upload
+      # would fail there for a reason that has nothing to do with the code under
+      # review. The scan still runs on a fork PR; only the upload is skipped.
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: >-
+          always() && (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        with:
+          sarif_file: ${{ steps.clearance.outputs.sarif-file }}
+          category: clearance
+
+      # The verdict has been reported and the findings have been uploaded. Only
+      # now does the job fail, so that a bad verdict produces both a red build
+      # and a populated Security tab instead of a red build and nothing else.
+      - name: Fail on an unacceptable verdict
+        if: steps.clearance.outputs.exit-code != '0'
+        run: |
+          echo "::error::Clearance exited ${{ steps.clearance.outputs.exit-code }} with verdict '${{ steps.clearance.outputs.verdict }}'."
+          echo "Clearance would not ship itself. See docs/ci.md for the exit-code contract."
+          exit 1
